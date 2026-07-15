@@ -1,0 +1,7 @@
+# Default Values
+TRANSCRIPT_LANGUAGE = "en"
+
+MAX_RETRIES = 3
+RETRY_DELAY = 2
+
+YT_DLP_TIMEOUT = 30
