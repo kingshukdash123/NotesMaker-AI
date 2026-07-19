@@ -1,4 +1,5 @@
-from typing import TypedDict, Optional, List
+from typing import TypedDict, Optional, List, Annotated
+import operator
 
 from server.model.metadata import VideoMetadata
 from server.model.transcript import TranscriptSegment
@@ -35,12 +36,12 @@ class NotesState(TypedDict):
     execution_plan: ExecutionPlan
 
     # Generated Sections
-    generated_sections: List[GeneratedSection]
+    generated_sections: Annotated[list[GeneratedSection], operator.add]
 
     # Draft
     draft_notes: DraftNotes
 
-    # Review
+    # Review_result
     review_result: ReviewResult
 
     # Final

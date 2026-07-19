@@ -2,7 +2,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from server.exceptions import NotesMakerError
 from server.logger import get_logger
-from server.model.execution import ExecutionPlan
+from server.model.execution import ExecutionPlan, ExecutionPlanModel
 from server.prompts.execution_plan_prompt import EXECUTION_PLAN_PROMPT
 from server.services.llm.service import LLMService
 
@@ -41,10 +41,12 @@ class ExecutionPlanner:
             logger.info("Invoking LLM for execution plan generation.")
 
             structured_llm = self.llm.with_structured_output(
-                ExecutionPlan
+                ExecutionPlanModel
             )
 
-            execution_plan = structured_llm.invoke(prompt)
+            execution_plan_model = structured_llm.invoke(prompt)
+
+            execution_plan = execution_plan_model.model_dump()
 
             logger.info("Execution plan generated successfully.")
 

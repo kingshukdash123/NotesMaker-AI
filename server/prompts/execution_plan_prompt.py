@@ -78,14 +78,7 @@ Return true when practical examples would significantly improve learning.
 7.
 Target Word Count
 Estimate the amount of notes needed.
-Small topic
-≈250 words
-Medium topic
-≈500 words
-Large topic
-≈800 words
-Very complex topic
-≈1200+ words
+the word count lies between 250 to 300 words maximum, it should not cross 300 words
 ---------------------------------------
 8.
 Audience

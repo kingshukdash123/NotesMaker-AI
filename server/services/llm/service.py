@@ -2,7 +2,7 @@ from langchain_groq import ChatGroq
 
 from server.exceptions import NotesMakerError
 from server.logger import get_logger
-from server.settings import settings
+from server.config.settings import settings
 
 logger = get_logger(__name__)
 
@@ -21,11 +21,20 @@ class LLMService:
                     settings.GROQ_MODEL,
                 )
 
-                cls._llm = ChatGroq(
+                primary_llm = ChatGroq(
                     model=settings.GROQ_MODEL,
                     api_key=settings.GROQ_API_KEY,
                     temperature=0.2,
                 )
+
+                # Fallback model to handle rate limit / quota exceptions
+                fallback_llm = ChatGroq(
+                    model="llama-3.3-70b-versatile",
+                    api_key=settings.GROQ_API_KEY,
+                    temperature=0.2,
+                )
+
+                cls._llm = primary_llm.with_fallbacks([fallback_llm])
 
                 logger.info("Groq LLM initialized successfully.")
 

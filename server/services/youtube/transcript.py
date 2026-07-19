@@ -3,7 +3,7 @@ import re
 # pyrefly: ignore [missing-import]
 from youtube_transcript_api import YouTubeTranscriptApi
 
-from server.config import TRANSCRIPT_LANGUAGE
+from server.config.constants import TRANSCRIPT_LANGUAGE
 from server.exceptions import NotesMakerError
 from server.logger import get_logger
 from server.model.transcript import TranscriptSegment
