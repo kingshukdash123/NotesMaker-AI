@@ -1,8 +1,8 @@
 from tavily import TavilyClient
 
-from server.config.settings import settings
-from server.exceptions import NotesMakerError
-from server.logger import get_logger
+from config.settings import settings
+from utils.exceptions import NotesMakerError
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

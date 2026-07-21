@@ -1,5 +1,5 @@
-from server.logger import get_logger
-from server.model.transcript import TranscriptSegment
+from utils.logger import get_logger
+from model.transcript import TranscriptSegment
 
 logger = get_logger(__name__)
 

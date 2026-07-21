@@ -1,13 +1,13 @@
 from langchain_core.prompts import ChatPromptTemplate
 
-from server.services.llm.service import LLMService
-from server.exceptions import NotesMakerError
-from server.logger import get_logger
-from server.model.execution import SectionPlan
-from server.model.metadata import VideoMetadata
-from server.model.outline import LectureOutline
-from server.model.notes import GeneratedSection, GeneratedSectionModel
-from server.prompts.section_writer_prompt import SECTION_WRITER_PROMPT
+from services.llm.service import LLMService
+from utils.exceptions import NotesMakerError
+from utils.logger import get_logger
+from model.execution import SectionPlan
+from model.metadata import VideoMetadata
+from model.outline import LectureOutline
+from model.notes import GeneratedSection, GeneratedSectionModel
+from prompts.section_writer_prompt import SECTION_WRITER_PROMPT
 
 logger = get_logger(__name__)
 

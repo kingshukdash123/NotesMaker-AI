@@ -1,7 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 
-from server.logger import get_logger
-from server.exceptions import NotesMakerError
+from utils.logger import get_logger
+from utils.exceptions import NotesMakerError
 
 logger = get_logger(__name__)
 

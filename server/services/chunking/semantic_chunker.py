@@ -2,10 +2,10 @@
 # from langchain_experimental.text_splitter import SemanticChunker
 # from langchain_huggingface import HuggingFaceEmbeddings
 
-# from server.logger import get_logger
-# from server.model.chunk import Chunk
-# from server.model.transcript import TranscriptSegment
-# from server.services.chunking.token_counter import count_tokens
+# from utils.logger import get_logger
+# from model.chunk import Chunk
+# from model.transcript import TranscriptSegment
+# from services.chunking.token_counter import count_tokens
 
 # logger = get_logger(__name__)
 

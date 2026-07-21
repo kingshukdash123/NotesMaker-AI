@@ -1,10 +1,10 @@
 from langchain_core.prompts import ChatPromptTemplate
 
-from server.exceptions import NotesMakerError
-from server.logger import get_logger
-from server.model.execution import ExecutionPlan, ExecutionPlanModel
-from server.prompts.execution_plan_prompt import EXECUTION_PLAN_PROMPT
-from server.services.llm.service import LLMService
+from utils.exceptions import NotesMakerError
+from utils.logger import get_logger
+from model.execution import ExecutionPlan, ExecutionPlanModel
+from prompts.execution_plan_prompt import EXECUTION_PLAN_PROMPT
+from services.llm.service import LLMService
 
 logger = get_logger(__name__)
 

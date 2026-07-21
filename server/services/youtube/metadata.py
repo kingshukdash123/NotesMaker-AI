@@ -1,8 +1,8 @@
 import yt_dlp
 
-from server.logger import get_logger
-from server.exceptions import NotesMakerError
-from server.model.metadata import VideoMetadata
+from utils.logger import get_logger
+from utils.exceptions import NotesMakerError
+from model.metadata import VideoMetadata
 
 logger = get_logger(__name__)
 

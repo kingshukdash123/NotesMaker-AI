@@ -1,9 +1,9 @@
 from typing import TypedDict, Optional
 
-from server.model.execution import SectionPlan
-from server.model.metadata import VideoMetadata
-from server.model.notes import GeneratedSection
-from server.model.outline import LectureOutline
+from model.execution import SectionPlan
+from model.metadata import VideoMetadata
+from model.notes import GeneratedSection
+from model.outline import LectureOutline
 
 
 class SectionState(TypedDict):

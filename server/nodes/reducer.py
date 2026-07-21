@@ -1,8 +1,8 @@
-from server.exceptions import NotesMakerError
-from server.logger import get_logger
-from server.state.state import NotesState
-from server.model.notes import DraftNotes
-from server.services.database.noteSaver import save_notes_to_output
+from utils.exceptions import NotesMakerError
+from utils.logger import get_logger
+from state.state import NotesState
+from model.notes import DraftNotes
+from services.database.noteSaver import save_notes_to_output
 
 logger = get_logger(__name__)
 

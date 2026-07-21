@@ -1,12 +1,12 @@
 from typing import TypedDict, Optional, List, Annotated
 import operator
 
-from server.model.metadata import VideoMetadata
-from server.model.transcript import TranscriptSegment
-from server.model.outline import LectureOutline
-from server.model.execution import ExecutionPlan
-from server.model.notes import GeneratedSection, DraftNotes, FinalNotes
-from server.model.review import ReviewResult
+from model.metadata import VideoMetadata
+from model.transcript import TranscriptSegment
+from model.outline import LectureOutline
+from model.execution import ExecutionPlan
+from model.notes import GeneratedSection, DraftNotes, FinalNotes
+from model.review import ReviewResult
 
 
 class NotesState(TypedDict):

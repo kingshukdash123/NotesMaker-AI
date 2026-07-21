@@ -1,7 +1,7 @@
-from server.state.state import NotesState
-from server.services.orchestrator.orchestrator import OrchestratorService
-from server.logger import get_logger
-from server.exceptions import NotesMakerError
+from state.state import NotesState
+from services.orchestrator.orchestrator import OrchestratorService
+from utils.logger import get_logger
+from utils.exceptions import NotesMakerError
 
 logger = get_logger(__name__)
 

@@ -1,5 +1,5 @@
-from server.logger import get_logger
-from server.services.youtube.generator import generate_transcript_and_metadata
+from utils.logger import get_logger
+from services.youtube.generator import generate_transcript_and_metadata
 
 logger = get_logger(__name__)
 

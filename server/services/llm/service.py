@@ -1,8 +1,8 @@
 from langchain_groq import ChatGroq
 
-from server.exceptions import NotesMakerError
-from server.logger import get_logger
-from server.config.settings import settings
+from utils.exceptions import NotesMakerError
+from utils.logger import get_logger
+from config.settings import settings
 
 logger = get_logger(__name__)
 

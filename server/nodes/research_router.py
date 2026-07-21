@@ -1,8 +1,8 @@
 from typing import Literal
 
-from server.state.sectionState import SectionState
-from server.logger import get_logger
-from server.exceptions import NotesMakerError
+from state.sectionState import SectionState
+from utils.logger import get_logger
+from utils.exceptions import NotesMakerError
 
 logger = get_logger(__name__)
 

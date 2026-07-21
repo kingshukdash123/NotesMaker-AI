@@ -1,7 +1,7 @@
-from server.logger import get_logger
-from server.services.youtube.validator import extract_video_id
-from server.services.youtube.metadata import get_video_metadata
-from server.services.youtube.transcript import get_transcript
+from utils.logger import get_logger
+from services.youtube.validator import extract_video_id
+from services.youtube.metadata import get_video_metadata
+from services.youtube.transcript import get_transcript
 
 logger = get_logger(__name__)
 

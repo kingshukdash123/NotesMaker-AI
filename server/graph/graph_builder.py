@@ -1,17 +1,17 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import RetryPolicy
 
-from server.state.state import NotesState
-from server.state.sectionState import SectionState
+from state.state import NotesState
+from state.sectionState import SectionState
 
-from server.nodes.transcript_metadata_generator import transcript_metadata_generator
-from server.nodes.transcript_merger import transcript_merger
-from server.nodes.orchestrator import orchestrator
-from server.nodes.fanout import fanout
-from server.nodes.sectionWriter import section_writer
-from server.nodes.research import research
-from server.nodes.research_router import research_router
-from server.nodes.reducer import reducer
+from nodes.transcript_metadata_generator import transcript_metadata_generator
+from nodes.transcript_merger import transcript_merger
+from nodes.orchestrator import orchestrator
+from nodes.fanout import fanout
+from nodes.sectionWriter import section_writer
+from nodes.research import research
+from nodes.research_router import research_router
+from nodes.reducer import reducer
 
 # ==========================
 # Section Worker Subgraph

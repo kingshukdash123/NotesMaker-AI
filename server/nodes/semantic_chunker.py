@@ -1,5 +1,5 @@
-from server.logger import get_logger
-from server.services.chunking.semantic_chunker import semantic_chunk_transcript
+from utils.logger import get_logger
+from services.chunking.semantic_chunker import semantic_chunk_transcript
 
 logger = get_logger(__name__)
 

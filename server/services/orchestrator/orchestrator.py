@@ -1,7 +1,7 @@
-from server.exceptions import NotesMakerError
-from server.logger import get_logger
-from server.services.orchestrator.execution import ExecutionPlanner
-from server.services.orchestrator.outline import OutlineGenerator
+from utils.exceptions import NotesMakerError
+from utils.logger import get_logger
+from services.orchestrator.execution import ExecutionPlanner
+from services.orchestrator.outline import OutlineGenerator
 
 logger = get_logger(__name__)
 

@@ -1,10 +1,10 @@
 from langchain_core.prompts import ChatPromptTemplate
 
-from server.exceptions import NotesMakerError
-from server.logger import get_logger
-from server.model.outline import LectureOutline
-from server.prompts.outline_prompt import OUTLINE_PROMPT
-from server.services.llm.service import LLMService
+from utils.exceptions import NotesMakerError
+from utils.logger import get_logger
+from model.outline import LectureOutline
+from prompts.outline_prompt import OUTLINE_PROMPT
+from services.llm.service import LLMService
 
 logger = get_logger(__name__)
 

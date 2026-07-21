@@ -8,9 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, HttpUrl
 
-from server.logger import get_logger, current_task_id
-from server.services.youtube.metadata import get_video_metadata
-from server.graph.graph_builder import graph
+from utils.logger import get_logger, current_task_id
+from services.youtube.metadata import get_video_metadata
+from graph.graph_builder import graph
 
 logger = get_logger(__name__)
 
@@ -50,26 +50,28 @@ async def run_pipeline_task(task_id: str, url: str):
         # ainvoke is the standard async method for LangGraph compilation graphs
         result = await graph.ainvoke({"youtube_url": url})
         
-        tasks[task_id]["status"] = "COMPLETED"
+        logger.info(f"Task {task_id}: Notes generation pipeline completed successfully.")
         tasks[task_id]["metadata"] = result.get("metadata")
         tasks[task_id]["result"] = {
             "draft_notes": result.get("draft_notes"),
             # "final_notes": result.get("final_notes"),
             "lecture_outline": result.get("lecture_outline"),
         }
-        logger.info(f"Task {task_id}: Notes generation pipeline completed successfully.")
+        tasks[task_id]["status"] = "COMPLETED"
         
     except Exception as e:
         logger.exception(f"Task {task_id}: Notes generation pipeline failed.")
-        tasks[task_id]["status"] = "FAILED"
         tasks[task_id]["error"] = str(e)
+        tasks[task_id]["status"] = "FAILED"
     finally:
         current_task_id.reset(token)
 
 
 @app.get("/")
+@app.get("/api")
+@app.get("/api/health")
 async def root():
-    return {"message": "Welcome to NotesMaker AI API. Use /docs for documentation."}
+    return {"status": "ok", "message": "Welcome to NotesMaker AI API. Use /docs for documentation."}
 
 
 @app.get("/api/youtube/metadata")
@@ -162,13 +164,15 @@ async def stream_logs(task_id: str):
                     if line:
                         yield f"data: {line.strip()}\n\n"
                     else:
-                        # Check if task is finished
                         task_state = tasks.get(task_id)
                         if task_state and task_state["status"] in ("COMPLETED", "FAILED"):
                             # Read any leftover logs that might have just been written
-                            line = f.readline()
-                            if line:
-                                yield f"data: {line.strip()}\n\n"
+                            leftover = f.read()
+                            if leftover:
+                                for l in leftover.splitlines():
+                                    if l.strip():
+                                        yield f"data: {l.strip()}\n\n"
+                            yield "event: close\ndata: [STREAM_FINISHED]\n\n"
                             break
                         await asyncio.sleep(0.2)
         except GeneratorExit:
@@ -182,4 +186,4 @@ async def stream_logs(task_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("server.app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

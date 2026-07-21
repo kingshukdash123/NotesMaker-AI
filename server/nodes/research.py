@@ -1,7 +1,7 @@
-from server.state.sectionState import SectionState
-from server.services.research.researchService import ResearchService
-from server.logger import get_logger
-from server.exceptions import NotesMakerError
+from state.sectionState import SectionState
+from services.research.researchService import ResearchService
+from utils.logger import get_logger
+from utils.exceptions import NotesMakerError
 
 logger = get_logger(__name__)
 

@@ -1,5 +1,5 @@
-from server.logger import get_logger
-from server.services.transcript.merger import merge_transcript
+from utils.logger import get_logger
+from services.transcript.merger import merge_transcript
 
 logger = get_logger(__name__)
 
