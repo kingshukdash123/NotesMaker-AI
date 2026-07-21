@@ -1,0 +1,204 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --background: #09090b;
+    --foreground: #fafafa;
+    --card: #09090b;
+    --card-foreground: #fafafa;
+    --popover: #09090b;
+    --popover-foreground: #fafafa;
+    --primary: #fafafa;
+    --primary-foreground: #18181b;
+    --secondary: #27272a;
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #fafafa;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafafa;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #d4d4d8;
+  }
+
+  body {
+    @apply bg-black text-zinc-100 font-sans antialiased min-h-screen selection:bg-zinc-800 selection:text-zinc-100 relative overflow-x-hidden;
+    background-color: #000000;
+    background-image: 
+      radial-gradient(circle at 10% 5%, rgba(255, 255, 255, 0.14) 0%, transparent 35%),
+      radial-gradient(circle at 90% 5%, rgba(255, 255, 255, 0.12) 0%, transparent 35%),
+      radial-gradient(circle at 50% 95%, rgba(255, 255, 255, 0.05) 0%, transparent 45%);
+    background-attachment: fixed;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* shadcn Panel and Card utilities */
+.glass-panel {
+  background: rgba(9, 9, 11, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(39, 39, 42, 0.8);
+}
+
+.glass-card {
+  background: rgba(18, 18, 20, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(39, 39, 42, 0.7);
+}
+
+.glass-input {
+  background: #09090b;
+  border: 1px solid #27272a;
+}
+
+.glass-input:focus-within {
+  border-color: #52525b;
+  box-shadow: 0 0 0 1px #52525b;
+}
+
+.terminal-font {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Markdown Render Preview Styles */
+.markdown-content h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f4f4f5;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-content h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f4f4f5;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #27272a;
+  padding-bottom: 0.35rem;
+}
+
+.markdown-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e4e4e7;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.65;
+  color: #d4d4d8;
+}
+
+.markdown-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-content li {
+  margin-bottom: 0.25rem;
+  line-height: 1.6;
+  color: #d4d4d8;
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid #52525b;
+  padding-left: 1rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: #a1a1aa;
+  font-style: italic;
+}
+
+.markdown-content code {
+  background-color: #18181b;
+  color: #e4e4e7;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+  border: 1px solid #27272a;
+}
+
+.markdown-content pre {
+  background-color: #09090b;
+  border: 1px solid #27272a;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+  border: none;
+  font-size: 0.85rem;
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #27272a;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.markdown-content th {
+  background-color: #18181b;
+  color: #f4f4f5;
+  font-weight: 600;
+}
+
+.markdown-content strong {
+  font-weight: 600;
+  color: #fafafa;
+}
+
+.markdown-content a {
+  color: #a1a1aa;
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  color: #fafafa;
+}
