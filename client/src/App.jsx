@@ -5,11 +5,91 @@ import VideoCard from './components/VideoCard';
 import PipelineTracker from './components/PipelineTracker';
 import LogTerminal from './components/LogTerminal';
 import NotesViewer from './components/NotesViewer';
+import AuthModal from './components/AuthModal';
+import ApiDisconnectModal from './components/ApiDisconnectModal';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs } from './services/server/api';
-import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw } from 'lucide-react';
+import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock } from 'lucide-react';
 
-export default function App() {
+function MainApp() {
+  const { currentUser } = useAuth();
+
+  // Auth modal state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'signup'
+  const [authNotice, setAuthNotice] = useState(null);
+
   const [url, setUrl] = useState('');
+
+  // API Status & Disconnect Modal State
+  const [apiStatus, setApiStatus] = useState('checking'); // 'healthy' | 'unhealthy' | 'checking'
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [hasShownModal, setHasShownModal] = useState(false);
+  const isConnectingRef = useRef(false);
+
+  const checkHealth = async () => {
+    if (isConnectingRef.current) return;
+    try {
+      const res = await fetch('/api/health', { cache: 'no-store' });
+      if (res.ok) {
+        setApiStatus('healthy');
+      } else {
+        setApiStatus('unhealthy');
+      }
+    } catch {
+      setApiStatus('unhealthy');
+    }
+  };
+
+  const handleConnect = async () => {
+    if (isConnectingRef.current) return;
+    isConnectingRef.current = true;
+    setApiStatus('checking');
+
+    const startTime = Date.now();
+    const timeout = 120000; // 1 minute retry window
+
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/health', { cache: 'no-store' });
+        if (res.ok) {
+          setApiStatus('healthy');
+          isConnectingRef.current = false;
+          return;
+        }
+      } catch (err) {
+        // Ignored; we expect failures if the server is starting
+      }
+
+      if (Date.now() - startTime < timeout) {
+        setTimeout(poll, 2000);
+      } else {
+        setApiStatus('unhealthy');
+        isConnectingRef.current = false;
+      }
+    };
+
+    poll();
+  };
+
+  useEffect(() => {
+    checkHealth();
+    const interval = setInterval(checkHealth, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (apiStatus === 'unhealthy' && !hasShownModal) {
+      setShowDisconnectModal(true);
+      setHasShownModal(true);
+    } else if (apiStatus === 'healthy') {
+      const timer = setTimeout(() => {
+        setShowDisconnectModal(false);
+      }, 2000);
+      setHasShownModal(false);
+      return () => clearTimeout(timer);
+    }
+  }, [apiStatus, hasShownModal]);
   
   // Metadata state
   const [metadata, setMetadata] = useState(null);
@@ -22,6 +102,11 @@ export default function App() {
   const [taskResult, setTaskResult] = useState(null);
   const [taskError, setTaskError] = useState(null);
 
+  // Section visibility states
+  const [showMetadata, setShowMetadata] = useState(true);
+  const [showPipeline, setShowPipeline] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+
   // Terminal & Logs state
   const [logs, setLogs] = useState([]);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -30,14 +115,28 @@ export default function App() {
   // Polling ref
   const pollIntervalRef = useRef(null);
 
+  const handleOpenAuthModal = (mode = 'login', notice = null) => {
+    setAuthModalMode(mode);
+    setAuthNotice(notice);
+    setIsAuthModalOpen(true);
+  };
+
   // Handler: Fetch Metadata
   const handleFetchMetadata = async (targetUrl = url) => {
     if (!targetUrl) return;
+
+    // Protection for non-authenticated users
+    if (!currentUser) {
+      handleOpenAuthModal('login', 'Please sign in to fetch YouTube video metadata.');
+      return;
+    }
+
     setIsLoadingMeta(true);
     setMetaError(null);
     try {
       const data = await fetchYoutubeMetadata(targetUrl);
       setMetadata(data);
+      setShowMetadata(true);
     } catch (err) {
       setMetaError(err.message || 'Failed to fetch video metadata');
       setMetadata(null);
@@ -50,6 +149,12 @@ export default function App() {
   const handleGenerateNotes = async (targetUrl = url) => {
     if (!targetUrl) return;
 
+    // Protection for non-authenticated users
+    if (!currentUser) {
+      handleOpenAuthModal('login', 'Please sign in to generate structured study notes.');
+      return;
+    }
+
     // Reset task state
     setTaskId(null);
     setTaskStatus('PROCESSING');
@@ -57,6 +162,9 @@ export default function App() {
     setTaskError(null);
     setLogs([]);
     setIsTerminalOpen(true); // Open terminal automatically on generate
+    setShowPipeline(true);
+    setShowMetadata(true);
+    setShowNotes(false);
 
     // If metadata isn't fetched yet, fetch it concurrently
     if (!metadata) {
@@ -94,7 +202,11 @@ export default function App() {
           if (statusData.status === 'COMPLETED') {
             setTaskStatus('COMPLETED');
             setTaskResult(statusData.result);
-            if (statusData.metadata) setMetadata(statusData.metadata);
+            setShowNotes(true);
+            if (statusData.metadata) {
+              setMetadata(statusData.metadata);
+              setShowMetadata(true);
+            }
             if (eventSourceRef.current) {
               eventSourceRef.current.close();
             }
@@ -228,6 +340,9 @@ class MultiHeadAttention(nn.Module):
         concepts: ['Self-Attention', 'Dot-Product Scaling', 'Multi-Head Projection']
       }
     });
+    setShowMetadata(true);
+    setShowPipeline(true);
+    setShowNotes(true);
   };
 
   // Clear metadata and errors when URL is empty
@@ -255,18 +370,30 @@ class MultiHeadAttention(nn.Module):
 
       {/* Top Header Navbar */}
       <Header
+        apiStatus={apiStatus}
+        checkHealth={checkHealth}
+        setShowDisconnectModal={setShowDisconnectModal}
         onToggleTerminal={() => setIsTerminalOpen(!isTerminalOpen)}
         logCount={logs.length}
         isGenerating={taskStatus === 'PROCESSING'}
+        onOpenAuthModal={handleOpenAuthModal}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        notice={authNotice}
       />
 
       {/* Main Split Layout Container */}
-      <div className={`flex-1 w-full flex flex-col lg:flex-row gap-6 px-4 sm:px-8 pb-16 pt-20 sm:pt-24 transition-all duration-300 ${
+      <div className={`flex-1 w-full flex flex-col lg:flex-row gap-6 px-4 sm:px-8 pb-6 pt-20 sm:pt-24 transition-all duration-300 ${
         isTerminalOpen ? 'max-w-[1700px] mx-auto' : 'max-w-7xl mx-auto'
       }`}>
         {/* Part 1: Notes Generation UI (Upper part on phone, Left part on desktop) */}
         <main className={`flex-1 min-w-0 w-full transition-all duration-300 ${
-          isTerminalOpen ? 'pb-[20vh] lg:pb-0 lg:pr-[440px] xl:pr-[500px]' : ''
+          isTerminalOpen ? 'pb-[10vh] lg:pb-0 lg:pr-[440px] xl:pr-[500px]' : ''
         }`}>
           {/* Hero Banner Title */}
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
@@ -283,6 +410,17 @@ class MultiHeadAttention(nn.Module):
             <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
               Extract transcripts, generate deep lecture outlines, perform online research, and assemble publication-grade notes automatically.
             </p>
+            {!currentUser && (
+              <div className="pt-2">
+                <button
+                  onClick={() => handleOpenAuthModal('signup', 'Sign up or sign in to unlock video note generation.')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-zinc-100 text-xs font-semibold shadow-sm transition"
+                >
+                  <Lock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Sign In to Unlock Full Access</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Input Search & Presets Component */}
@@ -307,26 +445,31 @@ class MultiHeadAttention(nn.Module):
           )}
           
           {/* Video Card Preview */}
-          {url !== '' && (
+          {url !== '' && metadata && showMetadata && (
             <VideoCard
               metadata={metadata}
               onStartGeneration={handleGenerateNotes}
               isGenerating={taskStatus === 'PROCESSING'}
+              onClose={() => setShowMetadata(false)}
             />
           )}
 
           {/* Pipeline Step Tracker */}
-          {(taskStatus !== 'IDLE' || taskId) && (
+          {(taskStatus !== 'IDLE' || taskId) && showPipeline && (
             <PipelineTracker
               status={taskStatus}
               logs={logs}
               error={taskError}
+              onClose={() => setShowPipeline(false)}
             />
           )}
 
           {/* Results Notes & Outline Viewer */}
-          {taskResult && (
-            <NotesViewer result={taskResult} />
+          {taskResult && showNotes && (
+            <NotesViewer 
+              result={taskResult} 
+              onClose={() => setShowNotes(false)}
+            />
           )}
 
           {/* Empty state prompt if idle */}
@@ -354,10 +497,26 @@ class MultiHeadAttention(nn.Module):
         />
       </div>
 
+      {/* Api Disconnect Modal */}
+      <ApiDisconnectModal
+        isOpen={showDisconnectModal}
+        onClose={() => setShowDisconnectModal(false)}
+        onConnect={handleConnect}
+        apiStatus={apiStatus}
+      />
+
       {/* Footer */}
       <footer className="border-t border-zinc-900 bg-black py-6 text-center text-xs text-zinc-500">
         <p>NotesMaker AI - All Rights Reserved</p>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }

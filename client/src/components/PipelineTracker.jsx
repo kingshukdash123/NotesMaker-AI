@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Loader2, Cpu, FileText, Layers, GitMerge, Sparkles, AlertTriangle } from 'lucide-react';
+import { Check, Loader2, Cpu, FileText, Layers, GitMerge, Sparkles, AlertTriangle, X } from 'lucide-react';
 
 const STAGES = [
   {
@@ -34,7 +34,7 @@ const STAGES = [
   },
 ];
 
-export default function PipelineTracker({ status, logs = [], error }) {
+export default function PipelineTracker({ status, logs = [], error, onClose }) {
   // Infer active stage based on logs in exact sequential order
   const getActiveStageIndex = () => {
     if (status === 'COMPLETED') return 5; // All done
@@ -70,24 +70,36 @@ export default function PipelineTracker({ status, logs = [], error }) {
             LangGraph Execution Pipeline
           </h3>
         </div>
-        <div className="text-xs font-medium px-3 py-1 rounded-md bg-zinc-900 border border-zinc-800">
-          {status === 'PROCESSING' && (
-            <span className="text-amber-400 flex items-center gap-1.5 font-semibold">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing Pipeline
-            </span>
-          )}
-          {status === 'COMPLETED' && (
-            <span className="text-emerald-400 flex items-center gap-1.5 font-semibold">
-              <Check className="w-3.5 h-3.5" /> Pipeline Completed
-            </span>
-          )}
-          {status === 'FAILED' && (
-            <span className="text-rose-400 flex items-center gap-1.5 font-semibold">
-              <AlertTriangle className="w-3.5 h-3.5" /> Pipeline Error
-            </span>
-          )}
-          {status === 'IDLE' && (
-            <span className="text-zinc-500">Idle</span>
+        <div className="flex items-center gap-3">
+          <div className="text-xs font-medium px-3 py-1 rounded-md bg-zinc-900 border border-zinc-800">
+            {status === 'PROCESSING' && (
+              <span className="text-amber-400 flex items-center gap-1.5 font-semibold">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing Pipeline
+              </span>
+            )}
+            {status === 'COMPLETED' && (
+              <span className="text-emerald-400 flex items-center gap-1.5 font-semibold">
+                <Check className="w-3.5 h-3.5" /> Pipeline Completed
+              </span>
+            )}
+            {status === 'FAILED' && (
+              <span className="text-rose-400 flex items-center gap-1.5 font-semibold">
+                <AlertTriangle className="w-3.5 h-3.5" /> Pipeline Error
+              </span>
+            )}
+            {status === 'IDLE' && (
+              <span className="text-zinc-500">Idle</span>
+            )}
+          </div>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 p-1.5 rounded-md transition"
+              title="Dismiss pipeline tracker"
+            >
+              <X className="w-4 h-4" />
+            </button>
           )}
         </div>
       </div>

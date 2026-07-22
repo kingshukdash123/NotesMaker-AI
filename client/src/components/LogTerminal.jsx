@@ -47,7 +47,7 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
   return (
     <div className="bg-black border-zinc-800 shadow-2xl flex flex-col transition-all duration-300 overflow-hidden
       /* Phone & Tablet: Fixed to lower panel */
-      fixed bottom-0 left-0 right-0 z-40 w-full h-[25vh] border-t rounded-t-xl rounded-b-none
+      fixed bottom-0 left-0 right-0 z-30 w-full h-[25vh] border-t rounded-t-xl rounded-b-none
       /* Windows / Desktop: Fixed to right side in position */
       lg:fixed lg:top-[76px] lg:right-6 lg:bottom-auto lg:left-auto lg:z-30 lg:w-[420px] xl:w-[480px] lg:h-[calc(100vh-150px)] lg:rounded-xl lg:border">
       {/* Terminal Header Bar */}

@@ -3,10 +3,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
   FileText, ListTree, Code, Copy, Download, Check, ExternalLink, 
-  BookOpen, Target, Lightbulb, Hash, Layers 
+  BookOpen, Target, Lightbulb, Hash, Layers, X
 } from 'lucide-react';
 
-export default function NotesViewer({ result }) {
+export default function NotesViewer({ result, onClose }) {
   const [activeTab, setActiveTab] = useState('notes'); // 'notes' | 'outline' | 'json'
   const [copied, setCopied] = useState(false);
 
@@ -132,6 +132,17 @@ export default function NotesViewer({ result }) {
             <Download className="w-3.5 h-3.5" />
             <span>Download .MD</span>
           </button>
+
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center justify-center p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition"
+              title="Close notes viewer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import { User, Clock, Calendar, Globe, ExternalLink, Play, CheckCircle } from 'lucide-react';
+import { User, Clock, Calendar, Globe, ExternalLink, Play, CheckCircle, X } from 'lucide-react';
 
-export default function VideoCard({ metadata, onStartGeneration, isGenerating }) {
+export default function VideoCard({ metadata, onStartGeneration, isGenerating, onClose }) {
   if (!metadata) return null;
 
   // Format duration in HH:MM:SS or MM:SS
@@ -61,15 +61,27 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating })
             <h2 className="text-base sm:text-lg font-bold text-zinc-100 line-clamp-2 leading-snug">
               {metadata.title}
             </h2>
-            <a
-              href={youtubeWatchUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-400 hover:text-zinc-100 transition shrink-0 p-1"
-              title="Open on YouTube"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
+            <div className="flex items-center gap-1 shrink-0">
+              <a
+                href={youtubeWatchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-400 hover:text-zinc-100 transition p-1 hover:bg-zinc-900 rounded-md"
+                title="Open on YouTube"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+              {onClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 p-1 rounded-md transition"
+                  title="Dismiss preview"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-y-1.5 gap-x-3 text-[11px] sm:text-xs text-zinc-400">
