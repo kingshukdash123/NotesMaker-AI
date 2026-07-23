@@ -18,11 +18,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // Helper to normalize user ID / username to valid email format if no '@' is present
+  // Also replaces any spaces in the identifier with underscores
   const formatEmail = (identifier) => {
     const trimmed = identifier.trim();
     if (!trimmed) return '';
-    if (trimmed.includes('@')) return trimmed;
-    return `${trimmed.toLowerCase()}@notesmaker.ai`;
+    const replaced = trimmed.replace(/\s+/g, '_');
+    if (replaced.includes('@')) return replaced;
+    return `${replaced.toLowerCase()}@notesmaker.ai`;
   };
 
   const signup = async (identifier, password) => {

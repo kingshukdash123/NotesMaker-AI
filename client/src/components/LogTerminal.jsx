@@ -45,7 +45,7 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
   if (!isOpen) return null;
 
   return (
-    <div className="bg-black border-zinc-800 shadow-2xl flex flex-col transition-all duration-300 overflow-hidden
+    <div className="bg-black border-zinc-800 shadow-2xl flex flex-col transition-all duration-300 overflow-hidden animate-slideLeft lg:animate-none lg:translate-x-0
       /* Phone & Tablet: Fixed to lower panel */
       fixed bottom-0 left-0 right-0 z-30 w-full h-[25vh] border-t rounded-t-xl rounded-b-none
       /* Windows / Desktop: Fixed to right side in position */
@@ -83,9 +83,8 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
           <button
             type="button"
             onClick={() => setAutoScroll(!autoScroll)}
-            className={`p-1 rounded text-xs transition ${
-              autoScroll ? 'bg-zinc-800 text-zinc-200 border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
+            className={`p-1 rounded text-xs transition ${autoScroll ? 'bg-zinc-800 text-zinc-200 border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
             title={autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'}
           >
             {autoScroll ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -124,7 +123,7 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
       </div>
 
       {/* Terminal Output Body */}
-      <div className="p-3.5 overflow-y-auto font-mono text-[11px] space-y-1 flex-1 min-h-[180px] bg-black text-zinc-300">
+      <div className="p-3.5 overflow-y-auto font-mono text-[11px] space-y-1 flex-1 bg-black text-zinc-300">
         {filteredLogs.length === 0 ? (
           <div className="text-zinc-600 italic py-8 text-center">
             No log messages yet. Initiate note generation to stream logs.

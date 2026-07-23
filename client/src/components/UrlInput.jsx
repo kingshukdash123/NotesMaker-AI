@@ -32,7 +32,8 @@ export default function UrlInput({
   onGenerateNotes, 
   onLoadMockData,
   isLoadingMeta, 
-  isGenerating 
+  isGenerating,
+  pulseTestNotes = false
 }) {
   const handleClear = () => {
     setUrl('');
@@ -133,7 +134,11 @@ export default function UrlInput({
         <button
           type="button"
           onClick={onLoadMockData}
-          className="text-xs px-3 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-amber-950/60 text-amber-500 hover:text-amber-400 font-medium transition duration-150 flex items-center gap-1.5"
+          className={`text-xs px-3 py-1 rounded-md font-medium transition duration-150 flex items-center gap-1.5 ${
+            pulseTestNotes
+              ? 'bg-amber-950/20 hover:bg-amber-950/30 border border-amber-500/50 text-amber-400 animate-pulseGlow'
+              : 'bg-zinc-900 hover:bg-zinc-800 border border-amber-950/60 text-amber-500 hover:text-amber-400'
+          }`}
           title="Load pre-built test study notes for offline design, print, and copy testing"
         >
           <span>🧪 Load Test Notes</span>

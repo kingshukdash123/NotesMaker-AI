@@ -7,8 +7,10 @@ import LogTerminal from './components/LogTerminal';
 import NotesViewer from './components/NotesViewer';
 import AuthModal from './components/AuthModal';
 import ApiDisconnectModal from './components/ApiDisconnectModal';
+import HistorySidebar from './components/HistorySidebar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs } from './services/server/api';
+import { saveNotes, getUserNotes, deleteNotes } from './services/firebase/notesService';
 import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock } from 'lucide-react';
 
 function MainApp() {
@@ -90,7 +92,7 @@ function MainApp() {
       return () => clearTimeout(timer);
     }
   }, [apiStatus, hasShownModal]);
-  
+
   // Metadata state
   const [metadata, setMetadata] = useState(null);
   const [isLoadingMeta, setIsLoadingMeta] = useState(false);
@@ -106,6 +108,11 @@ function MainApp() {
   const [showMetadata, setShowMetadata] = useState(true);
   const [showPipeline, setShowPipeline] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+
+  // History Sidebar States
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [notesHistory, setNotesHistory] = useState([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
   // Terminal & Logs state
   const [logs, setLogs] = useState([]);
@@ -161,7 +168,6 @@ function MainApp() {
     setTaskResult(null);
     setTaskError(null);
     setLogs([]);
-    setIsTerminalOpen(true); // Open terminal automatically on generate
     setShowPipeline(true);
     setShowMetadata(true);
     setShowNotes(false);
@@ -203,6 +209,7 @@ function MainApp() {
             setTaskStatus('COMPLETED');
             setTaskResult(statusData.result);
             setShowNotes(true);
+            const activeMetadata = statusData.metadata || metadata || {};
             if (statusData.metadata) {
               setMetadata(statusData.metadata);
               setShowMetadata(true);
@@ -211,6 +218,25 @@ function MainApp() {
               eventSourceRef.current.close();
             }
             clearInterval(pollIntervalRef.current);
+
+
+            // Save notes to Firestore
+            if (currentUser) {
+              try {
+                const noteId = await saveNotes(currentUser.uid, url, activeMetadata, statusData.result);
+                const newHistoryItem = {
+                  id: noteId,
+                  userId: currentUser.uid,
+                  videoUrl: url,
+                  metadata: activeMetadata,
+                  result: statusData.result,
+                  createdAtDate: new Date()
+                };
+                setNotesHistory(prev => [newHistoryItem, ...prev]);
+              } catch (saveErr) {
+                console.error('Error saving notes to history:', saveErr);
+              }
+            }
           } else if (statusData.status === 'FAILED') {
             setTaskStatus('FAILED');
             setTaskError(statusData.error || 'Notes generation failed.');
@@ -231,8 +257,10 @@ function MainApp() {
   };
 
   const handleLoadMockData = () => {
+    setUrl('https://www.youtube.com/watch?v=transformer-mock');
     // Populate with mock video metadata
     setMetadata({
+      video_id: 'transformer-mock',
       title: 'Attention Is All You Need (Transformer Architecture Explained)',
       author: 'NotesMaker AI Labs',
       length: 1240,
@@ -361,6 +389,67 @@ class MultiHeadAttention(nn.Module):
     };
   }, []);
 
+  // Fetch history when user logs in
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (currentUser) {
+        setIsHistoryLoading(true);
+        try {
+          const historyData = await getUserNotes(currentUser.uid);
+          setNotesHistory(historyData);
+        } catch (err) {
+          console.error('Failed to load notes history:', err);
+        } finally {
+          setIsHistoryLoading(false);
+        }
+      } else {
+        setNotesHistory([]);
+      }
+    };
+    fetchHistory();
+  }, [currentUser]);
+
+  const handleSelectHistoryNote = (note) => {
+    setUrl(note.videoUrl || '');
+    setMetadata(note.metadata || null);
+    setTaskResult(note.result || null);
+    setTaskStatus('COMPLETED');
+    setShowMetadata(true);
+    setShowNotes(true);
+    setIsHistoryOpen(false);
+  };
+
+  const handleDeleteHistoryNote = async (noteId) => {
+    try {
+      await deleteNotes(noteId);
+      setNotesHistory(prev => prev.filter(item => item.id !== noteId));
+    } catch (err) {
+      console.error('Failed to delete history item:', err);
+    }
+  };
+
+  const handleToggleTerminal = () => {
+    setIsTerminalOpen(prev => {
+      const nextVal = !prev;
+      if (nextVal && window.innerWidth >= 1024) {
+        setIsHistoryOpen(false);
+      }
+      return nextVal;
+    });
+  };
+
+  const handleToggleHistory = () => {
+    setIsHistoryOpen(prev => {
+      const nextVal = !prev;
+      if (nextVal && window.innerWidth >= 1024) {
+        setIsTerminalOpen(false);
+      }
+      return nextVal;
+    });
+  };
+
+  const isRightPanelOpen = isTerminalOpen || isHistoryOpen;
+
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col selection:bg-zinc-800 relative overflow-hidden">
       {/* Smooth White Ambient Light Blobs */}
@@ -373,7 +462,8 @@ class MultiHeadAttention(nn.Module):
         apiStatus={apiStatus}
         checkHealth={checkHealth}
         setShowDisconnectModal={setShowDisconnectModal}
-        onToggleTerminal={() => setIsTerminalOpen(!isTerminalOpen)}
+        onToggleTerminal={handleToggleTerminal}
+        onToggleHistory={handleToggleHistory}
         logCount={logs.length}
         isGenerating={taskStatus === 'PROCESSING'}
         onOpenAuthModal={handleOpenAuthModal}
@@ -388,13 +478,11 @@ class MultiHeadAttention(nn.Module):
       />
 
       {/* Main Split Layout Container */}
-      <div className={`flex-1 w-full flex flex-col lg:flex-row gap-6 px-4 sm:px-8 pb-6 pt-20 sm:pt-24 transition-all duration-300 ${
-        isTerminalOpen ? 'max-w-[1700px] mx-auto' : 'max-w-7xl mx-auto'
-      }`}>
-        {/* Part 1: Notes Generation UI (Upper part on phone, Left part on desktop) */}
-        <main className={`flex-1 min-w-0 w-full transition-all duration-300 ${
-          isTerminalOpen ? 'pb-[10vh] lg:pb-0 lg:pr-[440px] xl:pr-[500px]' : ''
+      <div className={`flex-1 w-full flex flex-col lg:flex-row gap-6 px-4 sm:px-8 pb-6 pt-20 sm:pt-24 transition-all duration-300 ${isRightPanelOpen ? 'max-w-[1700px] mx-auto' : 'max-w-7xl mx-auto'
         }`}>
+        {/* Part 1: Notes Generation UI (Upper part on phone, Left part on desktop) */}
+        <main className={`flex-1 min-w-0 w-full transition-all duration-300 ${isRightPanelOpen ? 'pb-[10vh] lg:pb-0 lg:pr-[440px] xl:pr-[500px]' : ''
+          }`}>
           {/* Hero Banner Title */}
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
             {/* <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium">
@@ -432,6 +520,7 @@ class MultiHeadAttention(nn.Module):
             onLoadMockData={handleLoadMockData}
             isLoadingMeta={isLoadingMeta}
             isGenerating={taskStatus === 'PROCESSING'}
+            pulseTestNotes={!currentUser && !metadata}
           />
 
           {/* Error Messages */}
@@ -443,7 +532,7 @@ class MultiHeadAttention(nn.Module):
               </div>
             </div>
           )}
-          
+
           {/* Video Card Preview */}
           {url !== '' && metadata && showMetadata && (
             <VideoCard
@@ -466,8 +555,8 @@ class MultiHeadAttention(nn.Module):
 
           {/* Results Notes & Outline Viewer */}
           {taskResult && showNotes && (
-            <NotesViewer 
-              result={taskResult} 
+            <NotesViewer
+              result={taskResult}
               onClose={() => setShowNotes(false)}
             />
           )}
@@ -503,6 +592,24 @@ class MultiHeadAttention(nn.Module):
         onClose={() => setShowDisconnectModal(false)}
         onConnect={handleConnect}
         apiStatus={apiStatus}
+      />
+
+      {/* History Sidebar */}
+      <HistorySidebar
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        history={notesHistory}
+        onSelect={handleSelectHistoryNote}
+        onDelete={handleDeleteHistoryNote}
+        isLoading={isHistoryLoading}
+        apiStatus={apiStatus}
+        checkHealth={checkHealth}
+        setShowDisconnectModal={setShowDisconnectModal}
+        isGenerating={taskStatus === 'PROCESSING'}
+        isTerminalOpen={isTerminalOpen}
+        onToggleTerminal={handleToggleTerminal}
+        logCount={logs.length}
+        onOpenAuthModal={handleOpenAuthModal}
       />
 
       {/* Footer */}

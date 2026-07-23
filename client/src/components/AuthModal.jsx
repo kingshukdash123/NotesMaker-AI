@@ -147,7 +147,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
               <input
                 type="text"
                 value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
+                onChange={(e) => setIdentifier(e.target.value.replace(/\s+/g, '_'))}
                 placeholder="e.g. alex or alex@example.com"
                 required
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition"

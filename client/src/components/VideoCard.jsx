@@ -29,6 +29,9 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
   };
 
   const youtubeWatchUrl = `https://www.youtube.com/watch?v=${metadata.video_id}`;
+  const cleanDescription = metadata.description
+    ? metadata.description.replace(/\s+/g, ' ').trim()
+    : '';
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-6 sm:mb-8 bg-zinc-950 p-4 sm:p-5 rounded-xl border border-zinc-800 shadow-xl relative overflow-hidden">
@@ -107,10 +110,12 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
             )}
           </div>
 
-          {metadata.description && (
-            <p className="text-[11px] sm:text-xs text-zinc-400 line-clamp-2 leading-relaxed italic bg-zinc-900/60 p-2.5 rounded-md border border-zinc-800/80">
-              "{metadata.description}"
-            </p>
+          {cleanDescription && (
+            <div className="bg-zinc-900/60 p-2.5 rounded-md border border-zinc-800/80">
+              <p className="line-clamp-2 text-[11px] sm:text-xs text-zinc-400 leading-relaxed italic">
+                {cleanDescription}
+              </p>
+            </div>
           )}
 
           <div className="pt-0.5 flex items-center justify-between">
