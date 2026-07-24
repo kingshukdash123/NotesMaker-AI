@@ -8,9 +8,9 @@ logger = get_logger(__name__)
 
 class OrchestratorService:
 
-    def __init__(self):
-        self.outline_generator = OutlineGenerator()
-        self.execution_planner = ExecutionPlanner()
+    def __init__(self, google_api_key=None, groq_api_key=None):
+        self.outline_generator = OutlineGenerator(google_api_key, groq_api_key)
+        self.execution_planner = ExecutionPlanner(google_api_key, groq_api_key)
 
     def run(self, metadata, transcript):
 

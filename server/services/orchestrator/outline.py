@@ -11,8 +11,8 @@ logger = get_logger(__name__)
 
 class OutlineGenerator:
 
-    def __init__(self):
-        self.llm = LLMService.get_llm()
+    def __init__(self, google_api_key=None, groq_api_key=None):
+        self.llm = LLMService.get_llm(google_api_key, groq_api_key)
 
     def generate(self, metadata, transcript) -> LectureOutline:
 

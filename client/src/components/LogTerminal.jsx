@@ -8,10 +8,10 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
   const terminalEndRef = useRef(null);
 
   useEffect(() => {
-    if (autoScroll && terminalEndRef.current) {
+    if (isOpen && autoScroll && terminalEndRef.current) {
       terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [logs, autoScroll]);
+  }, [logs, autoScroll, isOpen]);
 
   const filteredLogs = logs.filter((line) =>
     line.toLowerCase().includes(filter.toLowerCase())
@@ -42,14 +42,17 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
     return 'text-zinc-400';
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="bg-black border-zinc-800 shadow-2xl flex flex-col transition-all duration-300 overflow-hidden animate-slideLeft lg:animate-none lg:translate-x-0
+    <div className={`bg-black border-zinc-800 shadow-2xl flex flex-col transition-all duration-300 overflow-hidden
       /* Phone & Tablet: Fixed to lower panel */
       fixed bottom-0 left-0 right-0 z-30 w-full h-[25vh] border-t rounded-t-xl rounded-b-none
       /* Windows / Desktop: Fixed to right side in position */
-      lg:fixed lg:top-[76px] lg:right-6 lg:bottom-auto lg:left-auto lg:z-30 lg:w-[420px] xl:w-[480px] lg:h-[calc(100vh-150px)] lg:rounded-xl lg:border">
+      lg:fixed lg:top-[76px] lg:right-6 lg:bottom-auto lg:left-auto lg:z-30 lg:w-[420px] xl:w-[480px] lg:h-[calc(100vh-150px)] lg:rounded-xl lg:border
+      /* Open/Close states */
+      ${isOpen 
+        ? 'translate-x-0 opacity-100 pointer-events-auto visible' 
+        : 'translate-x-full opacity-0 pointer-events-none invisible lg:translate-x-12'
+      }`}>
       {/* Terminal Header Bar */}
       <div className="flex items-center justify-between px-3.5 py-2 bg-zinc-950 border-b border-zinc-800">
         <div className="flex items-center gap-2">

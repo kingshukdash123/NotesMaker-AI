@@ -19,7 +19,10 @@ def section_writer(state: SectionState) -> SectionState:
     )
 
     try:
-        service = SectionWriterService()
+        service = SectionWriterService(
+            google_api_key=state.get("google_api_key"),
+            groq_api_key=state.get("groq_api_key"),
+        )
 
         generated_section = service.run(
             # metadata=state["metadata"],

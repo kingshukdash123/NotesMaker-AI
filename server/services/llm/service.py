@@ -1,3 +1,5 @@
+from typing import Optional
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 
 from utils.exceptions import NotesMakerError
@@ -9,45 +11,55 @@ logger = get_logger(__name__)
 
 class LLMService:
 
-    _llm = None
-
     @classmethod
-    def get_llm(cls):
-
+    def get_llm(cls, google_api_key: Optional[str] = None, groq_api_key: Optional[str] = None):
+        """
+        Dynamically initializes and returns the LLM chain.
+        Primary: ChatGoogleGenerativeAI (Gemini)
+        Secondary/Fallback: ChatGroq (Llama)
+        """
         try:
-            if cls._llm is None:
-                logger.info(
-                    "Initializing Groq LLM (model=%s).",
-                    settings.GROQ_MODEL,
+            # User must supply both API keys through the request
+            pass
+
+            if not google_api_key:
+                logger.error("Google Gemini API key is missing.")
+                raise NotesMakerError(
+                    message="Google Gemini API key is missing. Please set it in Settings.",
+                    code="MISSING_GEMINI_API_KEY",
+                    status_code=400,
                 )
 
-                primary_llm = ChatGroq(
-                    model=settings.GROQ_MODEL,
-                    api_key=settings.GROQ_API_KEY,
-                    temperature=0.2,
+            if not groq_api_key:
+                logger.error("Groq API key is missing.")
+                raise NotesMakerError(
+                    message="Groq API key is missing. Please set it in Settings.",
+                    code="MISSING_GROQ_API_KEY",
+                    status_code=400,
                 )
 
-                # Fallback model to handle rate limit / quota exceptions
-                fallback_llm = ChatGroq(
-                    model="llama-3.3-70b-versatile",
-                    api_key=settings.GROQ_API_KEY,
-                    temperature=0.2,
-                )
+            logger.info("Initializing Google Gemini as primary and Groq as fallback LLM.")
 
-                cls._llm = primary_llm.with_fallbacks([fallback_llm])
+            primary_llm = ChatGoogleGenerativeAI(
+                model="gemini-3.5-flash-lite",
+                google_api_key=google_api_key,
+                temperature=0.2,
+            )
 
-                logger.info("Groq LLM initialized successfully.")
+            fallback_llm = ChatGroq(
+                model="llama-3.1-8b-instant",
+                api_key=groq_api_key,
+                temperature=0.2,
+            )
 
-            else:
-                logger.info("Using existing Groq LLM instance.")
-
-            return cls._llm
+            return primary_llm.with_fallbacks([fallback_llm])
 
         except Exception as e:
-            logger.exception("Failed to initialize Groq LLM.")
-
+            if isinstance(e, NotesMakerError):
+                raise e
+            logger.exception("Failed to initialize LLMs.")
             raise NotesMakerError(
-                message="Failed to initialize Groq language model.",
+                message=f"Failed to initialize language models: {str(e)}",
                 code="LLM_INITIALIZATION_ERROR",
                 status_code=500,
             ) from e

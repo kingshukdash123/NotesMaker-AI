@@ -14,3 +14,5 @@ class SectionState(TypedDict):
     research_results: Optional[str]
     # generated_section: Optional[GeneratedSection]
     generated_sections: Optional[list[GeneratedSection]]
+    google_api_key: Optional[str]
+    groq_api_key: Optional[str]

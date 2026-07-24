@@ -17,11 +17,11 @@ class SectionWriterService:
     Service responsible for generating a single lecture section.
     """
 
-    def __init__(self):
+    def __init__(self, google_api_key=None, groq_api_key=None):
 
         logger.info("Initializing SectionWriterService.")
 
-        self.base_llm = LLMService.get_llm()
+        self.base_llm = LLMService.get_llm(google_api_key, groq_api_key)
         
         self.llm = self.base_llm.with_structured_output(
             GeneratedSectionModel

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Terminal, AlertCircle, RefreshCw, LogIn, LogOut, User, History, Menu, X } from 'lucide-react';
+import { Sparkles, Terminal, AlertCircle, RefreshCw, LogIn, LogOut, User, History, Menu, X, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header({ 
@@ -10,7 +10,8 @@ export default function Header({
   apiStatus = 'checking',
   checkHealth,
   setShowDisconnectModal,
-  onToggleHistory
+  onToggleHistory,
+  onOpenApiKeySettings
 }) {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
@@ -151,6 +152,16 @@ export default function Header({
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
+                  <button
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      onOpenApiKeySettings();
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs text-zinc-305 hover:bg-zinc-900 flex items-center gap-2 transition border-b border-zinc-900/50"
+                  >
+                    <Key className="w-3.5 h-3.5 text-zinc-400" />
+                    API Key Settings
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-3 py-2 text-xs text-rose-400 hover:bg-zinc-900 flex items-center gap-2 transition"

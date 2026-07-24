@@ -8,9 +8,10 @@ import NotesViewer from './components/NotesViewer';
 import AuthModal from './components/AuthModal';
 import ApiDisconnectModal from './components/ApiDisconnectModal';
 import HistorySidebar from './components/HistorySidebar';
+import ApiKeySettingsModal from './components/ApiKeySettingsModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs } from './services/server/api';
-import { saveNotes, getUserNotes, deleteNotes } from './services/firebase/notesService';
+import { saveNotes, getUserNotes, deleteNotes, getUserApiKeys } from './services/firebase/notesService';
 import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock } from 'lucide-react';
 
 function MainApp() {
@@ -20,6 +21,10 @@ function MainApp() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'signup'
   const [authNotice, setAuthNotice] = useState(null);
+
+  // API Key Settings Modal State
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [apiKeyNotice, setApiKeyNotice] = useState(null);
 
   const [url, setUrl] = useState('');
 
@@ -162,6 +167,18 @@ function MainApp() {
       return;
     }
 
+    // Check if API keys are set in Firestore
+    try {
+      const keys = await getUserApiKeys(currentUser.uid);
+      if (!keys.googleApiKey || !keys.groqApiKey) {
+        setApiKeyNotice('Please configure your Google Gemini and Groq API keys to generate study notes.');
+        setIsApiKeyModalOpen(true);
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to verify API keys in Firestore:', err);
+    }
+
     // Reset task state
     setTaskId(null);
     setTaskStatus('PROCESSING');
@@ -178,7 +195,11 @@ function MainApp() {
     }
 
     try {
-      const response = await startNoteGeneration(targetUrl);
+      let idToken = null;
+      if (currentUser) {
+        idToken = await currentUser.getIdToken();
+      }
+      const response = await startNoteGeneration(targetUrl, currentUser?.uid, idToken);
       const newTaskId = response.task_id;
       setTaskId(newTaskId);
 
@@ -467,6 +488,7 @@ class MultiHeadAttention(nn.Module):
         logCount={logs.length}
         isGenerating={taskStatus === 'PROCESSING'}
         onOpenAuthModal={handleOpenAuthModal}
+        onOpenApiKeySettings={() => setIsApiKeyModalOpen(true)}
       />
 
       {/* Auth Modal */}
@@ -475,6 +497,16 @@ class MultiHeadAttention(nn.Module):
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authModalMode}
         notice={authNotice}
+      />
+
+      {/* API Key Settings Modal */}
+      <ApiKeySettingsModal
+        isOpen={isApiKeyModalOpen}
+        onClose={() => {
+          setIsApiKeyModalOpen(false);
+          setApiKeyNotice(null);
+        }}
+        notice={apiKeyNotice}
       />
 
       {/* Main Split Layout Container */}
@@ -610,6 +642,7 @@ class MultiHeadAttention(nn.Module):
         onToggleTerminal={handleToggleTerminal}
         logCount={logs.length}
         onOpenAuthModal={handleOpenAuthModal}
+        onOpenApiKeySettings={() => setIsApiKeyModalOpen(true)}
       />
 
       {/* Footer */}

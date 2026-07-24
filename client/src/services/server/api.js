@@ -23,12 +23,19 @@ export async function fetchYoutubeMetadata(url) {
  * @param {string} youtubeUrl - YouTube video URL
  * @returns {Promise<{ task_id: string, status: string }>} Task creation response
  */
-export async function startNoteGeneration(youtubeUrl) {
+export async function startNoteGeneration(youtubeUrl, userId, idToken) {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  if (userId) {
+    headers['X-User-Id'] = userId;
+  }
+  if (idToken) {
+    headers['Authorization'] = `Bearer ${idToken}`;
+  }
   const response = await fetch(`${API_BASE_URL}/notes/generate`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ youtube_url: youtubeUrl }),
   });
 

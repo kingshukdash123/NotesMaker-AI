@@ -3,7 +3,7 @@ import uuid
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, HttpUrl
@@ -37,7 +37,12 @@ class GenerateNotesRequest(BaseModel):
     youtube_url: str
 
 
-async def run_pipeline_task(task_id: str, url: str):
+async def run_pipeline_task(
+    task_id: str,
+    url: str,
+    google_api_key: Optional[str] = None,
+    groq_api_key: Optional[str] = None
+):
     """
     Asynchronously executes the LangGraph notes generation pipeline,
     binding the task context variable to isolate logs.
@@ -48,7 +53,11 @@ async def run_pipeline_task(task_id: str, url: str):
     try:
         # Run LangGraph pipeline asynchronously
         # ainvoke is the standard async method for LangGraph compilation graphs
-        result = await graph.ainvoke({"youtube_url": url})
+        result = await graph.ainvoke({
+            "youtube_url": url,
+            "google_api_key": google_api_key,
+            "groq_api_key": groq_api_key,
+        })
         
         logger.info(f"Task {task_id}: Notes generation pipeline completed successfully.")
         tasks[task_id]["metadata"] = result.get("metadata")
@@ -90,7 +99,11 @@ async def fetch_metadata(url: str = Query(..., description="The YouTube URL to f
 
 
 @app.post("/api/notes/generate", status_code=202)
-async def generate_notes(request: GenerateNotesRequest):
+async def generate_notes(
+    request: GenerateNotesRequest,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+):
     """
     Starts the notes generation process in the background.
     Returns a task ID immediately, allowing the client to query status and stream logs.
@@ -98,6 +111,21 @@ async def generate_notes(request: GenerateNotesRequest):
     task_id = str(uuid.uuid4())
     url = str(request.youtube_url)
     
+    # Parse Firebase Authorization ID Token if present
+    id_token = None
+    if authorization and authorization.startswith("Bearer "):
+        id_token = authorization.split("Bearer ")[1]
+        
+    # Fetch user API keys from Firestore
+    google_api_key = None
+    groq_api_key = None
+    if x_user_id:
+        try:
+            from services.firebase.firestore import get_user_api_keys
+            google_api_key, groq_api_key = await get_user_api_keys(x_user_id, id_token)
+        except Exception as e:
+            logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
+            
     tasks[task_id] = {
         "task_id": task_id,
         "status": "PROCESSING",
@@ -110,7 +138,7 @@ async def generate_notes(request: GenerateNotesRequest):
     # Run the pipeline in the background using asyncio.create_task.
     # Unlike FastAPI BackgroundTasks, create_task runs completely concurrently
     # and plays perfectly with standard contextvars.
-    asyncio.create_task(run_pipeline_task(task_id, url))
+    asyncio.create_task(run_pipeline_task(task_id, url, google_api_key, groq_api_key))
     
     logger.info(f"Dispatched background task {task_id} for URL {url}")
     return {"task_id": task_id, "status": "PROCESSING"}

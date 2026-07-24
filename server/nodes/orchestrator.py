@@ -11,7 +11,10 @@ def orchestrator(state: NotesState) -> NotesState:
     logger.info("Starting Orchestrator node.")
 
     try:
-        service = OrchestratorService()
+        service = OrchestratorService(
+            google_api_key=state.get("google_api_key"),
+            groq_api_key=state.get("groq_api_key"),
+        )
 
         outline, execution_plan = service.run(
             metadata=state["metadata"],

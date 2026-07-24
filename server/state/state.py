@@ -50,3 +50,7 @@ class NotesState(TypedDict):
     # Graph Status
     success: bool
     error: Optional[str]
+
+    # User API Keys
+    google_api_key: Optional[str]
+    groq_api_key: Optional[str]

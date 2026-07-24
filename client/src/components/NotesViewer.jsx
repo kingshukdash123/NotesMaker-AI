@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
-  FileText, ListTree, Code, Copy, Download, Check, ExternalLink, 
+  FileText, ListTree, Code, Copy, Download, Check, ExternalLink,
   BookOpen, Target, Lightbulb, Hash, Layers, X
 } from 'lucide-react';
 
@@ -39,7 +39,7 @@ export default function NotesViewer({ result, onClose }) {
     if (draftNotes) {
       fullMd += `# ${draftNotes.title || 'Lecture Notes'}\n\n`;
       if (draftNotes.content) fullMd += `${draftNotes.content}\n\n`;
-      
+
       const allReferences = draftNotes.sections ? draftNotes.sections.flatMap(s => s.references || []) : [];
       if (allReferences.length > 0) {
         fullMd += `## Key References\n\n`;
@@ -59,7 +59,7 @@ export default function NotesViewer({ result, onClose }) {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto bg-zinc-950 rounded-xl border border-zinc-800 shadow-xl overflow-hidden mb-12">
+    <div className="w-full bg-zinc-950 rounded-xl border border-zinc-800 shadow-xl overflow-hidden mb-12">
       {/* Top Navigation & Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-zinc-800 bg-zinc-950 p-3 sm:p-4 gap-3">
         {/* Tab Buttons (shadcn segmented control) */}
@@ -67,11 +67,10 @@ export default function NotesViewer({ result, onClose }) {
           <button
             type="button"
             onClick={() => setActiveTab('notes')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${
-              activeTab === 'notes'
-                ? 'bg-zinc-950 text-zinc-100 shadow-sm border border-zinc-800'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${activeTab === 'notes'
+              ? 'bg-zinc-950 text-zinc-100 shadow-sm border border-zinc-800'
+              : 'text-zinc-400 hover:text-zinc-200'
+              }`}
           >
             <FileText className="w-3.5 h-3.5" />
             <span>Generated Notes</span>
@@ -80,11 +79,10 @@ export default function NotesViewer({ result, onClose }) {
           <button
             type="button"
             onClick={() => setActiveTab('outline')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${
-              activeTab === 'outline'
-                ? 'bg-zinc-950 text-zinc-100 shadow-sm border border-zinc-800'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${activeTab === 'outline'
+              ? 'bg-zinc-950 text-zinc-100 shadow-sm border border-zinc-800'
+              : 'text-zinc-400 hover:text-zinc-200'
+              }`}
           >
             <ListTree className="w-3.5 h-3.5" />
             <span>Lecture Outline</span>
@@ -93,11 +91,10 @@ export default function NotesViewer({ result, onClose }) {
           <button
             type="button"
             onClick={() => setActiveTab('json')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${
-              activeTab === 'json'
-                ? 'bg-zinc-950 text-zinc-100 shadow-sm border border-zinc-800'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition ${activeTab === 'json'
+              ? 'bg-zinc-950 text-zinc-100 shadow-sm border border-zinc-800'
+              : 'text-zinc-400 hover:text-zinc-200'
+              }`}
           >
             <Code className="w-3.5 h-3.5" />
             <span>Raw Output</span>

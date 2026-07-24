@@ -7,6 +7,8 @@ import {
   orderBy, 
   deleteDoc, 
   doc, 
+  getDoc,
+  setDoc,
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
@@ -76,4 +78,43 @@ export async function deleteNotes(noteId) {
   if (!noteId) return;
   const docRef = doc(db, 'notes', noteId);
   await deleteDoc(docRef);
+}
+
+/**
+ * Saves or updates user API keys in Firestore.
+ * @param {string} userId - Auth user ID (UID)
+ * @param {string} googleApiKey - Gemini API Key
+ * @param {string} groqApiKey - Groq API Key
+ */
+export async function saveUserApiKeys(userId, googleApiKey, groqApiKey) {
+  if (!userId) throw new Error('User must be logged in to save API keys.');
+  
+  const docRef = doc(db, 'user_api_keys', userId);
+  await setDoc(docRef, {
+    googleApiKey: googleApiKey || '',
+    groqApiKey: groqApiKey || '',
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+
+/**
+ * Retrieves the user's API keys from Firestore.
+ * @param {string} userId - Auth user ID (UID)
+ * @returns {Promise<{googleApiKey: string, groqApiKey: string}>} The API keys object
+ */
+export async function getUserApiKeys(userId) {
+  if (!userId) return { googleApiKey: '', groqApiKey: '' };
+  
+  const docRef = doc(db, 'user_api_keys', userId);
+  const docSnap = await getDoc(docRef);
+  
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    return {
+      googleApiKey: data.googleApiKey || '',
+      groqApiKey: data.groqApiKey || ''
+    };
+  }
+  
+  return { googleApiKey: '', groqApiKey: '' };
 }

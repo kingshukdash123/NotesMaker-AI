@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   X, Search, Trash2, Calendar, Clock, Video, Loader2,
-  Sparkles, Terminal, AlertCircle, RefreshCw, LogIn, LogOut, User
+  Sparkles, Terminal, AlertCircle, RefreshCw, LogIn, LogOut, User, Key
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,7 +19,8 @@ export default function HistorySidebar({
   isTerminalOpen,
   onToggleTerminal,
   logCount,
-  onOpenAuthModal
+  onOpenAuthModal,
+  onOpenApiKeySettings
 }) {
   const { currentUser, getUserDisplayName, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,22 +55,27 @@ export default function HistorySidebar({
     return title.includes(query) || channel.includes(query);
   });
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* Backdrop overlay (dimming background & blur - only on mobile) */}
       <div
         onClick={onClose}
-        className="fixed inset-0 top-[53px] z-[70] bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-fadeIn lg:hidden"
+        className={`fixed inset-0 top-[53px] z-[70] bg-black/60 backdrop-blur-sm transition-all duration-300 lg:hidden ${
+          isOpen ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'
+        }`}
       />
 
       {/* Sliding Drawer Container */}
-      <div className="bg-zinc-950 flex flex-col transition-all duration-300
+      <div className={`bg-zinc-950 flex flex-col transition-all duration-300
         /* Phone & Tablet: Slide in from right */
-        fixed top-[53px] right-0 h-[calc(100vh-53px)] w-full max-w-[340px] xs:max-w-[400px] z-[80] border-l border-zinc-900 shadow-2xl animate-slideLeft
+        fixed top-[53px] right-0 h-[calc(100vh-53px)] w-full max-w-[340px] xs:max-w-[400px] z-[80] border-l border-zinc-900 shadow-2xl
         /* Windows / Desktop: Docked to right side like Terminal */
-        lg:fixed lg:top-[76px] lg:right-6 lg:left-auto lg:h-[calc(100vh-150px)] lg:w-[420px] xl:w-[480px] lg:max-w-none lg:rounded-xl lg:border lg:border-zinc-800 lg:z-30 lg:animate-none lg:translate-x-0">
+        lg:fixed lg:top-[76px] lg:right-6 lg:left-auto lg:h-[calc(100vh-150px)] lg:w-[420px] xl:w-[480px] lg:max-w-none lg:rounded-xl lg:border lg:border-zinc-800 lg:z-30
+        /* Open/Close states */
+        ${isOpen 
+          ? 'translate-x-0 opacity-100 pointer-events-auto visible' 
+          : 'translate-x-full opacity-0 pointer-events-none invisible lg:translate-x-12'
+        }`}>
 
         {/* Glow ambient accent */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-2xl pointer-events-none"></div>
@@ -138,8 +144,8 @@ export default function HistorySidebar({
                 onToggleTerminal();
               }}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all shadow-sm ${isTerminalOpen
-                  ? 'bg-zinc-100 text-zinc-900 font-semibold'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800'
+                ? 'bg-zinc-100 text-zinc-900 font-semibold'
+                : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800'
                 }`}
             >
               <Terminal className="w-3.5 h-3.5 text-zinc-400" />
@@ -155,7 +161,7 @@ export default function HistorySidebar({
           {/* User Auth Control */}
           <div className="pt-1.5 border-t border-zinc-900">
             {currentUser ? (
-              <div className="flex items-center justify-between gap-3 p-2 bg-zinc-950 rounded-lg border border-zinc-900">
+              <div className="flex flex-col gap-2 p-2 bg-zinc-950 rounded-lg border border-zinc-900">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-6 h-6 rounded-full bg-zinc-700 text-zinc-200 flex items-center justify-center text-[10px] font-bold uppercase shrink-0">
                     {getUserDisplayName(currentUser).charAt(0)}
@@ -164,19 +170,31 @@ export default function HistorySidebar({
                     {getUserDisplayName(currentUser)}
                   </span>
                 </div>
-                <button
-                  onClick={async () => {
-                    onClose(); // Close sidebar
-                    try {
-                      await logout();
-                    } catch (err) {
-                      console.error('Logout failed:', err);
-                    }
-                  }}
-                  className="text-[10px] font-semibold text-rose-400 hover:bg-zinc-900 px-2 py-1 rounded transition border border-rose-950/40 hover:border-rose-900/60"
-                >
-                  Sign Out
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      onClose(); // Close sidebar
+                      onOpenApiKeySettings();
+                    }}
+                    className="flex-1 text-center text-[10px] font-semibold text-zinc-305 hover:bg-zinc-900 py-1.5 px-2 rounded transition border border-zinc-800 flex items-center justify-center gap-1"
+                  >
+                    <Key className="w-3 h-3 text-zinc-400" />
+                    API Keys
+                  </button>
+                  <button
+                    onClick={async () => {
+                      onClose(); // Close sidebar
+                      try {
+                        await logout();
+                      } catch (err) {
+                        console.error('Logout failed:', err);
+                      }
+                    }}
+                    className="flex-1 text-center text-[10px] font-semibold text-rose-450 hover:bg-zinc-900 py-1.5 px-2 rounded transition border border-rose-950/40 hover:border-rose-900/60"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
             ) : (
               <button
