@@ -2,7 +2,10 @@
  * API service for NotesMaker AI backend communication.
  */
 
-const API_BASE_URL = '/api';
+
+// Get the API base URL from environment variables in production
+// and use localhost:3000/api for development
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 /**
  * Fetches YouTube video metadata.

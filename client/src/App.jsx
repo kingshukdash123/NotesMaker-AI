@@ -10,7 +10,7 @@ import ApiDisconnectModal from './components/ApiDisconnectModal';
 import HistorySidebar from './components/HistorySidebar';
 import ApiKeySettingsModal from './components/ApiKeySettingsModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs } from './services/server/api';
+import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs, API_BASE_URL } from './services/server/api';
 import { saveNotes, getUserNotes, deleteNotes, getUserApiKeys } from './services/firebase/notesService';
 import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock } from 'lucide-react';
 
@@ -97,7 +97,7 @@ function MainApp() {
   const checkHealth = async () => {
     if (isConnectingRef.current) return;
     try {
-      const res = await fetch('/api/health', { cache: 'no-store' });
+      const res = await fetch(`${API_BASE_URL}/health`, { cache: 'no-store' });
       if (res.ok) {
         setApiStatus('healthy');
       } else {
