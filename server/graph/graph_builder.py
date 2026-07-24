@@ -13,6 +13,26 @@ from nodes.research import research
 from nodes.research_router import research_router
 from nodes.reducer import reducer
 
+from utils.logger import current_task_id
+
+# ==========================
+# Task ID Context Propagation Wrapper
+# ==========================
+
+
+def wrap_node(node_func):
+    def wrapper(state):
+        task_id = state.get("task_id") if isinstance(state, dict) else None
+        token = None
+        if task_id:
+            token = current_task_id.set(task_id)
+        try:
+            return node_func(state)
+        finally:
+            if token:
+                current_task_id.reset(token)
+    return wrapper
+
 # ==========================
 # Section Worker Subgraph
 # ==========================
@@ -21,20 +41,20 @@ section_builder = StateGraph(SectionState)
 
 section_builder.add_node(
     "research",
-    research,
+    wrap_node(research),
     retry_policy=RetryPolicy(max_attempts=5, backoff_factor=2.0),
 )
 
 section_builder.add_node(
     "section_writer",
-    section_writer,
+    wrap_node(section_writer),
     retry_policy=RetryPolicy(max_attempts=5, backoff_factor=2.0),
 )
 
 # Conditional Routing from START
 section_builder.add_conditional_edges(
     START,
-    research_router,
+    wrap_node(research_router),
     ["research", "section_writer"]
 )
 
@@ -67,27 +87,27 @@ builder = StateGraph(NotesState)
 
 builder.add_node(
     "transcript_metadata_generator",
-    transcript_metadata_generator,
+    wrap_node(transcript_metadata_generator),
 )
 
 builder.add_node(
     "transcript_merger",
-    transcript_merger,
+    wrap_node(transcript_merger),
 )
 
 builder.add_node(
     "orchestrator",
-    orchestrator,
+    wrap_node(orchestrator),
 )
 
 builder.add_node(
     "section_worker",
-    section_worker_node,
+    wrap_node(section_worker_node),
 )
 
 builder.add_node(
     "reducer",
-    reducer,
+    wrap_node(reducer),
 )
 
 # ==========================
@@ -115,7 +135,7 @@ builder.add_edge(
 
 builder.add_conditional_edges(
     "orchestrator",
-    fanout,
+    wrap_node(fanout),
     ["section_worker"],
 )
 

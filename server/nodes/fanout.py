@@ -33,6 +33,7 @@ def fanout(state: NotesState):
                 "generated_sections": None,
                 "google_api_key": state.get("google_api_key"),
                 "groq_api_key": state.get("groq_api_key"),
+                "task_id": state.get("task_id"),
             }
 
             sends.append(

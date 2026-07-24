@@ -1,22 +1,28 @@
+import os
 import logging
 import logging.handlers
 from pathlib import Path
 import contextvars
 
 # -----------------------------------------------------------------------------
-# Log Directory
+# Log Directory & Mode Check
 # -----------------------------------------------------------------------------
 
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+is_api_mode = os.environ.get("NOTESMAKER_MODE") == "API"
 
-LOG_FILE = LOG_DIR / "notesmaker.log"
+if not is_api_mode:
+    LOG_DIR = Path("logs")
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    LOG_FILE = LOG_DIR / "notesmaker.log"
 
 # -----------------------------------------------------------------------------
 # Context Variables for Task Tracking
 # -----------------------------------------------------------------------------
 
-current_task_id: contextvars.ContextVar[str | None] = contextvars.ContextVar("current_task_id", default=None)
+current_task_id: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "current_task_id", 
+    default=None
+)
 
 # -----------------------------------------------------------------------------
 # Task-specific Logging Handler
@@ -24,20 +30,19 @@ current_task_id: contextvars.ContextVar[str | None] = contextvars.ContextVar("cu
 
 class TaskLogHandler(logging.Handler):
     """
-    A custom logging handler that routes log records to a task-specific log file
-    if `current_task_id` context variable is set.
+    A custom logging handler that routes log records to the in-memory tasks
+    dictionary in app.py if `current_task_id` context variable is set.
     """
     def emit(self, record):
         task_id = current_task_id.get(None)
         if task_id:
             try:
-                task_dir = LOG_DIR / "tasks"
-                task_dir.mkdir(parents=True, exist_ok=True)
-                task_log_file = task_dir / f"{task_id}.log"
-                
-                msg = self.format(record)
-                with open(task_log_file, "a", encoding="utf-8") as f:
-                    f.write(msg + "\n")
+                from app import tasks
+                if task_id in tasks:
+                    msg = self.format(record)
+                    if "logs" not in tasks[task_id]:
+                        tasks[task_id]["logs"] = []
+                    tasks[task_id]["logs"].append(msg)
             except Exception:
                 self.handleError(record)
 
@@ -61,24 +66,24 @@ if not logger.handlers:
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
 
-    # Rotating File Handler
-    file_handler = logging.handlers.RotatingFileHandler(
-        filename=LOG_FILE,
-        maxBytes=5 * 1024 * 1024,  # 5 MB
-        backupCount=5,
-        encoding="utf-8",
-    )
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(formatter)
+    # Rotating File Handler (Only in Dev/Test mode)
+    if not is_api_mode:
+        file_handler = logging.handlers.RotatingFileHandler(
+            filename=LOG_FILE,
+            maxBytes=5 * 1024 * 1024,  # 5 MB
+            backupCount=5,
+            encoding="utf-8",
+        )
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     # Task Handler
     task_handler = TaskLogHandler()
     task_handler.setLevel(logging.INFO)
     task_handler.setFormatter(formatter)
-
-    logger.addHandler(console_handler)
-    logger.addHandler(file_handler)
     logger.addHandler(task_handler)
 
     logger.propagate = False

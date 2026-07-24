@@ -1,3 +1,6 @@
+import os
+os.environ["NOTESMAKER_MODE"] = "API"
+
 import asyncio
 import uuid
 from pathlib import Path
@@ -11,6 +14,7 @@ from pydantic import BaseModel, HttpUrl
 from utils.logger import get_logger, current_task_id
 from services.youtube.metadata import get_video_metadata
 from graph.graph_builder import graph
+import time
 
 logger = get_logger(__name__)
 
@@ -57,6 +61,7 @@ async def run_pipeline_task(
             "youtube_url": url,
             "google_api_key": google_api_key,
             "groq_api_key": groq_api_key,
+            "task_id": task_id,
         })
         
         logger.info(f"Task {task_id}: Notes generation pipeline completed successfully.")
@@ -125,14 +130,22 @@ async def generate_notes(
             google_api_key, groq_api_key = await get_user_api_keys(x_user_id, id_token)
         except Exception as e:
             logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
-            
+    
+    
+    # Prune tasks older than 1 hour to keep memory usage low
+    now = time.time()
+    for expired_id in [tid for tid, t in list(tasks.items()) if now - t.get("created_at", now) > 3600]:
+        tasks.pop(expired_id, None)
+        
     tasks[task_id] = {
         "task_id": task_id,
         "status": "PROCESSING",
         "youtube_url": url,
         "metadata": None,
         "result": None,
-        "error": None
+        "error": None,
+        "logs": [],
+        "created_at": now
     }
     
     # Run the pipeline in the background using asyncio.create_task.
@@ -158,51 +171,42 @@ async def get_task_status(task_id: str):
 @app.get("/api/notes/logs/{task_id}/stream")
 async def stream_logs(task_id: str):
     """
-    Server-Sent Events (SSE) endpoint to stream execution logs in real-time.
+    Server-Sent Events (SSE) endpoint to stream execution logs in real-time
+    directly from the in-memory tasks dictionary.
     """
     # Verify task exists
     if task_id not in tasks:
         raise HTTPException(status_code=404, detail="Task not found")
         
     async def log_generator():
-        log_file = Path("logs/tasks") / f"{task_id}.log"
-        
-        # Wait up to 5 seconds for the log file to be created
-        for _ in range(50):
-            if log_file.exists():
-                break
-            await asyncio.sleep(0.1)
-            
-        if not log_file.exists():
-            yield "data: [SYSTEM] Log file not created yet. Waiting...\n\n"
-            
-        # Stream the log file
+        last_sent_index = 0
         try:
-            with open(log_file, "r", encoding="utf-8") as f:
-                # 1. Read existing lines
-                while True:
-                    line = f.readline()
-                    if not line:
-                        break
-                    yield f"data: {line.strip()}\n\n"
+            while True:
+                task_state = tasks.get(task_id)
+                if not task_state:
+                    break
                     
-                # 2. Tail new lines
-                while True:
-                    line = f.readline()
-                    if line:
-                        yield f"data: {line.strip()}\n\n"
-                    else:
-                        task_state = tasks.get(task_id)
-                        if task_state and task_state["status"] in ("COMPLETED", "FAILED"):
-                            # Read any leftover logs that might have just been written
-                            leftover = f.read()
-                            if leftover:
-                                for l in leftover.splitlines():
-                                    if l.strip():
-                                        yield f"data: {l.strip()}\n\n"
-                            yield "event: close\ndata: [STREAM_FINISHED]\n\n"
-                            break
-                        await asyncio.sleep(0.2)
+                current_logs = task_state.get("logs", [])
+                total_logs = len(current_logs)
+                
+                # Yield new logs
+                if total_logs > last_sent_index:
+                    for i in range(last_sent_index, total_logs):
+                        yield f"data: {current_logs[i]}\n\n"
+                    last_sent_index = total_logs
+                    
+                # Close stream if the task is finished
+                if task_state["status"] in ("COMPLETED", "FAILED"):
+                    # Check for any last-second logs
+                    current_logs = task_state.get("logs", [])
+                    total_logs = len(current_logs)
+                    if total_logs > last_sent_index:
+                        for i in range(last_sent_index, total_logs):
+                            yield f"data: {current_logs[i]}\n\n"
+                    yield "event: close\ndata: [STREAM_FINISHED]\n\n"
+                    break
+                    
+                await asyncio.sleep(0.1)
         except GeneratorExit:
             logger.info(f"Log stream disconnected for task {task_id}")
         except Exception as e:

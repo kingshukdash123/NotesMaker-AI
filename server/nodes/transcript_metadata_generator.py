@@ -18,6 +18,6 @@ def transcript_metadata_generator(state: dict) -> dict:
     state["metadata"] = result["metadata"]
     state["transcript_segments"] = result["transcript"]
 
-    logger.info("Transcript & Metadata Generator node completed.")
+    logger.info("Transcript & Metadata Generator node completed success.")
 
     return state

@@ -16,3 +16,4 @@ class SectionState(TypedDict):
     generated_sections: Optional[list[GeneratedSection]]
     google_api_key: Optional[str]
     groq_api_key: Optional[str]
+    task_id: Optional[str]

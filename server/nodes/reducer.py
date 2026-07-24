@@ -1,5 +1,5 @@
 from utils.exceptions import NotesMakerError
-from utils.logger import get_logger
+from utils.logger import get_logger, current_task_id
 from state.state import NotesState
 from model.notes import DraftNotes
 from services.database.noteSaver import save_notes_to_output
@@ -30,15 +30,20 @@ def reducer(state: NotesState) -> NotesState:
         }
 
         state["draft_notes"] = draft_notes
-
-        # Save final notes to output folder
-        output_file = save_notes_to_output(draft_notes["title"], draft_notes["content"])
-
-        logger.info(
-            "Reducer completed successfully. Total sections merged: %d. Saved notes to %s",
-            len(sections),
-            output_file,
-        )
+        
+        # Only save to local output folder in development/testing mode (when task_id is None)
+        if current_task_id.get(None) is None:
+            output_file = save_notes_to_output(draft_notes["title"], draft_notes["content"])
+            logger.info(
+                "Reducer completed successfully. Total sections merged: %d. Saved notes to %s",
+                len(sections),
+                output_file,
+            )
+        else:
+            logger.info(
+                "Reducer completed successfully. Total sections merged: %d. (Skipped local file save in API mode)",
+                len(sections),
+            )
 
         return state
 

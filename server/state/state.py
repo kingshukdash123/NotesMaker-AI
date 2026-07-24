@@ -54,3 +54,4 @@ class NotesState(TypedDict):
     # User API Keys
     google_api_key: Optional[str]
     groq_api_key: Optional[str]
+    task_id: Optional[str]
