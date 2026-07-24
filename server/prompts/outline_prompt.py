@@ -93,6 +93,9 @@ Do NOT summarize every point.
 Do not invent information.
 Only include concepts that are clearly present in the lecture.
 --------------------------------------------------
+11. Language Requirement (CRITICAL)
+Regardless of the language of the transcript input (which may be in English, Hindi, Bengali, Spanish, etc.), you MUST generate the outline, titles, overviews, and bullet points ENTIRELY in English.
+--------------------------------------------------
 OUTPUT REQUIREMENTS
 --------------------------------------------------
 Return ONLY the structured output matching the required schema.

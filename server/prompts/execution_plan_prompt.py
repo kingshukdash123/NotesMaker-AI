@@ -103,6 +103,10 @@ Interview Notes
 Preserve teaching order.
 Do not rearrange sections.
 ---------------------------------------
+11.
+Language Requirement (CRITICAL)
+Regardless of the language of the transcript or outline inputs, you MUST write the execution plan (including all section titles, topics, and research queries) ENTIRELY in English.
+---------------------------------------
 OUTPUT
 Return the response using the required structured schema.
 Do not include markdown.

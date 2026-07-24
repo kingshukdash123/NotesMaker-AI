@@ -51,6 +51,7 @@ Requirements:
 • Do not repeat content from previous or future sections.
 • Do not summarize the entire lecture.
 • Focus exclusively on this section.
+• Regardless of the language of the transcript, outline, or research inputs, you MUST write the entire note section content ENTIRELY in English.
 ============================================================
 OPTIONAL ELEMENTS
 ============================================================
