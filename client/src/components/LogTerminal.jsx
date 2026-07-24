@@ -30,7 +30,7 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
     if (line.includes('WARNING')) {
       return 'text-amber-300';
     }
-    if (line.includes('COMPLETED') || line.includes('success')) {
+    if (line.includes('COMPLETED') || line.includes('completed') || line.includes('success')) {
       return 'text-emerald-400 font-semibold';
     }
     if (line.includes('[SYSTEM]')) {

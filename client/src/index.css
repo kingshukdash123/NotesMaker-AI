@@ -170,7 +170,10 @@
 }
 
 .markdown-content table {
+  display: block;
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;

@@ -14,6 +14,65 @@ import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLog
 import { saveNotes, getUserNotes, deleteNotes, getUserApiKeys } from './services/firebase/notesService';
 import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock } from 'lucide-react';
 
+const mapErrorMessage = (errorMsg) => {
+  if (!errorMsg) return 'Notes generation failed.';
+  const msg = errorMsg.toLowerCase();
+
+  // 1. API Rate Limit Reached
+  if (
+    msg.includes('rate limit') ||
+    msg.includes('too many requests') ||
+    msg.includes('429') ||
+    msg.includes('resource_exhausted') ||
+    msg.includes('quota')
+  ) {
+    return 'API Rate Limit reached. Please check your Google Gemini / Groq API key quota limits.';
+  }
+
+  // 2. Failed to Fetch Metadata
+  if (
+    msg.includes('metadata') ||
+    msg.includes('yt-dlp') ||
+    msg.includes('youtube') ||
+    msg.includes('transcript') ||
+    msg.includes('video details')
+  ) {
+    return 'Failed to fetch video details or transcript. Please verify the YouTube URL and try again.';
+  }
+
+  // 3. Invalid API Key
+  if (
+    msg.includes('invalid_api_key') ||
+    msg.includes('invalid api key') ||
+    msg.includes('api key invalid') ||
+    msg.includes('unauthorized') ||
+    msg.includes('401')
+  ) {
+    return 'Invalid API Key. Please verify your API Key settings.';
+  }
+
+  // 4. Technical / Internal Causes
+  if (
+    msg.includes('tool call failed') ||
+    msg.includes('keyerror') ||
+    msg.includes('valueerror') ||
+    msg.includes('nameerror') ||
+    msg.includes('internal server error') ||
+    msg.includes('500') ||
+    msg.includes('exception') ||
+    msg.includes('failed to merge') ||
+    msg.includes('reducer_node_error') ||
+    msg.includes('fanout_node_error') ||
+    msg.includes('runtimeerror') ||
+    msg.includes('tool_call_failed')
+  ) {
+    return 'An internal error occurred. Please try again later.';
+  }
+
+  // Fallback to the original error if it's friendly, otherwise generic
+  return errorMsg;
+};
+
 function MainApp() {
   const { currentUser } = useAuth();
 
@@ -27,6 +86,7 @@ function MainApp() {
   const [apiKeyNotice, setApiKeyNotice] = useState(null);
 
   const [url, setUrl] = useState('');
+  const [loadedUrl, setLoadedUrl] = useState('');
 
   // API Status & Disconnect Modal State
   const [apiStatus, setApiStatus] = useState('checking'); // 'healthy' | 'unhealthy' | 'checking'
@@ -149,8 +209,9 @@ function MainApp() {
       const data = await fetchYoutubeMetadata(targetUrl);
       setMetadata(data);
       setShowMetadata(true);
+      setLoadedUrl(targetUrl);
     } catch (err) {
-      setMetaError(err.message || 'Failed to fetch video metadata');
+      setMetaError(mapErrorMessage(err.message || 'Failed to fetch video metadata'));
       setMetadata(null);
     } finally {
       setIsLoadingMeta(false);
@@ -226,10 +287,12 @@ function MainApp() {
       pollIntervalRef.current = setInterval(async () => {
         try {
           const statusData = await getTaskStatus(newTaskId);
+          
           if (statusData.status === 'COMPLETED') {
             setTaskStatus('COMPLETED');
             setTaskResult(statusData.result);
             setShowNotes(true);
+            setLoadedUrl(url);
             const activeMetadata = statusData.metadata || metadata || {};
             if (statusData.metadata) {
               setMetadata(statusData.metadata);
@@ -260,7 +323,7 @@ function MainApp() {
             }
           } else if (statusData.status === 'FAILED') {
             setTaskStatus('FAILED');
-            setTaskError(statusData.error || 'Notes generation failed.');
+            setTaskError(mapErrorMessage(statusData.error || 'Notes generation failed.'));
             if (eventSourceRef.current) {
               eventSourceRef.current.close();
             }
@@ -273,7 +336,7 @@ function MainApp() {
 
     } catch (err) {
       setTaskStatus('FAILED');
-      setTaskError(err.message || 'Failed to dispatch note generation task');
+      setTaskError(mapErrorMessage(err.message || 'Failed to dispatch note generation task'));
     }
   };
 
@@ -315,44 +378,44 @@ function MainApp() {
       draft_notes: {
         title: 'Attention Is All You Need (Transformer Architecture Explained)',
         content: `### 1. Introduction to the Transformer
-The **Transformer** is a landmark neural network architecture introduced in 2017. Unlike previous sequence-to-sequence models (such as LSTMs and GRUs) that processed input sequentially, the Transformer relies entirely on **Self-Attention Mechanisms** to capture global dependencies.
+          The **Transformer** is a landmark neural network architecture introduced in 2017. Unlike previous sequence-to-sequence models (such as LSTMs and GRUs) that processed input sequentially, the Transformer relies entirely on **Self-Attention Mechanisms** to capture global dependencies.
 
-Key advantages include:
-- **Parallelization**: Computations across different sequence steps can be executed concurrently.
-- **Constant Path Length**: Signals travel a constant distance between any two input positions.
+          Key advantages include:
+          - **Parallelization**: Computations across different sequence steps can be executed concurrently.
+          - **Constant Path Length**: Signals travel a constant distance between any two input positions.
 
-### 2. Self-Attention Mechanics
-Self-attention maps a query vector ($Q$) and a set of key ($K$) and value ($V$) vectors to an output. The matrix representation is defined mathematically as:
+          ### 2. Self-Attention Mechanics
+          Self-attention maps a query vector ($Q$) and a set of key ($K$) and value ($V$) vectors to an output. The matrix representation is defined mathematically as:
 
-$$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$$
+          $$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$$
 
-Where:
-- $Q, K, V$ are projection matrices.
-- $d_k$ is the scaling dimension factor.
+          Where:
+          - $Q, K, V$ are projection matrices.
+          - $d_k$ is the scaling dimension factor.
 
-### 3. Multi-Head Attention (MHA)
-Instead of performing a single attention function, Multi-Head Attention projects the queries, keys, and values $h$ times with different linear projections:
+          ### 3. Multi-Head Attention (MHA)
+          Instead of performing a single attention function, Multi-Head Attention projects the queries, keys, and values $h$ times with different linear projections:
 
-\`\`\`python
-# Multi-head attention simulation code block
-import torch
-import torch.nn as nn
+          \`\`\`python
+          # Multi-head attention simulation code block
+          import torch
+          import torch.nn as nn
 
-class MultiHeadAttention(nn.Module):
-    def __init__(self, d_model, num_heads):
-        super().__init__()
-        self.num_heads = num_heads
-        self.d_k = d_model // num_heads
-        self.q_linear = nn.Linear(d_model, d_model)
-        self.k_linear = nn.Linear(d_model, d_model)
-        self.v_linear = nn.Linear(d_model, d_model)
-        
-    def forward(self, q, k, v):
-        # linear projection and scaling mechanics
-        print("Executing self-attention layers...")
-        return v
-\`\`\`
-`,
+          class MultiHeadAttention(nn.Module):
+              def __init__(self, d_model, num_heads):
+                  super().__init__()
+                  self.num_heads = num_heads
+                  self.d_k = d_model // num_heads
+                  self.q_linear = nn.Linear(d_model, d_model)
+                  self.k_linear = nn.Linear(d_model, d_model)
+                  self.v_linear = nn.Linear(d_model, d_model)
+                  
+              def forward(self, q, k, v):
+                  # linear projection and scaling mechanics
+                  print("Executing self-attention layers...")
+                  return v
+          \`\`\`
+          `,
         sections: [
           {
             section_id: 1,
@@ -389,18 +452,28 @@ class MultiHeadAttention(nn.Module):
         concepts: ['Self-Attention', 'Dot-Product Scaling', 'Multi-Head Projection']
       }
     });
+    setLoadedUrl('https://www.youtube.com/watch?v=transformer-mock');
     setShowMetadata(true);
     setShowPipeline(true);
     setShowNotes(true);
   };
 
-  // Clear metadata and errors when URL is empty
+  // Clear metadata, pipeline, and notes sections when URL changes or is removed
   useEffect(() => {
-    if (url.trim() === '') {
+    if (url.trim() !== loadedUrl.trim()) {
       setMetadata(null);
       setMetaError(null);
+      setTaskId(null);
+      setTaskStatus('IDLE');
+      setTaskResult(null);
+      setTaskError(null);
+      setLogs([]);
+      setShowNotes(false);
+      setShowPipeline(false);
+      setShowMetadata(false);
+      setLoadedUrl('');
     }
-  }, [url]);
+  }, [url, loadedUrl]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -431,12 +504,16 @@ class MultiHeadAttention(nn.Module):
   }, [currentUser]);
 
   const handleSelectHistoryNote = (note) => {
-    setUrl(note.videoUrl || '');
+    const noteUrl = note.videoUrl || '';
+    setUrl(noteUrl);
+    setLoadedUrl(noteUrl);
     setMetadata(note.metadata || null);
     setTaskResult(note.result || null);
     setTaskStatus('COMPLETED');
     setShowMetadata(true);
     setShowNotes(true);
+    setShowPipeline(false);
+    setLogs([]);
     setIsHistoryOpen(false);
   };
 
