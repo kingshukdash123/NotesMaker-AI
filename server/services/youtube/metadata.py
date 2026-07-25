@@ -52,7 +52,7 @@ def get_video_metadata(url: str) -> VideoMetadata:
         return metadata
 
     except Exception as e:
-        logger.warning(f"yt-dlp failed to fetch metadata: {str(e)}. Attempting oEmbed fallback...")
+        logger.warning(f"yt-dlp failed to fetch metadata. Attempting oEmbed fallback...")
         
         try:
             video_id = extract_video_id(url)
