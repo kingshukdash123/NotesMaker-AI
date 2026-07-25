@@ -1,4 +1,3 @@
-import base64
 import os
 os.environ["NOTESMAKER_MODE"] = "API"
 
@@ -24,35 +23,6 @@ app = FastAPI(
     description="Backend REST API for NotesMaker AI including real-time pipeline log streaming.",
     version="1.0.0"
 )
-
-@app.on_event("startup")
-def startup_event():
-    cookies_content = os.getenv("YOUTUBE_COOKIES")
-    if cookies_content:
-        try:
-            
-            clean_content = cookies_content.strip()
-            # Try to decode from Base64 to preserve exact Netscape tab/newline formatting
-            try:
-                # Add padding if needed
-                missing_padding = len(clean_content) % 4
-                if missing_padding:
-                    clean_content += '=' * (4 - missing_padding)
-                
-                decoded_bytes = base64.b64decode(clean_content, validate=True)
-                cookies_data = decoded_bytes.decode("utf-8")
-                logger.info("Decoded YOUTUBE_COOKIES from Base64 format.")
-            except Exception:
-                # Fallback to plain text if not a valid Base64 string
-                cookies_data = cookies_content
-                logger.info("YOUTUBE_COOKIES is not in Base64 format; writing as raw text.")
-
-            # Write the cookies to a local cookies.txt file
-            with open("cookies.txt", "w", encoding="utf-8") as f:
-                f.write(cookies_data)
-            logger.info("Successfully wrote YOUTUBE_COOKIES to cookies.txt")
-        except Exception as e:
-            logger.error(f"Failed to write YOUTUBE_COOKIES to cookies.txt: {str(e)}")
 
 # CORS Setup
 app.add_middleware(

@@ -1,9 +1,7 @@
-import requests
-from http.cookiejar import MozillaCookieJar
+import httpx
 import os
 import re
 
-# pyrefly: ignore [missing-import]
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from config.constants import TRANSCRIPT_LANGUAGE
@@ -44,7 +42,7 @@ def clean_text(text: str) -> str | None:
 def get_transcript(video_id: str) -> list[TranscriptSegment]:
     """
     Fetch and clean the transcript of a YouTube video (English preferred, otherwise fallback).
-    Uses SerpApi if SERPAPI_API_KEY is configured, otherwise falls back to local scraping.
+    Uses SerpApi in production if SERPAPI_API_KEY is configured, otherwise falls back to local scraping.
     """
 
     logger.info(f"Fetching transcript for video: {video_id}")
@@ -53,29 +51,19 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     if serpapi_key:
         logger.info("Using SerpApi for transcript extraction.")
         try:
-            import httpx
             url = "https://serpapi.com/search"
             params = {
                 "engine": "youtube_video_transcript",
                 "v": video_id,
                 "api_key": serpapi_key,
-                "language_code": TRANSCRIPT_LANGUAGE
             }
             
             with httpx.Client() as client:
-                # Try fetching preferred language (English)
+                # Fetch default available transcript directly
                 response = client.get(url, params=params, timeout=20.0)
                 data = response.json() if response.status_code == 200 else {}
                 transcript_data = data.get("transcript", [])
                 
-                # If preferred language not found, try without language_code to get default language
-                if not transcript_data:
-                    logger.info("Preferred language transcript not found on SerpApi. Retrying without language restriction...")
-                    params.pop("language_code", None)
-                    response = client.get(url, params=params, timeout=20.0)
-                    data = response.json() if response.status_code == 200 else {}
-                    transcript_data = data.get("transcript", [])
-                    
                 # If still not found, try auto-generated (ASR) transcript
                 if not transcript_data:
                     logger.info("Direct transcript not found on SerpApi. Attempting auto-generated (ASR) transcript...")
@@ -87,17 +75,17 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
                 if transcript_data:
                     segments: list[TranscriptSegment] = []
                     for item in transcript_data:
-                        text = clean_text(item.get("text", ""))
+                        text = clean_text(item.get("snippet", ""))
                         if text is None:
                             continue
                         start_ms = item.get("start_ms", 0)
-                        duration_ms = item.get("duration_ms", 0)
+                        end_ms = item.get("end_ms", 0)
                         
                         segments.append(
                             {
                                 "id": len(segments) + 1,
                                 "start": start_ms / 1000.0,
-                                "end": (start_ms + duration_ms) / 1000.0,
+                                "end": end_ms / 1000.0,
                                 "text": text,
                             }
                         )
@@ -110,33 +98,9 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
         except Exception as e:
             logger.exception("SerpApi transcript extraction failed. Falling back to local scraping...")
 
-    # Local fallback scraping phase (with cookies if present)
-    cookies_path = "cookies.txt" if os.path.exists("cookies.txt") else None
-    proxy_url = os.getenv("PROXY_URL")
-
+    # Local scraping phase (for development/fallback without cookies or proxies)
     try:
-        # Get the list of available transcripts
-        if cookies_path:
-            logger.info("Using cookies.txt via custom requests Session for transcript extraction.")
-            
-            session = requests.Session()
-            cj = MozillaCookieJar(cookies_path)
-            cj.load(ignore_discard=True, ignore_expires=True)
-            session.cookies = cj
-            
-            if proxy_url:
-                session.proxies = {
-                    "http": proxy_url,
-                    "https": proxy_url
-                }
-                logger.info("Using proxy for transcript session.")
-            
-            # Pass custom session with cookies to YouTubeTranscriptApi
-            transcript_list = YouTubeTranscriptApi(http_client=session).list(video_id)
-
-        # for development phase
-        else:
-            transcript_list = YouTubeTranscriptApi().list(video_id)
+        transcript_list = YouTubeTranscriptApi().list(video_id)
         
         # Try to find direct English transcript first
         try:

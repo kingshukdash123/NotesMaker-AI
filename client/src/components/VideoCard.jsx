@@ -1,37 +1,10 @@
 import React from 'react';
-import { User, Clock, Calendar, Globe, ExternalLink, Play, CheckCircle, X } from 'lucide-react';
+import { User, ExternalLink, Play, CheckCircle, X } from 'lucide-react';
 
 export default function VideoCard({ metadata, onStartGeneration, isGenerating, onClose }) {
   if (!metadata) return null;
 
-  // Format duration in HH:MM:SS or MM:SS
-  const formatDuration = (seconds) => {
-    if (!seconds) return 'N/A';
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hrs > 0) {
-      return `${hrs}h ${mins}m ${secs}s`;
-    }
-    return `${mins}m ${secs}s`;
-  };
-
-  // Format upload date
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    if (dateStr.length === 8) {
-      const year = dateStr.slice(0, 4);
-      const month = dateStr.slice(4, 6);
-      const day = dateStr.slice(6, 8);
-      return `${year}-${month}-${day}`;
-    }
-    return dateStr;
-  };
-
   const youtubeWatchUrl = `https://www.youtube.com/watch?v=${metadata.video_id}`;
-  const cleanDescription = metadata.description
-    ? metadata.description.replace(/\s+/g, ' ').trim()
-    : '';
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-6 sm:mb-8 bg-zinc-950 p-4 sm:p-5 rounded-xl border border-zinc-800 shadow-xl relative overflow-hidden">
@@ -53,9 +26,6 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
               <Play className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-white ml-0.5" />
             </div>
           </a>
-          <span className="absolute bottom-2 right-2 px-1.5 py-0.5 text-[10px] sm:text-[11px] font-semibold bg-black/80 text-white rounded backdrop-blur">
-            {formatDuration(metadata.duration)}
-          </span>
         </div>
 
         {/* Video Info */}
@@ -65,7 +35,7 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
               {metadata.title}
             </h2>
             <div className="flex items-center gap-1 shrink-0">
-              <a
+              {/* <a
                 href={youtubeWatchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -73,7 +43,7 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
                 title="Open on YouTube"
               >
                 <ExternalLink className="w-4 h-4" />
-              </a>
+              </a> */}
               {onClose && (
                 <button
                   type="button"
@@ -88,35 +58,11 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
           </div>
 
           <div className="flex flex-wrap items-center gap-y-1.5 gap-x-3 text-[11px] sm:text-xs text-zinc-400">
-            <span className="flex items-center gap-1.5 text-zinc-300 font-medium max-w-[200px] truncate">
+            <span className="flex items-center gap-1.5 text-zinc-300 font-medium max-w-[250px] truncate">
               <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <span className="truncate">{metadata.channel || 'Unknown Channel'}</span>
             </span>
-            <span className="flex items-center gap-1.5 shrink-0">
-              <Clock className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-              {formatDuration(metadata.duration)}
-            </span>
-            {metadata.upload_date && (
-              <span className="flex items-center gap-1.5 shrink-0">
-                <Calendar className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                {formatDate(metadata.upload_date)}
-              </span>
-            )}
-            {metadata.language && (
-              <span className="flex items-center gap-1 uppercase text-[9px] sm:text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 shrink-0">
-                <Globe className="w-3 h-3 text-zinc-400 shrink-0" />
-                {metadata.language}
-              </span>
-            )}
           </div>
-
-          {cleanDescription && (
-            <div className="bg-zinc-900/60 p-2.5 rounded-md border border-zinc-800/80">
-              <p className="line-clamp-2 text-[11px] sm:text-xs text-zinc-400 leading-relaxed italic">
-                {cleanDescription}
-              </p>
-            </div>
-          )}
 
           <div className="pt-0.5 flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] sm:text-xs font-medium">

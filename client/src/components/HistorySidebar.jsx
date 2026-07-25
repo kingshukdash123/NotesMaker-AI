@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   X, Search, Trash2, Calendar, Clock, Video, Loader2,
-  Sparkles, Terminal, AlertCircle, RefreshCw, LogIn, LogOut, User, Key
+  Sparkles, Terminal, AlertCircle, RefreshCw, LogIn, LogOut, Key
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -37,14 +37,6 @@ export default function HistorySidebar({
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
-
-  // Format duration in minutes and seconds
-  const formatDuration = (seconds) => {
-    if (!seconds) return '';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}m ${secs}s`;
   };
 
   // Filter history by search query
@@ -113,7 +105,7 @@ export default function HistorySidebar({
                   checkHealth();
                 }
               }}
-              className="cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 transition text-xs font-medium text-zinc-300"
+              className="cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 transition text-xs font-medium text-zinc-305"
             >
               {apiStatus === 'checking' && (
                 <>
@@ -277,11 +269,6 @@ export default function HistorySidebar({
                     <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-zinc-600">
                       <Video className="w-4 h-4" />
                     </div>
-                  )}
-                  {item.metadata?.duration && (
-                    <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 text-[8px] bg-black/85 text-zinc-300 rounded font-mono">
-                      {formatDuration(item.metadata.duration)}
-                    </span>
                   )}
                 </div>
 
