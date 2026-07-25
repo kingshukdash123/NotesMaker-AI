@@ -51,6 +51,7 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     cookies_path = "cookies.txt" if os.path.exists("cookies.txt") else None
 
     try:
+        proxy_url = os.getenv("PROXY_URL")
         # Get the list of available transcripts
         if cookies_path:
             logger.info("Using cookies.txt via custom requests Session for transcript extraction.")
@@ -60,11 +61,18 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
             cj.load(ignore_discard=True, ignore_expires=True)
             session.cookies = cj
             
+            if proxy_url:
+                session.proxies = {
+                    "http": proxy_url,
+                    "https": proxy_url
+                }
+                logger.info("Using proxy for transcript session.")
+            
             # Pass custom session with cookies to YouTubeTranscriptApi
             transcript_list = YouTubeTranscriptApi(http_client=session).list(video_id)
 
         # for development phase
-        else: 
+        else:
             transcript_list = YouTubeTranscriptApi().list(video_id)
         
         # Try to find direct English transcript first

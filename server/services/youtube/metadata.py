@@ -29,6 +29,11 @@ def get_video_metadata(url: str) -> VideoMetadata:
         ydl_opts["http_headers"] = {"User-Agent": user_agent}
         logger.info("Using custom User-Agent for yt-dlp.")
 
+    proxy_url = os.getenv("PROXY_URL")
+    if proxy_url:
+        ydl_opts["proxy"] = proxy_url
+        logger.info("Using proxy for yt-dlp metadata extraction.")
+
     if os.path.exists("cookies.txt"):
         ydl_opts["cookiefile"] = "cookies.txt"
         logger.info("Using cookies.txt file for yt-dlp metadata extraction.")
