@@ -18,15 +18,10 @@ def get_video_metadata(url: str) -> VideoMetadata:
 
     logger.info("Fetching video metadata...")
 
-    # Configure yt-dlp to use mobile clients (Android/iOS) which are less aggressively blocked by YouTube
+    # Configure yt-dlp
     ydl_opts = {
         "quiet": True,
         "no_warnings": True,
-        "extractor_args": {
-            "youtube": {
-                "client": ["android", "ios"]
-            }
-        }
     }
 
     if os.path.exists("cookies.txt"):
