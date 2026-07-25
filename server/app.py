@@ -24,10 +24,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.on_event("startup")
+def startup_event():
+    cookies_content = os.getenv("YOUTUBE_COOKIES")
+    if cookies_content:
+        try:
+            # Write the cookies to a local cookies.txt file
+            with open("cookies.txt", "w", encoding="utf-8") as f:
+                f.write(cookies_content)
+            logger.info("Successfully wrote YOUTUBE_COOKIES environment variable to cookies.txt")
+        except Exception as e:
+            logger.error(f"Failed to write YOUTUBE_COOKIES to cookies.txt: {str(e)}")
+
 # CORS Setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("CLIENT_ORIGIN", "http://localhost:8000")],
+    allow_origins=[os.getenv("CLIENT_ORIGIN", "http://localhost:3000")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

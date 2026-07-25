@@ -1,3 +1,4 @@
+import os
 import re
 
 # pyrefly: ignore [missing-import]
@@ -45,9 +46,15 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
 
     logger.info(f"Fetching transcript for video: {video_id}")
 
+    cookies_path = "cookies.txt" if os.path.exists("cookies.txt") else None
+
     try:
         # Get the list of available transcripts
-        transcript_list = YouTubeTranscriptApi().list(video_id)
+        if cookies_path:
+            logger.info("Using cookies.txt for transcript extraction.")
+            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id, cookies=cookies_path)
+        else:
+            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
         
         # Try to find direct English transcript first
         try:

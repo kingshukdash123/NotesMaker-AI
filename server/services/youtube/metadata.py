@@ -1,3 +1,4 @@
+import os
 import yt_dlp
 import httpx
 
@@ -27,6 +28,10 @@ def get_video_metadata(url: str) -> VideoMetadata:
             }
         }
     }
+
+    if os.path.exists("cookies.txt"):
+        ydl_opts["cookiefile"] = "cookies.txt"
+        logger.info("Using cookies.txt file for yt-dlp metadata extraction.")
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
