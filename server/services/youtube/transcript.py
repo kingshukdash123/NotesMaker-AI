@@ -1,3 +1,5 @@
+import requests
+from http.cookiejar import MozillaCookieJar
 import os
 import re
 
@@ -51,10 +53,19 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     try:
         # Get the list of available transcripts
         if cookies_path:
-            logger.info("Using cookies.txt for transcript extraction.")
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id, cookies=cookies_path)
-        else:
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            logger.info("Using cookies.txt via custom requests Session for transcript extraction.")
+            
+            session = requests.Session()
+            cj = MozillaCookieJar(cookies_path)
+            cj.load(ignore_discard=True, ignore_expires=True)
+            session.cookies = cj
+            
+            # Pass custom session with cookies to YouTubeTranscriptApi
+            transcript_list = YouTubeTranscriptApi(http_client=session).list(video_id)
+
+        # for development phase
+        else: 
+            transcript_list = YouTubeTranscriptApi().list(video_id)
         
         # Try to find direct English transcript first
         try:
