@@ -24,6 +24,11 @@ def get_video_metadata(url: str) -> VideoMetadata:
         "no_warnings": True,
     }
 
+    user_agent = os.getenv("USER_AGENT")
+    if user_agent:
+        ydl_opts["http_headers"] = {"User-Agent": user_agent}
+        logger.info("Using custom User-Agent for yt-dlp.")
+
     if os.path.exists("cookies.txt"):
         ydl_opts["cookiefile"] = "cookies.txt"
         logger.info("Using cookies.txt file for yt-dlp metadata extraction.")
