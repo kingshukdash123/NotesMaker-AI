@@ -21,6 +21,8 @@ GUIDELINES
 Create logical sections.
 Each section should represent one coherent concept.
 Avoid splitting a single explanation across multiple sections.
+Do not generate unnecessary sections. Keep the total section count optimal and focused; do not create duplicate or excessively granular sections that do not add distinct educational value.
+You MUST always include exactly one dedicated "Conclusion" section at the very end of the plan to summarize key takeaways.
 ---------------------------------------
 2.
 For every section generate:
@@ -77,8 +79,10 @@ Return true when practical examples would significantly improve learning.
 ---------------------------------------
 7.
 Target Word Count
-Estimate the amount of notes needed.
-the word count lies between 250 to 300 words maximum, it should not cross 300 words
+Estimate the target word count for each section.
+- If the total number of sections in your plan is under 5, then the target_word_count for each section should be under 250 words.
+- If the total number of sections in your plan is 5 or more, then the target_word_count for each section must be under 150 words.
+- For the mandatory "Conclusion" section at the end, the target_word_count must always be under 100 words.
 ---------------------------------------
 8.
 Audience

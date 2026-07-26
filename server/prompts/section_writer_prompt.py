@@ -44,9 +44,14 @@ Requirements:
 • Maintain logical flow.
 • Follow the target word count as closely as possible.
 • Use Markdown formatting.
-• Prefer headings and sub-headings.
-• Use bullet points whenever appropriate.
-• Use numbered lists only for ordered processes.
+• Identify the section's relative depth and hierarchy level from the GLOBAL LECTURE OUTLINE.
+• Structure the content dynamically using a clean hierarchy (main section title, subheaders, descriptions, nested points, and tables/diagrams) based on the section's depth in the GLOBAL LECTURE OUTLINE:
+  - Select appropriate markdown heading levels (e.g., `##` or `###` or `####`) that accurately reflect the section's depth in the global outline.
+  - Prefix the main section title (the top-level heading of your generated content) with the section_id (e.g., if the section_id is 1 and the title is "Introduction", write "## 1. Introduction").
+  - Use subheaders (e.g., `###` or `####` relative to the main heading) to group related concepts when a section covers multiple sub-topics.
+  - Use descriptive paragraphs (plain text descriptions) for concepts that require detailed explanation, context, or narrative exposition. Do not force everything into lists.
+  - Use structured lists (points and indented subpoints like `- Point` and `  - Subpoint`) when presenting lists of items, properties, benefits, or sequential steps.
+  - Generate tables or diagrams as specified in the CURRENT SECTION PLAN (e.g., if `table_required` or `diagram_required` is true).
 • Explain technical concepts before introducing advanced terminology.
 • Do not repeat content from previous or future sections.
 • Do not summarize the entire lecture.
