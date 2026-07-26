@@ -13,6 +13,7 @@ from pydantic import BaseModel, HttpUrl
 
 from utils.logger import get_logger, current_task_id
 from services.youtube.metadata import get_video_metadata
+from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
 import time
 
@@ -91,12 +92,13 @@ async def root():
 @app.get("/api/youtube/metadata")
 async def fetch_metadata(url: str = Query(..., description="The YouTube URL to fetch metadata for")):
     """
-    Fetches YouTube video metadata directly using yt-dlp.
+    Fetches YouTube video metadata directly using YouTube's public oEmbed API.
     This is designed to be fast and is called before triggering notes generation.
     """
     try:
         logger.info(f"Requested metadata fetch for URL: {url}")
-        metadata = get_video_metadata(url)
+        video_id = extract_video_id(url)
+        metadata = get_video_metadata(video_id)
         return metadata
     except Exception as e:
         logger.error(f"Metadata extraction failed: {str(e)}")

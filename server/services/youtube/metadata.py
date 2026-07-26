@@ -8,7 +8,7 @@ from services.youtube.validator import extract_video_id
 logger = get_logger(__name__)
 
 
-def get_video_metadata(url: str) -> VideoMetadata:
+def get_video_metadata(video_id: str) -> VideoMetadata:
     """
     Fetch metadata from a YouTube video using YouTube's public oEmbed API.
     This does not require API keys or auth, and is not IP blocked.
@@ -16,7 +16,6 @@ def get_video_metadata(url: str) -> VideoMetadata:
     logger.info("Fetching video metadata using oEmbed...")
     
     try:
-        video_id = extract_video_id(url)
         oembed_url = f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={video_id}&format=json"
         
         with httpx.Client() as client:

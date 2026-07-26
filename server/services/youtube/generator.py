@@ -17,7 +17,7 @@ def generate_transcript_and_metadata(url: str) -> dict:
     video_id = extract_video_id(url)
 
     # Fetch metadata
-    metadata = get_video_metadata(url)
+    metadata = get_video_metadata(video_id)
 
     # Fetch transcript
     transcript = get_transcript(video_id)
