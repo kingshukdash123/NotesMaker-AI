@@ -347,9 +347,15 @@ function MainApp() {
       video_id: 'transformer-mock',
       title: 'Attention Is All You Need (Transformer Architecture Explained)',
       author: 'NotesMaker AI Labs',
+      channel: 'NotesMaker AI Labs',
       length: 1240,
       thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60',
-      description: 'A deep dive into the seminal paper that introduced the Transformer network architecture.'
+      description: 'A deep dive into the seminal paper that introduced the Transformer network architecture.',
+      available_languages: [
+        { code: 'en', name: 'English' },
+        { code: 'asr-en', name: 'English (auto-generated)' },
+        { code: 'es', name: 'Spanish' }
+      ]
     });
 
     // Populate with mock log pipeline steps

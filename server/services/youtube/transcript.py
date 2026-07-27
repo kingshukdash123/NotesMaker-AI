@@ -7,6 +7,7 @@ from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, No
 from utils.exceptions import NotesMakerError
 from utils.logger import get_logger
 from model.transcript import TranscriptSegment
+from services.firebase.firestore import get_cached_transcript, save_cached_transcript
 
 logger = get_logger(__name__)
 
@@ -38,52 +39,52 @@ def clean_text(text: str) -> str | None:
     return text
 
 
-def _fetch_via_serpapi(video_id: str, serpapi_key: str) -> list[TranscriptSegment]:
-    """Helper to fetch transcripts using SerpApi."""
-    url = "https://serpapi.com/search"
+def _fetch_via_transcriptapi(video_id: str, api_key: str) -> list[TranscriptSegment]:
+    """Helper to fetch transcripts using TranscriptAPI.com."""
+    logger.info("Attempting transcript retrieval via TranscriptAPI.com...")
+    url = "https://transcriptapi.com/api/v2/youtube/transcript"
+    headers = {"Authorization": f"Bearer {api_key}"}
     params = {
-        "engine": "youtube_video_transcript",
-        "v": video_id,
-        "api_key": serpapi_key,
+        "video_url": video_id,
+        "format": "json",
+        "include_timestamp": "true",
+        "send_metadata": "false",
     }
     
     with httpx.Client() as client:
-        # Request auto-generated (ASR) transcript via SerpApi.
-        logger.info("Attempting auto-generated (ASR) transcript via SerpApi...")
-        params["type"] = "asr"
+        # Timeout set to 300.0 seconds to support fetching transcripts for extremely long videos
+        response = client.get(url, headers=headers, params=params, timeout=300.0)
         
-        # Timeout set to 300.0 seconds to support fetching transcripts for extremely long videos (up to 15 hours)
-        response = client.get(url, params=params, timeout=300.0)
-        data = response.json() if response.status_code == 200 else {}
-        transcript_data = data.get("transcript", [])
+        if response.status_code == 200:
+            data = response.json()
+            raw_transcript = data.get("transcript", [])
             
-        if transcript_data:
             segments: list[TranscriptSegment] = []
-            for item in transcript_data:
-                text = clean_text(item.get("snippet", ""))
+            for item in raw_transcript:
+                text = clean_text(item.get("text", ""))
                 if text is None:
                     continue
-                start_ms = item.get("start_ms", 0)
-                end_ms = item.get("end_ms", 0)
+                start = item.get("start", 0.0)
+                duration = item.get("duration", 0.0)
                 
                 segments.append(
                     {
                         "id": len(segments) + 1,
-                        "start": start_ms / 1000.0,
-                        "end": end_ms / 1000.0,
+                        "start": start,
+                        "end": start + duration,
                         "text": text,
                     }
                 )
             logger.info(
-                f"Fetched {len(segments)} cleaned transcript segments using SerpApi."
+                f"Fetched {len(segments)} cleaned transcript segments using TranscriptAPI."
             )
             return segments
         else:
-            logger.warning("SerpApi could not find any auto-generated (ASR) transcript for this video.")
+            logger.warning(f"TranscriptAPI failed to fetch transcript: {response.text}")
             raise NotesMakerError(
-                message="No auto-generated transcripts found via SerpApi for this video.",
+                message=f"No transcript found via TranscriptAPI.",
                 code="TRANSCRIPT_NOT_FOUND",
-                status_code=404,
+                status_code=response.status_code,
             )
 
 
@@ -109,15 +110,18 @@ def _fetch_via_local_scraper(video_id: str) -> list[TranscriptSegment]:
 
     segments: list[TranscriptSegment] = []
     for segment in transcript_data:
-        text = clean_text(segment.text)
+        text = clean_text(segment.get("text", segment.get("snippet", "")) if isinstance(segment, dict) else getattr(segment, 'text', ''))
         if text is None:
             continue
+
+        start = segment.get("start", 0.0) if isinstance(segment, dict) else getattr(segment, 'start', 0.0)
+        duration = segment.get("duration", 0.0) if isinstance(segment, dict) else getattr(segment, 'duration', 0.0)
 
         segments.append(
             {
                 "id": len(segments) + 1,
-                "start": segment.start,
-                "end": segment.start + segment.duration,
+                "start": start,
+                "end": start + duration,
                 "text": text,
             }
         )
@@ -130,48 +134,65 @@ def _fetch_via_local_scraper(video_id: str) -> list[TranscriptSegment]:
 
 def get_transcript(video_id: str) -> list[TranscriptSegment]:
     """
-    Fetch and clean the transcript of a YouTube video (English preferred, otherwise fallback).
-    In cloud environments (like Render/production), routes directly through SerpApi.
-    In local development, uses local scraping only (never calls SerpApi to save credits).
+    Fetch and clean the transcript of a YouTube video.
+    First checks Firestore for a cached transcript.
+    If not found, fetches it from the transcript services (TranscriptAPI or local scraper)
+    and saves the transcript to Firestore.
     """
     logger.info(f"Fetching transcript for video: {video_id}")
 
-    serpapi_key = os.getenv("SERPAPI_API_KEY")
-    is_cloud = os.getenv("ENV") == "production"
+    # 0. Check Firestore cache first
+    cached_transcript = get_cached_transcript(video_id)
+    if cached_transcript is not None:
+        logger.info(f"Found cached transcript for video {video_id} in Firestore. Using cache.")
+        return cached_transcript
 
-    # 1. Cloud routing check (production)
-    if is_cloud and serpapi_key:
-        logger.info("Cloud environment detected. Routing directly to SerpApi.")
+    # 1. Fetch transcript since not cached
+    api_key = os.getenv("TRANSCRIPT_API_KEY")
+    is_cloud = os.getenv("ENV") == "production"
+    transcript = None
+
+    if is_cloud and api_key:
+        logger.info("Production environment detected. Routing directly to TranscriptAPI.com.")
         try:
-            return _fetch_via_serpapi(video_id, serpapi_key)
+            transcript = _fetch_via_transcriptapi(video_id, api_key)
         except Exception as e:
             if isinstance(e, NotesMakerError):
                 raise e
-            logger.exception("SerpApi transcript extraction failed in cloud environment.")
+            logger.exception("TranscriptAPI extraction failed.")
+            raise NotesMakerError(
+                message="Failed to fetch transcript from TranscriptAPI.",
+                code="TRANSCRIPT_ERROR",
+                status_code=500,
+            )
+    else:
+        # 2. Local environment: Local scraping only
+        try:
+            transcript = _fetch_via_local_scraper(video_id)
+        except Exception as e:
+            if isinstance(e, NotesMakerError):
+                raise e
+                
+            if isinstance(e, (TranscriptsDisabled, NoTranscriptFound)):
+                logger.warning(f"YouTube reports subtitles are disabled/unavailable for video {video_id}.")
+                raise NotesMakerError(
+                    message="No transcripts (subtitles) are available for this video.",
+                    code="TRANSCRIPT_NOT_FOUND",
+                    status_code=404,
+                )
+                
+            logger.exception("Local scraping failed.")
             raise NotesMakerError(
                 message="Failed to fetch transcript. Subtitles might be disabled or unavailable for this video.",
                 code="TRANSCRIPT_ERROR",
                 status_code=500,
             )
 
-    # 2. Local environment: Local scraping only (no SerpApi fallback)
-    try:
-        return _fetch_via_local_scraper(video_id)
-    except Exception as e:
-        if isinstance(e, NotesMakerError):
-            raise e
-            
-        if isinstance(e, (TranscriptsDisabled, NoTranscriptFound)):
-            logger.warning(f"YouTube reports subtitles are disabled/unavailable for video {video_id}.")
-            raise NotesMakerError(
-                message="No transcripts (subtitles) are available for this video.",
-                code="TRANSCRIPT_NOT_FOUND",
-                status_code=404,
-            )
-            
-        logger.exception("Local scraping failed.")
-        raise NotesMakerError(
-            message="Failed to fetch transcript. Subtitles might be disabled or unavailable for this video.",
-            code="TRANSCRIPT_ERROR",
-            status_code=500,
-        )
+    # 3. If successfully fetched, save to Firestore cache
+    if transcript:
+        try:
+            save_cached_transcript(video_id, transcript)
+        except Exception as err:
+            logger.warning(f"Failed to cache transcript to Firestore: {str(err)}")
+
+    return transcript

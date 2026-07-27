@@ -64,6 +64,25 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
             </span>
           </div>
 
+          {/* Available Languages Display */}
+          {metadata.available_languages && metadata.available_languages.length > 0 && (
+            <div className="space-y-1.5 pt-0.5">
+              <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold block">
+                Available Subtitles
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {metadata.available_languages.map((lang) => (
+                  <span
+                    key={lang.code}
+                    className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-300 font-medium hover:border-zinc-700 transition"
+                  >
+                    {lang.name} ({lang.code})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="pt-0.5 flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] sm:text-xs font-medium">
               <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
