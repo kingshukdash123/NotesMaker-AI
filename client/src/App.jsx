@@ -280,6 +280,7 @@ function MainApp() {
   const [historySearchQuery, setHistorySearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [isMobileHistoryExpanded, setIsMobileHistoryExpanded] = useState(false);
+  const [isInitialRouteResolved, setIsInitialRouteResolved] = useState(false);
 
   // 10. Terminal & Logs State
   const [logs, setLogs] = useState([]);
@@ -302,48 +303,82 @@ function MainApp() {
         if (currentUser === null) {
           window.history.replaceState(null, '', '/');
           setGlobalTab('home');
+          setIsInitialRouteResolved(true);
           return;
         }
         if (!currentUser) return; // Wait until auth state is resolved
 
-        const tab = parts[1] || 'generator';
-        const videoId = parts[2] || '';
-
+        const view = parts[1] || 'generator';
         setGlobalTab('workspace');
-        setWorkspaceTab(tab);
 
-        // If a video ID is specified, load that note
-        if (videoId) {
-          const currentVideoId = extractYoutubeVideoId(loadedUrl);
-          if (currentVideoId === videoId && taskResult) {
-            return;
-          }
+        if (view === 'configure') {
+          setActiveWorkspaceView('configure');
+        } else if (view === 'profile') {
+          setActiveWorkspaceView('profile');
+        } else {
+          // Default to generator
+          setActiveWorkspaceView('generator');
+          const subTab = parts[2] || 'notes';
+          const validSubTabs = ['notes', 'summary', 'qa'];
+          const activeSubTab = validSubTabs.includes(subTab) ? subTab : 'notes';
+          setWorkspaceTab(activeSubTab);
 
-          setIsHistoryLoading(true);
-          try {
-            const foundNote = await getNoteByVideoId(currentUser.uid, videoId);
-            if (foundNote) {
-              setUrl(foundNote.videoUrl);
-              setLoadedUrl(foundNote.videoUrl);
-              setMetadata(foundNote.metadata);
-              setTaskResult(foundNote.result);
-              setTaskStatus('COMPLETED');
-              setShowMetadata(true);
-              setShowNotes(true);
-              setIsViewingHistory(true);
-            } else {
-              // Note not found for the given videoId, fallback to generator
-              window.history.replaceState(null, '', '/workspace/generator');
-              setWorkspaceTab('generator');
+          const videoId = parts[3] || '';
+          if (videoId) {
+            const currentVideoId = extractYoutubeVideoId(loadedUrl);
+            if (currentVideoId === videoId && taskResult) {
+              setIsInitialRouteResolved(true);
+              return;
             }
-          } catch (err) {
-            console.error('Failed to load note by video ID:', err);
-          } finally {
-            setIsHistoryLoading(false);
+
+            setIsHistoryLoading(true);
+            try {
+              const foundNote = await getNoteByVideoId(currentUser.uid, videoId);
+              if (foundNote) {
+                setUrl(foundNote.videoUrl);
+                setLoadedUrl(foundNote.videoUrl);
+                setLoadedNoteId(foundNote.id);
+                setMetadata(foundNote.metadata);
+                setTaskResult(foundNote.result);
+                setTaskStatus('COMPLETED');
+                setShowMetadata(true);
+                setShowNotes(true);
+                setIsViewingHistory(true);
+              } else {
+                // Video note not found, reset view to input screen
+                setUrl('');
+                setLoadedUrl('');
+                setLoadedNoteId(null);
+                setMetadata(null);
+                setTaskResult(null);
+                setTaskStatus('IDLE');
+                setShowMetadata(false);
+                setShowNotes(false);
+                window.history.replaceState(null, '', '/workspace/generator');
+              }
+            } catch (err) {
+              console.error('Failed to load note by video ID:', err);
+            } finally {
+              setIsHistoryLoading(false);
+            }
+          } else {
+            // No videoId, reset active loaded note if we were viewing one
+            if (taskResult) {
+              setUrl('');
+              setLoadedUrl('');
+              setLoadedNoteId(null);
+              setMetadata(null);
+              setTaskResult(null);
+              setTaskStatus('IDLE');
+              setShowMetadata(false);
+              setShowNotes(false);
+            }
           }
         }
+        setIsInitialRouteResolved(true);
       } else {
         setGlobalTab('home');
+        setIsInitialRouteResolved(true);
       }
     };
 
@@ -356,23 +391,32 @@ function MainApp() {
   }, [currentUser]);
 
   useEffect(() => {
+    if (!isInitialRouteResolved) return;
+
     let targetPath = '/';
     if (globalTab === 'workspace') {
-      const videoId = extractYoutubeVideoId(loadedUrl);
-      if (videoId) {
-        targetPath = `/workspace/${workspaceTab}/${videoId}`;
+      if (activeWorkspaceView === 'configure') {
+        targetPath = '/workspace/configure';
+      } else if (activeWorkspaceView === 'profile') {
+        targetPath = '/workspace/profile';
       } else {
-        targetPath = `/workspace/${workspaceTab}`;
+        // activeWorkspaceView === 'generator'
+        const videoId = extractYoutubeVideoId(loadedUrl);
+        if (videoId) {
+          targetPath = `/workspace/generator/${workspaceTab}/${videoId}`;
+        } else {
+          targetPath = `/workspace/generator`;
+        }
       }
     }
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
     }
-  }, [globalTab, workspaceTab, loadedUrl]);
+  }, [isInitialRouteResolved, globalTab, activeWorkspaceView, workspaceTab, loadedUrl]);
 
   useEffect(() => {
     setIsNotesFullscreen(false);
-  }, [globalTab, workspaceTab]);
+  }, [globalTab, activeWorkspaceView, workspaceTab]);
 
   const checkHealth = async () => {
     if (isConnectingRef.current) return;
@@ -1219,27 +1263,29 @@ Where:
                       {/* Notes History Pane (Left side inside Notes Generator view) */}
                       <div className="w-full xl:w-72 shrink-0 flex flex-col border-b xl:border-b-0 xl:border-r border-zinc-900 pb-4 xl:pb-0 xl:pr-4 xl:sticky xl:top-[77px] xl:h-[calc(100vh-101px)] gap-2">
                         
-                        {/* "+ New Ingestion" trigger button - Always visible */}
-                        <button
-                          onClick={() => {
-                            clearMockTimers();
-                            setUrl('');
-                            setLoadedUrl('');
-                            setLoadedNoteId(null);
-                            setMetadata(null);
-                            setTaskResult(null);
-                            setTaskStatus('IDLE');
-                            setShowMetadata(false);
-                            setShowNotes(false);
-                            setWorkspaceTab('notes');
-                            setIsViewingHistory(false);
-                            setIsMobileHistoryExpanded(false);
-                          }}
-                          className="w-full py-2.5 px-4 rounded-xl bg-zinc-100 text-zinc-950 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow hover:scale-[1.02] cursor-pointer"
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span>Generate</span>
-                        </button>
+                        {/* "+ New Ingestion" trigger button - Only visible when viewing a history note */}
+                        {isViewingHistory && (
+                          <button
+                            onClick={() => {
+                              clearMockTimers();
+                              setUrl('');
+                              setLoadedUrl('');
+                              setLoadedNoteId(null);
+                              setMetadata(null);
+                              setTaskResult(null);
+                              setTaskStatus('IDLE');
+                              setShowMetadata(false);
+                              setShowNotes(false);
+                              setWorkspaceTab('notes');
+                              setIsViewingHistory(false);
+                              setIsMobileHistoryExpanded(false);
+                            }}
+                            className="w-full py-2.5 px-4 rounded-xl bg-zinc-100 text-zinc-950 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow hover:scale-[1.02] cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>Generate</span>
+                          </button>
+                        )}
 
                         {/* Mobile Expander Toggle Bar */}
                         <button
