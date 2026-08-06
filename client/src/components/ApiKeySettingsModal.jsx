@@ -93,31 +93,31 @@ export default function ApiKeySettingsModal({ isOpen, onClose, notice = null }) 
 
         {/* Optional Action Notice */}
         {notice && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-950/40 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2.5">
-            <Key className="w-4 h-4 shrink-0 text-amber-450" />
+          <div className="mb-4 p-3 rounded-lg bg-orange-950/20 border border-orange-500/30 text-orange-300 text-xs flex items-center gap-2.5">
+            <Key className="w-4 h-4 shrink-0 text-orange-400" />
             <span>{notice}</span>
           </div>
         )}
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="mb-4 p-3 rounded-lg bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Success Alert */}
         {success && (
-          <div className="mb-4 p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+          <div className="mb-4 p-3 rounded-lg bg-orange-950/20 border border-orange-500/30 text-orange-300 text-xs flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-400" />
             <span>{success}</span>
           </div>
         )}
 
         {fetching ? (
           <div className="py-12 flex flex-col items-center justify-center text-zinc-400 gap-2">
-            <Loader2 className="w-6 h-6 animate-spin text-zinc-450" />
+            <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
             <span className="text-xs">Loading api settings...</span>
           </div>
         ) : (

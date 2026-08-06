@@ -12,8 +12,8 @@ export default function AuthWall({ title, description, onOpenAuthModal, children
       {/* Lock Overlay Shield */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-black/60 backdrop-blur-[2px] z-10 text-center">
         <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-300 flex items-center justify-center mb-5 shadow-2xl relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent rounded-2xl"></div>
-          <Lock className="w-7 h-7 text-amber-500 animate-pulse" />
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent rounded-2xl"></div>
+          <Lock className="w-7 h-7 text-orange-500 animate-pulse" />
         </div>
         
         <h3 className="text-xl font-bold text-zinc-50 mb-2">

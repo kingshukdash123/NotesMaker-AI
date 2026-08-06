@@ -4,25 +4,25 @@
 @layer base {
   :root {
     color-scheme: dark;
-    --background: #09090b;
+    --background: #000000;
     --foreground: #fafafa;
     --card: #09090b;
     --card-foreground: #fafafa;
     --popover: #09090b;
     --popover-foreground: #fafafa;
-    --primary: #fafafa;
-    --primary-foreground: #18181b;
-    --secondary: #27272a;
+    --primary: #f97316;
+    --primary-foreground: #000000;
+    --secondary: #1c1917;
     --secondary-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
+    --muted: #1c1917;
+    --muted-foreground: #a8a29e;
+    --accent: #ea580c;
     --accent-foreground: #fafafa;
     --destructive: #7f1d1d;
     --destructive-foreground: #fafafa;
     --border: #27272a;
     --input: #27272a;
-    --ring: #d4d4d8;
+    --ring: #f97316;
   }
 
   body {
@@ -251,12 +251,12 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.2);
-    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.2);
+    border-color: rgba(249, 115, 22, 0.3);
   }
   50% {
-    box-shadow: 0 0 12px 4px rgba(245, 158, 11, 0.45);
-    border-color: rgba(245, 158, 11, 0.8);
+    box-shadow: 0 0 12px 4px rgba(249, 115, 22, 0.45);
+    border-color: rgba(249, 115, 22, 0.8);
   }
 }
 
@@ -295,7 +295,7 @@
   left: 15%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.03) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.03) 40%, transparent 70%);
   filter: blur(50px);
   animation: gridLightSweep 20s infinite ease-in-out;
   pointer-events: none;
@@ -308,7 +308,7 @@
   right: 15%;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 60%);
   filter: blur(60px);
   animation: gridLightSweep 25s infinite ease-in-out reverse;
   pointer-events: none;
@@ -329,7 +329,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.25), transparent);
   animation: gridLineSweep 8s infinite linear;
   pointer-events: none;
   z-index: 0;

@@ -259,7 +259,7 @@ export default function HistorySidebar({
             {!currentUser ? (
               <div className="h-60 flex flex-col items-center justify-center text-center p-4">
                 <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 mb-3 shadow-inner">
-                  <Clock className="w-5 h-5 text-amber-500" />
+                  <Clock className="w-5 h-5 text-orange-500" />
                 </div>
                 <p className="text-xs font-bold text-zinc-300">Sign in to view history</p>
                 <p className="text-[10px] text-zinc-500 max-w-[200px] mt-1.5 mb-4 leading-relaxed">
@@ -324,7 +324,7 @@ export default function HistorySidebar({
                     disabled={!item.videoUrl}
                   >
                     {copiedId === item.id ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-450" />
+                      <Check className="w-3.5 h-3.5 text-orange-400" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}
@@ -339,7 +339,7 @@ export default function HistorySidebar({
                         onDelete(item.id);
                       }
                     }}
-                    className="absolute right-2.5 bottom-2.5 opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-rose-400 p-1 rounded hover:bg-zinc-800/80 transition duration-150 cursor-pointer"
+                    className="absolute right-2.5 bottom-2.5 opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-orange-500 p-1 rounded hover:bg-zinc-800/80 transition duration-150 cursor-pointer"
                     title="Delete from history"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

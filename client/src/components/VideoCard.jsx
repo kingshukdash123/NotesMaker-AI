@@ -22,7 +22,7 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
             rel="noopener noreferrer"
             className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-200"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-600 flex items-center justify-center shadow-lg transform group-hover:scale-110 transition">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-600 flex items-center justify-center shadow-lg transform group-hover:scale-110 transition">
               <Play className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-white ml-0.5" />
             </div>
           </a>
@@ -84,7 +84,7 @@ export default function VideoCard({ metadata, onStartGeneration, isGenerating, o
           )}
 
           <div className="pt-0.5 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] sm:text-xs font-medium">
+            <div className="flex items-center gap-1.5 text-orange-400 text-[11px] sm:text-xs font-medium">
               <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>Metadata Extracted & Ready for AI Processing</span>
             </div>

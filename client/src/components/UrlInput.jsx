@@ -28,7 +28,7 @@ export default function UrlInput({
       <div className=" p-2 rounded-xl">
         <div className="flex flex-col sm:flex-row items-center gap-2 bg-zinc-900/60 rounded-lg p-3 border border-zinc-800/80">
           <div className="flex items-center flex-1 w-full pl-3 gap-3">
-            <YoutubeIcon className="w-5 h-5 text-red-500 shrink-0" />
+            <YoutubeIcon className="w-5 h-5 text-orange-500 shrink-0" />
             <input
               type="text"
               value={url}

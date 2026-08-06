@@ -82,14 +82,14 @@ function HomeSection({ setGlobalTab, setWorkspaceTab, isAuthenticated, onOpenAut
   return (
     <div className="max-w-5xl mx-auto relative overflow-hidden py-6">
       {/* Ambient Background Radial Glow behind Hero Title */}
-      <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-orange-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
       <div className="space-y-16 relative z-10">
         {/* Hero Block */}
         <div className="text-center space-y-6 max-w-3xl mx-auto">
           <h2 className="text-4xl sm:text-6xl font-black tracking-tight text-zinc-50 leading-tight">
             Transcribe, Outline &{' '}
-            <span className="bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent">
               Synthesize Lectures
             </span>
           </h2>
@@ -906,8 +906,8 @@ function MainApp() {
               <>
                 {/* Error Messages */}
                 {metaError && (
-                  <div className="max-w-4xl mx-auto mb-6 p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 shrink-0 text-rose-400" />
+                  <div className="max-w-4xl mx-auto mb-6 p-4 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
                     <div>
                       <span className="font-bold">Metadata Fetch Error:</span> {metaError}
                     </div>

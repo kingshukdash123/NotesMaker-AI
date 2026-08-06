@@ -10,7 +10,7 @@ export default function Tabs({ activeTab, setActiveTab }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-0">
-      <div className="flex p-1 bg-zinc-950/85 backdrop-blur-md border border-zinc-800/60 rounded-xl max-w-2xl mx-auto shadow-xl">
+      <div className="flex border-b border-zinc-800/80 max-w-2xl mx-auto w-full relative">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -18,18 +18,21 @@ export default function Tabs({ activeTab, setActiveTab }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 rounded-lg text-[10px] sm:text-xs font-semibold tracking-wide transition-all duration-300 relative ${
+              className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-3 text-[10px] sm:text-xs font-semibold tracking-wide transition-all duration-300 relative ${
                 isActive
-                  ? 'bg-zinc-100 text-zinc-950 shadow-md font-bold scale-[1.02]'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                  ? 'text-zinc-50 font-bold'
+                  : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              <Icon className={`w-4 h-4 sm:w-3.5 sm:h-3.5 ${isActive ? 'text-zinc-950' : 'text-zinc-400'}`} />
+              <Icon className={`w-4 h-4 sm:w-3.5 sm:h-3.5 ${isActive ? 'text-orange-500' : 'text-zinc-500'}`} />
               <span className="hidden sm:inline">{tab.label}</span>
               {tab.badge && (
-                <span className="hidden sm:inline-flex text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/25 font-bold uppercase tracking-wider ml-1">
+                <span className="hidden sm:inline-flex text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-orange-500/10 text-orange-400 border border-orange-500/25 font-bold uppercase tracking-wider ml-1">
                   {tab.badge}
                 </span>
+              )}
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
               )}
             </button>
           );

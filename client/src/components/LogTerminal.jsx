@@ -25,13 +25,13 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
 
   const getLogStyle = (line) => {
     if (line.includes('ERROR') || line.includes('FAILED') || line.includes('Exception')) {
-      return 'text-rose-400 bg-rose-950/30';
+      return 'text-red-400 bg-red-950/20';
     }
     if (line.includes('WARNING')) {
-      return 'text-amber-300';
+      return 'text-orange-400';
     }
     if (line.includes('COMPLETED') || line.includes('completed') || line.includes('success')) {
-      return 'text-emerald-400 font-semibold';
+      return 'text-orange-400 font-semibold';
     }
     if (line.includes('[SYSTEM]')) {
       return 'text-cyan-400 italic';
@@ -100,14 +100,14 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
             className="p-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 rounded transition"
             title="Copy Logs"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-orange-400" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
 
           {/* Clear Logs */}
           <button
             type="button"
             onClick={onClear}
-            className="p-1 text-zinc-400 hover:text-rose-400 hover:bg-zinc-900 rounded transition"
+            className="p-1 text-zinc-400 hover:text-orange-500 hover:bg-zinc-900 rounded transition"
             title="Clear Terminal"
           >
             <Trash2 className="w-3.5 h-3.5" />

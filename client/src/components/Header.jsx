@@ -41,35 +41,38 @@ export default function Header({
             />
             <div className="flex items-center gap-1 sm:gap-1.5">
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-50">
-                NotesMaker A<i>I</i>
+                NotesMaker <span className="text-orange-500 font-bold">A<i>I</i></span>
               </h1>
-              <span className="inline-flex items-center justify-center px-2 py-0.5 text-[9px] sm:text-[10px] font-mono tracking-wider uppercase rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800 align-middle">
-                v1.0
-              </span>
             </div>
           </div>
 
           {/* Global Nav Links */}
-          <nav className="flex items-center gap-1 sm:gap-1.5 ml-1 sm:ml-4 pl-1 sm:pl-4 border-l border-zinc-800">
+          <nav className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-4 pl-1 sm:pl-4 border-l border-zinc-800">
             <button
               onClick={() => setGlobalTab('home')}
-              className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold tracking-wide transition ${
+              className={`px-3 py-2 text-[11px] sm:text-xs font-semibold tracking-wide transition relative cursor-pointer ${
                 globalTab === 'home' 
-                  ? 'bg-zinc-900 text-zinc-100' 
+                  ? 'text-zinc-100 font-bold' 
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              Home
+              <span>Home</span>
+              {globalTab === 'home' && (
+                <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
+              )}
             </button>
             <button
               onClick={() => setGlobalTab('workspace')}
-              className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold tracking-wide transition ${
+              className={`px-3 py-2 text-[11px] sm:text-xs font-semibold tracking-wide transition relative cursor-pointer ${
                 globalTab === 'workspace' 
-                  ? 'bg-zinc-900 text-zinc-100' 
+                  ? 'text-zinc-100 font-bold' 
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              Workspace
+              <span>Workspace</span>
+              {globalTab === 'workspace' && (
+                <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
+              )}
             </button>
           </nav>
         </div>

@@ -59,10 +59,10 @@ export default function SummaryOverview({ result, metadata }) {
               </span>
               <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
                 outline.difficulty?.toLowerCase() === 'advanced'
-                  ? 'bg-rose-950/20 border-rose-800/50 text-rose-400'
+                  ? 'bg-orange-950/40 border-orange-700/60 text-orange-300 font-extrabold'
                   : outline.difficulty?.toLowerCase() === 'intermediate'
-                  ? 'bg-amber-950/20 border-amber-800/50 text-amber-400'
-                  : 'bg-emerald-950/20 border-emerald-800/50 text-emerald-400'
+                  ? 'bg-orange-950/20 border-orange-850/50 text-orange-400'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-300'
               }`}>
                 {outline.difficulty || 'General'}
               </span>

@@ -38,8 +38,8 @@ export default function LoadingModal({ isOpen }) {
         <div className="flex items-center justify-between pb-3 border-b border-zinc-900">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
             </span>
             <h3 className="text-xs font-mono font-bold tracking-wider uppercase text-zinc-100">
               AI Synthesis Active
@@ -62,7 +62,7 @@ export default function LoadingModal({ isOpen }) {
             </div>
           ))}
           
-          <div className="flex items-center gap-1.5 text-[10px] text-amber-500 pt-2">
+          <div className="flex items-center gap-1.5 text-[10px] text-orange-500 pt-2">
             <span>Compiling study guides...</span>
             <span className="typing-cursor" />
           </div>

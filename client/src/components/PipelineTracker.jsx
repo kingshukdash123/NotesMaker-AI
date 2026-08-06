@@ -73,17 +73,17 @@ export default function PipelineTracker({ status, logs = [], error, onClose }) {
         <div className="flex items-center gap-3">
           <div className="text-xs font-medium px-3 py-1 rounded-md bg-zinc-900 border border-zinc-800">
             {status === 'PROCESSING' && (
-              <span className="text-amber-400 flex items-center gap-1.5 font-semibold">
+              <span className="text-orange-400 flex items-center gap-1.5 font-semibold">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing Pipeline
               </span>
             )}
             {status === 'COMPLETED' && (
-              <span className="text-emerald-400 flex items-center gap-1.5 font-semibold">
+              <span className="text-orange-500 flex items-center gap-1.5 font-semibold">
                 <Check className="w-3.5 h-3.5" /> Pipeline Completed
               </span>
             )}
             {status === 'FAILED' && (
-              <span className="text-rose-400 flex items-center gap-1.5 font-semibold">
+              <span className="text-red-500 flex items-center gap-1.5 font-semibold">
                 <AlertTriangle className="w-3.5 h-3.5" /> Pipeline Error
               </span>
             )}
@@ -117,11 +117,11 @@ export default function PipelineTracker({ status, logs = [], error, onClose }) {
               key={stage.id}
               className={`relative flex flex-col items-center p-3.5 rounded-lg border transition duration-200 ${
                 isDone
-                  ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
+                  ? 'bg-orange-950/20 border-orange-500/30 text-orange-300'
                   : isCurrent
-                  ? 'bg-zinc-900 border-zinc-400 text-zinc-100 shadow-sm'
+                  ? 'bg-zinc-900 border-orange-500 text-zinc-100 shadow-sm'
                   : isFailed
-                  ? 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+                  ? 'bg-red-950/30 border-red-500/40 text-red-300'
                   : 'bg-zinc-900/40 border-zinc-800/80 text-zinc-500'
               }`}
             >
@@ -129,18 +129,18 @@ export default function PipelineTracker({ status, logs = [], error, onClose }) {
                 <div
                   className={`w-9 h-9 rounded-md flex items-center justify-center transition-all ${
                     isDone
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                      ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40'
                       : isCurrent
-                      ? 'bg-zinc-800 text-zinc-100 border border-zinc-400 shadow-sm'
+                      ? 'bg-zinc-800 text-zinc-100 border border-orange-500 shadow-sm'
                       : isFailed
-                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                      ? 'bg-red-500/20 text-red-400 border border-red-500/40'
                       : 'bg-zinc-950 text-zinc-600 border border-zinc-800'
                   }`}
                 >
                   {isDone ? (
-                    <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
+                    <Check className="w-4 h-4 text-orange-400 stroke-[3]" />
                   ) : isCurrent ? (
-                    <Loader2 className="w-4 h-4 text-zinc-200 animate-spin" />
+                    <Loader2 className="w-4 h-4 text-orange-500 animate-spin" />
                   ) : (
                     <Icon className="w-4 h-4" />
                   )}
@@ -159,8 +159,8 @@ export default function PipelineTracker({ status, logs = [], error, onClose }) {
       </div>
 
       {error && (
-        <div className="mt-4 p-3 rounded-md bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
+        <div className="mt-4 p-3 rounded-md bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-red-500" />
           <span className="font-mono">{error}</span>
         </div>
       )}
