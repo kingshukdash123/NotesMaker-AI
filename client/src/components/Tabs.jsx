@@ -2,7 +2,6 @@ import { BookOpen, MessageSquare, BarChart2, Sparkles, StepBackIcon, StepBack, A
 
 export default function Tabs({ activeTab, setActiveTab }) {
   const tabs = [
-    { id: 'generator', label: 'Generator', icon: ArrowLeft },
     { id: 'notes', label: 'Study Notes', icon: BookOpen },
     { id: 'summary', label: 'Summary Dashboard', icon: BarChart2 },
     { id: 'qa', label: 'Video Q&A', icon: MessageSquare },

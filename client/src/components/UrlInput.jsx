@@ -91,6 +91,20 @@ export default function UrlInput({
             )}
           </div>
         </div>
+        
+        {/* Test Assistant triggers */}
+        {/* {!isGenerating && (
+          <div className="mt-2 flex items-center justify-between px-2 text-[10px] text-zinc-550">
+            <span>Need a video demo?</span>
+            <button
+              type="button"
+              onClick={onLoadMockData}
+              className="text-orange-500 hover:text-orange-400 font-bold tracking-wide uppercase transition cursor-pointer"
+            >
+              Simulate AI Generation (Test Loader)
+            </button>
+          </div>
+        )} */}
       </div>
 
     </div>

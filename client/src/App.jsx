@@ -7,8 +7,6 @@ import LogTerminal from './components/LogTerminal';
 import NotesViewer from './components/NotesViewer';
 import AuthModal from './components/AuthModal';
 import ApiDisconnectModal from './components/ApiDisconnectModal';
-import HistorySidebar from './components/HistorySidebar';
-import ApiKeySettingsModal from './components/ApiKeySettingsModal';
 import Tabs from './components/Tabs';
 import AuthWall from './components/AuthWall';
 import VideoQa from './components/VideoQa';
@@ -17,7 +15,7 @@ import LoadingModal from './components/LoadingModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs, API_BASE_URL } from './services/server/api';
 import { saveNotes, getUserNotes, deleteNotes, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId } from './services/firebase/notesService';
-import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History } from 'lucide-react';
+import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown } from 'lucide-react';
 
 const mapErrorMessage = (errorMsg) => {
   if (!errorMsg) return 'Notes generation failed.';
@@ -223,32 +221,42 @@ function HomeSection({ setGlobalTab, setWorkspaceTab, isAuthenticated, onOpenAut
 }
 
 function MainApp() {
-  const { currentUser } = useAuth();
+  const { currentUser, logout, getUserDisplayName } = useAuth();
 
   // 1. Navigation & Viewport State
   const [globalTab, setGlobalTab] = useState('home');
   const [workspaceTab, setWorkspaceTab] = useState('notes');
   const [isNotesFullscreen, setIsNotesFullscreen] = useState(false);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
 
   // 2. Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'signup'
   const [authNotice, setAuthNotice] = useState(null);
 
-  // 3. API Key Settings Modal State
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [apiKeyNotice, setApiKeyNotice] = useState(null);
+  // 3. API Key Settings States (Embedded Settings form)
+  const [activeWorkspaceView, setActiveWorkspaceView] = useState('generator'); // 'generator' | 'configure' | 'profile'
+  const [googleKey, setGoogleKey] = useState('');
+  const [groqKey, setGroqKey] = useState('');
+  const [showGoogle, setShowGoogle] = useState(false);
+  const [showGroq, setShowGroq] = useState(false);
+  const [isSavingKeys, setIsSavingKeys] = useState(false);
+  const [isFetchingKeys, setIsFetchingKeys] = useState(false);
+  const [keysError, setKeysError] = useState('');
+  const [keysSuccess, setKeysSuccess] = useState('');
 
   // 4. URL & Ingestion State
   const [url, setUrl] = useState('');
   const [loadedUrl, setLoadedUrl] = useState('');
+  const [loadedNoteId, setLoadedNoteId] = useState(null);
 
   // 5. API Status & Disconnect Modal State
   const [apiStatus, setApiStatus] = useState('checking'); // 'healthy' | 'unhealthy' | 'checking'
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [hasShownModal, setHasShownModal] = useState(false);
   const isConnectingRef = useRef(false);
+  const mockTimersRef = useRef([]);
 
   // 6. Metadata State
   const [metadata, setMetadata] = useState(null);
@@ -266,10 +274,12 @@ function MainApp() {
   const [showPipeline, setShowPipeline] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
-  // 9. History Sidebar States
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  // 9. History embedded States
   const [notesHistory, setNotesHistory] = useState([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [historySearchQuery, setHistorySearchQuery] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
+  const [isMobileHistoryExpanded, setIsMobileHistoryExpanded] = useState(false);
 
   // 10. Terminal & Logs State
   const [logs, setLogs] = useState([]);
@@ -438,6 +448,7 @@ function MainApp() {
 
   // Handler: Fetch Metadata
   const handleFetchMetadata = async (targetUrl = url) => {
+    clearMockTimers();
     if (!targetUrl) return;
 
     // Protection for non-authenticated users
@@ -463,6 +474,7 @@ function MainApp() {
 
   // Handler: Start Note Generation
   const handleGenerateNotes = async (targetUrl = url) => {
+    clearMockTimers();
     if (!targetUrl) return;
     setIsViewingHistory(false);
 
@@ -562,6 +574,7 @@ function MainApp() {
                   createdAtDate: new Date()
                 };
                 setNotesHistory(prev => [newHistoryItem, ...prev]);
+                setLoadedNoteId(noteId);
               } catch (saveErr) {
                 console.error('Error saving notes to history:', saveErr);
               }
@@ -585,10 +598,17 @@ function MainApp() {
     }
   };
 
+  const clearMockTimers = () => {
+    mockTimersRef.current.forEach(timer => clearTimeout(timer));
+    mockTimersRef.current = [];
+  };
+
   const handleLoadMockData = () => {
+    clearMockTimers();
     setIsViewingHistory(false);
     setUrl('https://www.youtube.com/watch?v=transformer-mock');
-    // Populate with mock video metadata
+    
+    // 1. Populate with mock video metadata immediately
     setMetadata({
       video_id: 'transformer-mock',
       title: 'Attention Is All You Need (Transformer Architecture Explained)',
@@ -599,115 +619,114 @@ function MainApp() {
       description: 'A deep dive into the seminal paper that introduced the Transformer network architecture.',
       available_languages: [
         { code: 'en', name: 'English' },
-        { code: 'asr-en', name: 'English (auto-generated)' },
         { code: 'es', name: 'Spanish' }
       ]
     });
-
-    // Populate with mock log pipeline steps
+    
+    // 2. Set logs to initial metadata stage and show processing loader
     setLogs([
       'Task 777-mock-data: Starting mock study notes generation...',
       '[stage: metadata] Transcript & Metadata Generator node started.',
-      '[stage: metadata] Fetching video metadata and transcript...',
-      '[stage: metadata] Transcript & Metadata Generator node completed.',
-      '[stage: transcript] Transcript Merger node started.',
-      '[stage: transcript] Paragraph segmentation successfully finished.',
-      '[stage: transcript] Transcript Merger node completed.',
-      '[stage: orchestrator] Starting Orchestrator node.',
-      '[stage: orchestrator] Generating curriculum outline and planning...',
-      '[stage: orchestrator] Orchestrator node completed successfully.',
-      '[stage: section_writer] Starting parallel Section Workers...',
-      '[stage: section_writer] [Section 1] Generating introduction & self-attention overview...',
-      '[stage: section_writer] [Section 2] Synthesizing multi-head attention math details...',
-      '[stage: section_writer] Section Worker completed for all sections.',
-      '[stage: reducer] Starting Reducer node.',
-      '[stage: reducer] Synthesis & Final Assembly completed successfully. Total sections merged: 2.',
-      '[STREAM_FINISHED]'
+      '[stage: metadata] Fetching video metadata and transcript...'
     ]);
-
-    setTaskStatus('COMPLETED');
-    setTaskResult({
-      draft_notes: {
-        title: 'Attention Is All You Need (Transformer Architecture Explained)',
-        content: `### 1. Introduction to the Transformer
-          The **Transformer** is a landmark neural network architecture introduced in 2017. Unlike previous sequence-to-sequence models (such as LSTMs and GRUs) that processed input sequentially, the Transformer relies entirely on **Self-Attention Mechanisms** to capture global dependencies.
-
-          Key advantages include:
-          - **Parallelization**: Computations across different sequence steps can be executed concurrently.
-          - **Constant Path Length**: Signals travel a constant distance between any two input positions.
-
-          ### 2. Self-Attention Mechanics
-          Self-attention maps a query vector ($Q$) and a set of key ($K$) and value ($V$) vectors to an output. The matrix representation is defined mathematically as:
-
-          $$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$$
-
-          Where:
-          - $Q, K, V$ are projection matrices.
-          - $d_k$ is the scaling dimension factor.
-
-          ### 3. Multi-Head Attention (MHA)
-          Instead of performing a single attention function, Multi-Head Attention projects the queries, keys, and values $h$ times with different linear projections:
-
-          \`\`\`python
-          # Multi-head attention simulation code block
-          import torch
-          import torch.nn as nn
-
-          class MultiHeadAttention(nn.Module):
-              def __init__(self, d_model, num_heads):
-                  super().__init__()
-                  self.num_heads = num_heads
-                  self.d_k = d_model // num_heads
-                  self.q_linear = nn.Linear(d_model, d_model)
-                  self.k_linear = nn.Linear(d_model, d_model)
-                  self.v_linear = nn.Linear(d_model, d_model)
-                  
-              def forward(self, q, k, v):
-                  # linear projection and scaling mechanics
-                  print("Executing self-attention layers...")
-                  return v
-          \`\`\`
-          `,
-        sections: [
-          {
-            section_id: 1,
-            title: 'Introduction & Self-Attention',
-            content: 'Self-attention maps a query vector ($Q$) and a set of key ($K$) and value ($V$) vectors.',
-            references: [
-              { title: 'Attention Is All You Need Paper (ArXiv)', url: 'https://arxiv.org/abs/1706.03762' }
-            ]
-          },
-          {
-            section_id: 2,
-            title: 'Multi-Head Attention Layers',
-            content: 'Multi-head projects queries, keys and values dynamically.',
-            references: [
-              { title: 'The Annotated Transformer (Harvard)', url: 'https://nlp.seas.harvard.edu/2018/04/03/attention.html' }
-            ]
-          }
-        ]
-      },
-      lecture_outline: {
-        title: 'Transformer Architecture Fundamentals',
-        difficulty: 'Intermediate',
-        lecture_type: 'Technical Seminar',
-        overview: 'Overview of Self-Attention, Positional Encoding, and Feed-Forward sublayers.',
-        learning_objectives: [
-          'Understand the difference between Recurrent models and Self-Attention layers',
-          'Calculate scaled dot-product attention mechanics',
-          'Implement multi-head projection splitting'
-        ],
-        topic_hierarchy: [
-          { title: 'Sequence to Sequence Limits', bullets: ['RNN bottlenecks', 'Lack of parallel processing'] },
-          { title: 'Dot-Product Attention Scaling', bullets: ['Softmax stability', 'Dimension scaling factor'] }
-        ],
-        concepts: ['Self-Attention', 'Dot-Product Scaling', 'Multi-Head Projection']
-      }
-    });
+    setTaskStatus('PROCESSING');
+    setTaskResult(null);
     setLoadedUrl('https://www.youtube.com/watch?v=transformer-mock');
     setShowMetadata(true);
     setShowPipeline(true);
-    setShowNotes(true);
+    setShowNotes(false);
+
+    // 3. Simulating logs stream intervals
+    const timer1 = setTimeout(() => {
+      setLogs(prev => [
+        ...prev,
+        '[stage: metadata] Transcript & Metadata Generator node completed.',
+        '[stage: transcript] Transcript Merger node started.',
+        '[stage: transcript] Paragraph segmentation successfully finished.',
+        '[stage: transcript] Transcript Merger node completed.'
+      ]);
+    }, 3500);
+
+    const timer2 = setTimeout(() => {
+      setLogs(prev => [
+        ...prev,
+        '[stage: orchestrator] Starting Orchestrator node.',
+        '[stage: orchestrator] Generating curriculum outline and planning...',
+        '[stage: orchestrator] Orchestrator node completed successfully.',
+        '[stage: section_writer] Starting parallel Section Workers...',
+        '[stage: section_writer] [Section 1] Generating introduction & self-attention overview...',
+        '[stage: section_writer] [Section 2] Synthesizing multi-head attention math details...'
+      ]);
+    }, 7000);
+
+    const timer3 = setTimeout(() => {
+      setLogs(prev => [
+        ...prev,
+        '[stage: section_writer] Section Worker completed for all sections.',
+        '[stage: reducer] Starting Reducer node.',
+        '[stage: reducer] Synthesis & Final Assembly completed successfully. Total sections merged: 2.',
+        '[STREAM_FINISHED]'
+      ]);
+      setTaskStatus('COMPLETED');
+      setTaskResult({
+        draft_notes: {
+          title: 'Attention Is All You Need (Transformer Architecture Explained)',
+          content: `### 1. Introduction to the Transformer
+The **Transformer** is a landmark neural network architecture introduced in 2017. Unlike previous sequence-to-sequence models (such as LSTMs and GRUs) that processed input sequentially, the Transformer relies entirely on **Self-Attention Mechanisms** to capture global dependencies.
+
+Key advantages include:
+- **Parallelization**: Computations across different sequence steps can be executed concurrently.
+- **Constant Path Length**: Signals travel a constant distance between any two input positions.
+
+### 2. Self-Attention Mechanics
+Self-attention maps a query vector ($Q$) and a set of key ($K$) and value ($V$) vectors to an output. The matrix representation is defined mathematically as:
+
+$$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$$
+
+Where:
+- $Q, K, V$ are projection matrices.
+- $d_k$ is the scaling dimension factor.
+          `,
+          sections: [
+            {
+              section_id: 1,
+              title: 'Introduction & Self-Attention',
+              content: 'Self-attention maps a query vector ($Q$) and a set of key ($K$) and value ($V$) vectors.',
+              references: [
+                { title: 'Attention Is All You Need Paper (ArXiv)', url: 'https://arxiv.org/abs/1706.03762' }
+              ]
+            },
+            {
+              section_id: 2,
+              title: 'Multi-Head Attention Layers',
+              content: 'Multi-head projects queries, keys and values dynamically.',
+              references: [
+                { title: 'The Annotated Transformer (Harvard)', url: 'https://nlp.seas.harvard.edu/2018/04/03/attention.html' }
+              ]
+            }
+          ]
+        },
+        lecture_outline: {
+          title: 'Transformer Architecture Fundamentals',
+          difficulty: 'Intermediate',
+          lecture_type: 'Technical Seminar',
+          overview: 'Overview of Self-Attention, Positional Encoding, and Feed-Forward sublayers.',
+          learning_objectives: [
+            'Understand the difference between Recurrent models and Self-Attention layers',
+            'Calculate scaled dot-product attention mechanics',
+            'Implement multi-head projection splitting'
+          ],
+          topic_hierarchy: [
+            { title: 'Sequence to Sequence Limits', bullets: ['RNN bottlenecks', 'Lack of parallel processing'] },
+            { title: 'Dot-Product Attention Scaling', bullets: ['Softmax stability', 'Dimension scaling factor'] }
+          ],
+          concepts: ['Self-Attention', 'Dot-Product Scaling', 'Multi-Head Projection']
+        }
+      });
+      setShowNotes(true);
+    }, 11000);
+
+    mockTimersRef.current.push(timer1, timer2, timer3);
   };
 
   // Clear metadata, pipeline, and notes sections when URL changes or is removed
@@ -732,6 +751,7 @@ function MainApp() {
     return () => {
       if (eventSourceRef.current) eventSourceRef.current.close();
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      mockTimersRef.current.forEach(timer => clearTimeout(timer));
     };
   }, []);
 
@@ -750,15 +770,67 @@ function MainApp() {
         }
       } else {
         setNotesHistory([]);
+        setLoadedNoteId(null);
       }
     };
     fetchHistory();
   }, [currentUser]);
 
+  // Effect to load API Keys when accessing configuration
+  useEffect(() => {
+    if (currentUser && activeWorkspaceView === 'configure') {
+      const loadKeys = async () => {
+        setIsFetchingKeys(true);
+        setKeysError('');
+        setKeysSuccess('');
+        try {
+          const keys = await getUserApiKeys(currentUser.uid);
+          setGoogleKey(keys.googleApiKey || '');
+          setGroqKey(keys.groqApiKey || '');
+        } catch (err) {
+          console.error('Failed to load API keys:', err);
+          setKeysError('Failed to load your existing API keys.');
+        } finally {
+          setIsFetchingKeys(false);
+        }
+      };
+      loadKeys();
+    }
+  }, [activeWorkspaceView, currentUser]);
+
+  const handleSaveApiKeys = async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    setIsSavingKeys(true);
+    setKeysError('');
+    setKeysSuccess('');
+    try {
+      await saveUserApiKeys(currentUser.uid, googleKey.trim(), groqKey.trim());
+      setKeysSuccess('API Keys saved successfully!');
+    } catch (err) {
+      console.error('Error saving API keys:', err);
+      setKeysError(err.message || 'An error occurred while saving your keys.');
+    } finally {
+      setIsSavingKeys(false);
+    }
+  };
+
+  const handleCopyUrl = (e, videoUrl, itemId) => {
+    e.stopPropagation();
+    if (!videoUrl) return;
+    navigator.clipboard.writeText(videoUrl);
+    setCopiedId(itemId);
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 2000);
+  };
+
   const handleSelectHistoryNote = (note) => {
+    clearMockTimers();
     const noteUrl = note.videoUrl || '';
     setUrl(noteUrl);
     setLoadedUrl(noteUrl);
+    setLoadedNoteId(note.id);
     setMetadata(note.metadata || null);
     setTaskResult(note.result || null);
     setTaskStatus('COMPLETED');
@@ -766,87 +838,60 @@ function MainApp() {
     setShowNotes(true);
     setShowPipeline(false);
     setLogs([]);
-    setIsHistoryOpen(false);
     setIsViewingHistory(true);
     setGlobalTab('workspace');
     setWorkspaceTab('notes');
+    setIsMobileHistoryExpanded(false);
   };
 
   const handleSetWorkspaceTab = (tabId) => {
     setWorkspaceTab(tabId);
-    if (tabId === 'generator') {
-      setIsViewingHistory(false);
-      setUrl('');
-      setLoadedUrl('');
-      setMetadata(null);
-      setTaskResult(null);
-      setTaskStatus('IDLE');
-      setShowMetadata(false);
-      setShowNotes(false);
-    }
   };
 
   const handleDeleteHistoryNote = async (noteId) => {
     try {
       await deleteNotes(noteId);
       setNotesHistory(prev => prev.filter(item => item.id !== noteId));
+      // Reset currently loaded note if deleted
+      if (loadedNoteId === noteId) {
+        setLoadedNoteId(null);
+        setUrl('');
+        setLoadedUrl('');
+        setMetadata(null);
+        setTaskResult(null);
+        setTaskStatus('IDLE');
+      }
     } catch (err) {
       console.error('Failed to delete history item:', err);
     }
   };
 
   const handleToggleTerminal = () => {
-    setIsTerminalOpen(prev => {
-      const nextVal = !prev;
-      if (nextVal && window.innerWidth >= 1024) {
-        setIsHistoryOpen(false);
-      }
-      return nextVal;
-    });
+    setIsTerminalOpen(prev => !prev);
   };
 
-  const handleToggleHistory = () => {
-    setIsHistoryOpen(prev => {
-      const nextVal = !prev;
-      if (nextVal && window.innerWidth >= 1024) {
-        setIsTerminalOpen(false);
-      }
-      return nextVal;
-    });
-  };
-
-  const isRightPanelOpen = isTerminalOpen || isHistoryOpen;
+  const isRightPanelOpen = isTerminalOpen;
+  const filteredHistory = notesHistory.filter(item => {
+    const title = item.metadata?.title?.toLowerCase() || '';
+    const channel = item.metadata?.channel?.toLowerCase() || '';
+    const query = historySearchQuery.toLowerCase();
+    return title.includes(query) || channel.includes(query);
+  });
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col selection:bg-zinc-800 relative overflow-hidden">
-      {/* Global Background Grid and glows (Only on Home landing page) */}
-      {globalTab === 'home' && (
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          <div className="premium-grid-bg h-full w-full"></div>
-          <div className="grid-glow-effect"></div>
-          <div className="grid-glow-secondary"></div>
-        </div>
-      )}
-
       {/* Smooth White Ambient Light Blobs */}
       <div className="fixed -top-24 -left-24 w-[350px] sm:w-[550px] h-[350px] sm:h-[550px] bg-gradient-to-br from-white/25 via-zinc-200/10 to-transparent rounded-full blur-[75px] pointer-events-none z-0 opacity-100"></div>
       <div className="fixed -top-24 -right-24 w-[400px] sm:w-[650px] h-[400px] sm:h-[650px] bg-gradient-to-bl from-white/20 via-zinc-300/10 to-transparent rounded-full blur-[85px] pointer-events-none z-0 opacity-50"></div>
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[200px] bg-white/[0.08] rounded-full blur-[100px] pointer-events-none z-0"></div>
 
-      {/* Top Header Navbar */}
+      {/* Top Header Navbar rendered globally */}
       {!isNotesFullscreen && (
         <Header
-          apiStatus={apiStatus}
-          checkHealth={checkHealth}
-          setShowDisconnectModal={setShowDisconnectModal}
-          onToggleTerminal={handleToggleTerminal}
-          onToggleHistory={handleToggleHistory}
-          logCount={logs.length}
-          isGenerating={taskStatus === 'PROCESSING'}
-          onOpenAuthModal={handleOpenAuthModal}
-          onOpenApiKeySettings={() => setIsApiKeyModalOpen(true)}
           globalTab={globalTab}
           setGlobalTab={setGlobalTab}
+          isSidebarMobileOpen={isSidebarMobileOpen}
+          setIsSidebarMobileOpen={setIsSidebarMobileOpen}
         />
       )}
 
@@ -858,39 +903,41 @@ function MainApp() {
         notice={authNotice}
       />
 
-      {/* API Key Settings Modal */}
-      <ApiKeySettingsModal
-        isOpen={isApiKeyModalOpen}
-        onClose={() => {
-          setIsApiKeyModalOpen(false);
-          setApiKeyNotice(null);
-        }}
-        notice={apiKeyNotice}
-      />
-      {/* Premium Loader Modal */}
-      <LoadingModal isOpen={taskStatus === 'PROCESSING'} />
 
-      {/* Main Split Layout Container */}
-      <div className={`flex-1 w-full flex flex-col lg:flex-row gap-6 px-4 sm:px-8 pb-6 transition-all duration-300 relative z-10 ${
-        isNotesFullscreen ? 'pt-0' : 'pt-20 sm:pt-24'
-      } ${isRightPanelOpen ? 'max-w-[1700px] mx-auto' : 'max-w-7xl mx-auto'
-        }`}>
-        {/* Part 1: Notes Generation UI (Upper part on phone, Left part on desktop) */}
-        <main className={`flex-1 min-w-0 w-full transition-all duration-300 ${isRightPanelOpen ? 'pb-[10vh] lg:pb-0 lg:pr-[440px] xl:pr-[500px]' : ''
-          }`}>
-          
-          {globalTab === 'home' && (
-            <HomeSection
-              setGlobalTab={setGlobalTab}
-              setWorkspaceTab={setWorkspaceTab}
-              isAuthenticated={!!currentUser}
-              onOpenAuthModal={handleOpenAuthModal}
-              onLoadMockData={handleLoadMockData}
-            />
+
+      {/* Main Switcher between Public Landing page and Auth-walled Workspace */}
+      {globalTab === 'home' ? (
+        <>
+          {/* Global Background Grid and glows (Only on Home landing page) */}
+          <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            <div className="premium-grid-bg h-full w-full"></div>
+            <div className="grid-glow-effect"></div>
+            <div className="grid-glow-secondary"></div>
+          </div>
+
+          <div className="flex-1 w-full flex flex-col px-4 sm:px-8 pb-12 pt-20 sm:pt-24 max-w-7xl mx-auto transition-all duration-300 relative z-10">
+            <main className="flex-1 min-w-0 w-full">
+              <HomeSection
+                setGlobalTab={setGlobalTab}
+                setWorkspaceTab={() => {}}
+                isAuthenticated={!!currentUser}
+                onOpenAuthModal={handleOpenAuthModal}
+                onLoadMockData={handleLoadMockData}
+              />
+            </main>
+          </div>
+
+          {!isNotesFullscreen && (
+            <footer className="relative z-10 border-t border-zinc-900 bg-black py-6 text-center text-xs text-zinc-500">
+              <p>NotesMaker AI - All Rights Reserved</p>
+            </footer>
           )}
-
-          {globalTab === 'workspace' && (
-            !currentUser ? (
+        </>
+      ) : (
+        /* Workspace Section (Auth-walled) */
+        !currentUser ? (
+          <>
+            <div className="flex-1 w-full flex flex-col px-4 sm:px-8 pb-12 pt-20 sm:pt-24 max-w-7xl mx-auto relative z-10">
               <AuthWall 
                 title="Study Workspace" 
                 description="Access notes generation, summary dashboards, and video Q&A resources in your study workspace." 
@@ -902,161 +949,478 @@ function MainApp() {
                   <div className="py-12 border border-zinc-800 rounded-xl bg-zinc-950 text-center text-zinc-500">Preview of study workspace...</div>
                 </div>
               </AuthWall>
-            ) : (
-              <>
-                {/* Error Messages */}
-                {metaError && (
-                  <div className="max-w-4xl mx-auto mb-6 p-4 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
-                    <div>
-                      <span className="font-bold">Metadata Fetch Error:</span> {metaError}
-                    </div>
+            </div>
+            {!isNotesFullscreen && (
+              <footer className="relative z-10 border-t border-zinc-900 bg-black py-6 text-center text-xs text-zinc-500">
+                <p>NotesMaker AI - All Rights Reserved</p>
+              </footer>
+            )}
+          </>
+        ) : (
+          /* Authenticated Sidebar Dashboard Workspace Layout (Header rendered separately at top) */
+          <div className="flex-1 w-full flex relative min-h-screen">
+            
+            {/* Mobile Sidebar Backdrop Overlay */}
+            {isSidebarMobileOpen && (
+              <div 
+                onClick={() => setIsSidebarMobileOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-[1px] z-[79] lg:hidden mt-[53px]"
+              />
+            )}
+
+            {/* Left Fixed Full-Height Navigation Sidebar - positioned below Header */}
+            <aside className={`fixed top-[53px] bottom-0 left-0 w-64 bg-zinc-950 border-r border-zinc-900 z-[80] flex flex-col p-4 transition-transform duration-300 lg:translate-x-0 ${
+              isSidebarMobileOpen ? 'translate-x-0' : '-translate-x-full'
+            } ${isNotesFullscreen ? 'hidden lg:hidden' : ''}`}>
+              
+
+              <div className="h-px mb-4" />
+
+              {/* Sidebar Navigation */}
+              <div className="flex-1">
+                <h3 className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-500 mb-3 px-2">
+                  Workspace
+                </h3>
+                <nav className="flex flex-col gap-1.5">
+                  <button
+                    onClick={() => {
+                      setActiveWorkspaceView('generator');
+                      setIsSidebarMobileOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
+                      activeWorkspaceView === 'generator'
+                        ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                    }`}
+                  >
+                    <Cpu className="w-4 h-4" />
+                    <span>Notes Generator</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveWorkspaceView('configure');
+                      setIsSidebarMobileOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
+                      activeWorkspaceView === 'configure'
+                        ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                    }`}
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Configure Settings</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveWorkspaceView('profile');
+                      setIsSidebarMobileOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
+                      activeWorkspaceView === 'profile'
+                        ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                    }`}
+                  >
+                    <User className="w-4 h-4" />
+                    <span>User Profile</span>
+                  </button>
+                </nav>
+              </div>
+
+              {/* Live API Health Status in Footer */}
+              <div className="pt-4 border-t border-zinc-900 space-y-3">
+                {/* Console Toggle Button */}
+                <button
+                  type="button"
+                  onClick={handleToggleTerminal}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer border ${
+                    isTerminalOpen
+                      ? 'bg-orange-950/20 text-orange-400 border-orange-900/30 font-bold'
+                      : 'bg-zinc-950/30 border-zinc-900 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Terminal className="w-4 h-4" />
+                    <span>Real-time Console</span>
                   </div>
-                )}
+                  {taskStatus === 'PROCESSING' && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                    </span>
+                  )}
+                </button>
 
-                {/* If no taskResult has been processed/loaded yet, show the UrlInput directly */}
-                {!taskResult ? (
-                  <>
-                    <UrlInput
-                      url={url}
-                      setUrl={setUrl}
-                      onFetchMetadata={handleFetchMetadata}
-                      onGenerateNotes={handleGenerateNotes}
-                      onLoadMockData={handleLoadMockData}
-                      isLoadingMeta={isLoadingMeta}
-                      isGenerating={taskStatus === 'PROCESSING'}
-                      pulseTestNotes={!metadata}
-                      hasMetadata={!!metadata}
-                    />
+                <div
+                  onClick={() => {
+                    if (apiStatus === 'unhealthy') {
+                      setShowDisconnectModal(true);
+                    } else {
+                      checkHealth();
+                    }
+                  }}
+                  className="cursor-pointer flex items-center gap-2 p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-900 hover:bg-zinc-900 transition text-[10px] font-medium"
+                >
+                  {apiStatus === 'checking' && (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 text-orange-500 animate-spin" />
+                      <span className="text-zinc-500">API: Connecting...</span>
+                    </>
+                  )}
+                  {apiStatus === 'healthy' && (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                      </span>
+                      <span className="text-orange-500 font-semibold">API Connected</span>
+                    </>
+                  )}
+                  {apiStatus === 'unhealthy' && (
+                    <>
+                      <AlertCircle className="w-3.5 h-3.5 text-orange-600 animate-pulse" />
+                      <span className="text-orange-600 font-semibold">API Offline</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </aside>
 
-                    {/* Video Card Preview */}
-                    {url !== '' && metadata && showMetadata && (
-                      <VideoCard
-                        metadata={metadata}
-                        onStartGeneration={handleGenerateNotes}
-                        isGenerating={taskStatus === 'PROCESSING'}
-                        onClose={() => setShowMetadata(false)}
-                      />
-                    )}
-                  </>
-                ) : (
-                  /* Workspace Results tabs and views */
-                  <div className="space-y-6 pt-4">
-                    {/* Workspace sub-tabs switcher */}
-                    <Tabs
-                      activeTab={workspaceTab}
-                      setActiveTab={handleSetWorkspaceTab}
-                    />
-                    
-                    {/* Render active sub-tab */}
-                    {workspaceTab === 'generator' && (
-                      <div className="space-y-8">
-                        <UrlInput
-                          url={url}
-                          setUrl={setUrl}
-                          onFetchMetadata={handleFetchMetadata}
-                          onGenerateNotes={handleGenerateNotes}
-                          onLoadMockData={handleLoadMockData}
-                          isLoadingMeta={isLoadingMeta}
-                          isGenerating={taskStatus === 'PROCESSING'}
-                          pulseTestNotes={!metadata}
-                          hasMetadata={!!metadata}
-                        />
+            {/* Right Side main scrollable Workspace Content Pane - pt-[53px] offset for Header */}
+            <div className="flex-1 min-w-0 lg:pl-64 flex flex-col pt-[53px]">
+              <div className={`flex-1 w-full px-4 sm:px-8 py-6 transition-all duration-300 relative z-10 ${
+                isRightPanelOpen 
+                  ? 'max-w-[1700px] lg:mx-0 lg:ml-0 lg:mr-auto lg:pr-[370px] xl:pr-[410px]' 
+                  : 'max-w-7xl mx-auto'
+              }`}>
+                
+                <div className="bg-zinc-950/20 border border-zinc-900 rounded-2xl p-4 sm:p-6 shadow-xl w-full">
+                  {/* 1. API Configuration Settings view */}
+                  {activeWorkspaceView === 'configure' && (
+                    <div className="max-w-xl mx-auto space-y-6 py-4">
+                      <div className="space-y-1.5 pb-4 border-b border-zinc-900">
+                        <h3 className="text-lg font-bold text-zinc-50">API Key Configurations</h3>
+                        <p className="text-xs text-zinc-400">Keys are stored securely and only used for your note generations.</p>
+                      </div>
 
-                        {/* Video Card Preview */}
-                        {url !== '' && metadata && showMetadata && (
-                          <VideoCard
-                            metadata={metadata}
-                            onStartGeneration={handleGenerateNotes}
-                            isGenerating={taskStatus === 'PROCESSING'}
-                            onClose={() => setShowMetadata(false)}
-                          />
+                      {keysError && (
+                        <div className="p-3 rounded-lg bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-2.5">
+                          <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                          <span>{keysError}</span>
+                        </div>
+                      )}
+
+                      {keysSuccess && (
+                        <div className="p-3 rounded-lg bg-orange-950/20 border border-orange-500/30 text-orange-300 text-xs flex items-center gap-2.5">
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-400" />
+                          <span>{keysSuccess}</span>
+                        </div>
+                      )}
+
+                      {isFetchingKeys ? (
+                        <div className="py-12 flex flex-col items-center justify-center text-zinc-450 gap-2">
+                          <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+                          <span className="text-xs">Loading api settings...</span>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleSaveApiKeys} className="space-y-5">
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="block text-xs font-semibold text-zinc-300">Google Gemini API Key</label>
+                              <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 font-semibold underline underline-offset-2">
+                                Get Key <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            </div>
+                            <div className="relative">
+                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                              <input
+                                type={showGoogle ? 'text' : 'password'}
+                                value={googleKey}
+                                onChange={(e) => setGoogleKey(e.target.value)}
+                                placeholder="AIzaSy..."
+                                required
+                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
+                              />
+                              <button type="button" onClick={() => setShowGoogle(!showGoogle)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                {showGoogle ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="block text-xs font-semibold text-zinc-300">Groq API Key</label>
+                              <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 font-semibold underline underline-offset-2">
+                                Get Key <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            </div>
+                            <div className="relative">
+                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                              <input
+                                type={showGroq ? 'text' : 'password'}
+                                value={groqKey}
+                                onChange={(e) => setGroqKey(e.target.value)}
+                                placeholder="gsk_..."
+                                required
+                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
+                              />
+                              <button type="button" onClick={() => setShowGroq(!showGroq)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                {showGroq ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
+                          </div>
+
+                          <button type="submit" disabled={isSavingKeys} className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-sm rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg disabled:opacity-50">
+                            {isSavingKeys ? <Loader2 className="w-4 h-4 animate-spin text-zinc-950" /> : <Save className="w-4 h-4" />}
+                            <span>Save Configurations</span>
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 2. User Profile view */}
+                  {activeWorkspaceView === 'profile' && (
+                    <div className="max-w-md mx-auto space-y-6 py-4 flex flex-col items-center text-center">
+                      <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 text-orange-500 flex items-center justify-center text-xl font-black uppercase shadow-inner">
+                        {getUserDisplayName(currentUser).charAt(0)}
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-bold text-zinc-50">{getUserDisplayName(currentUser)}</h3>
+                        <p className="text-xs text-zinc-500">{currentUser.email}</p>
+                      </div>
+                      <div className="w-full pt-4 border-t border-zinc-900 mt-2 flex flex-col gap-3">
+                        <div className="flex items-center justify-between text-xs text-zinc-400 bg-zinc-900/30 p-3 rounded-lg border border-zinc-900">
+                          <span>Authentication Provider</span>
+                          <span className="font-semibold text-zinc-200">Email Address / User ID</span>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              setGlobalTab('home');
+                              await logout();
+                            } catch (err) {
+                              console.error('Logout failed:', err);
+                            }
+                          }}
+                          className="w-full py-2.5 px-4 bg-red-950/20 hover:bg-red-900/10 border border-red-950/40 hover:border-red-900/60 text-red-500 font-semibold text-sm rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out Account</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Notes Generator View (Has embedded History & Active generator panel) */}
+                  {activeWorkspaceView === 'generator' && (
+                    <div className="w-full flex flex-col xl:flex-row gap-6 items-stretch">
+                      
+                      {/* Notes History Pane (Left side inside Notes Generator view) */}
+                      <div className="w-full xl:w-72 shrink-0 flex flex-col border-b xl:border-b-0 xl:border-r border-zinc-900 pb-4 xl:pb-0 xl:pr-4 xl:sticky xl:top-[77px] xl:h-[calc(100vh-101px)] gap-2">
+                        
+                        {/* "+ New Ingestion" trigger button - Always visible */}
+                        <button
+                          onClick={() => {
+                            clearMockTimers();
+                            setUrl('');
+                            setLoadedUrl('');
+                            setLoadedNoteId(null);
+                            setMetadata(null);
+                            setTaskResult(null);
+                            setTaskStatus('IDLE');
+                            setShowMetadata(false);
+                            setShowNotes(false);
+                            setWorkspaceTab('notes');
+                            setIsViewingHistory(false);
+                            setIsMobileHistoryExpanded(false);
+                          }}
+                          className="w-full py-2.5 px-4 rounded-xl bg-zinc-100 text-zinc-950 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow hover:scale-[1.02] cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Generate</span>
+                        </button>
+
+                        {/* Mobile Expander Toggle Bar */}
+                        <button
+                          type="button"
+                          onClick={() => setIsMobileHistoryExpanded(!isMobileHistoryExpanded)}
+                          className="xl:hidden w-full flex items-center justify-between px-4 py-3 bg-zinc-900/40 border border-zinc-900 rounded-xl text-xs font-bold text-zinc-300 transition hover:bg-zinc-900/60 cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <History className="w-4 h-4 text-orange-500" />
+                            <span>Notes Ingestion History ({notesHistory.length})</span>
+                          </div>
+                          <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${isMobileHistoryExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {/* History content collapsible block */}
+                        <div className={`flex-col ${isMobileHistoryExpanded ? 'flex' : 'hidden'} xl:flex xl:flex-1 min-h-0`}>
+                          {/* Search History box */}
+                          <div className="relative mb-4 mt-2 xl:mt-0">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+                            <input
+                              type="text"
+                              placeholder="Search history..."
+                              value={historySearchQuery}
+                              onChange={(e) => setHistorySearchQuery(e.target.value)}
+                              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-4 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition"
+                            />
+                          </div>
+
+                          {/* History list */}
+                          <div className="flex-1 overflow-y-auto max-h-[300px] xl:max-h-none space-y-2.5 custom-scrollbar pr-1">
+                            {isHistoryLoading ? (
+                              <div className="py-8 flex flex-col items-center justify-center text-zinc-500 gap-2">
+                                <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                                <span className="text-[10px]">Loading history...</span>
+                              </div>
+                            ) : filteredHistory.length === 0 ? (
+                              <div className="text-center py-8 text-[10px] text-zinc-500">
+                                {historySearchQuery ? 'No results found.' : 'No notes generated yet.'}
+                              </div>
+                            ) : (
+                              filteredHistory.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className={`group relative border rounded-xl p-2.5 flex gap-2 transition cursor-pointer ${
+                                    loadedNoteId === item.id 
+                                      ? 'bg-zinc-900 border-zinc-700' 
+                                      : 'bg-zinc-900/30 border-zinc-900/80 hover:border-zinc-800 hover:bg-zinc-900/60'
+                                  }`}
+                                  onClick={() => handleSelectHistoryNote(item)}
+                                >
+                                  {/* Thumbnail preview */}
+                                  <div className="relative shrink-0 w-16 aspect-video rounded overflow-hidden bg-zinc-950 border border-zinc-900">
+                                    {item.metadata?.thumbnail ? (
+                                      <img src={item.metadata.thumbnail} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-zinc-650">
+                                        <Video className="w-3.5 h-3.5" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0 pr-5">
+                                    <h4 className="text-[11px] font-bold text-zinc-200 line-clamp-2 leading-tight group-hover:text-zinc-100 transition">
+                                      {item.metadata?.title || 'Study Notes'}
+                                    </h4>
+                                    <p className="text-[9px] text-zinc-500 truncate mt-0.5">{item.metadata?.channel || 'YouTube Video'}</p>
+                                  </div>
+
+                                  {/* Copy & Delete */}
+                                  <div className="absolute right-1.5 top-1.5 opacity-0 group-hover:opacity-100 flex flex-col gap-1 transition">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => handleCopyUrl(e, item.videoUrl, item.id)}
+                                      className="text-zinc-500 hover:text-zinc-300 p-0.5 rounded hover:bg-zinc-800 transition"
+                                    >
+                                      {copiedId === item.id ? <Check className="w-3.5 h-3.5 text-orange-400" /> : <Copy className="w-3.5 h-3.5" />}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm('Are you sure you want to delete these study notes?')) {
+                                          handleDeleteHistoryNote(item.id);
+                                        }
+                                      }}
+                                      className="text-zinc-500 hover:text-red-450 p-0.5 rounded hover:bg-zinc-800 transition"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Active Ingestion & Viewer Panel (Right side inside Notes Generator view) */}
+                      <div className="flex-1 min-w-0 xl:sticky xl:top-[77px] xl:h-[calc(100vh-101px)] flex flex-col min-h-0">
+                        {metaError && (
+                          <div className="mb-4 p-3 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
+                            <div>
+                              <span className="font-bold">Metadata Fetch Error:</span> {metaError}
+                            </div>
+                          </div>
+                        )}
+
+                        {!taskResult ? (
+                          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2 space-y-6">
+                            <UrlInput
+                              url={url}
+                              setUrl={setUrl}
+                              onFetchMetadata={handleFetchMetadata}
+                              onGenerateNotes={handleGenerateNotes}
+                              onLoadMockData={handleLoadMockData}
+                              isLoadingMeta={isLoadingMeta}
+                              isGenerating={taskStatus === 'PROCESSING'}
+                              pulseTestNotes={!metadata}
+                              hasMetadata={!!metadata}
+                            />
+                            {url !== '' && metadata && showMetadata && taskStatus !== 'PROCESSING' && (
+                              <VideoCard
+                                metadata={metadata}
+                                onStartGeneration={handleGenerateNotes}
+                                isGenerating={taskStatus === 'PROCESSING'}
+                                onClose={() => setShowMetadata(false)}
+                              />
+                            )}
+
+                            {/* Inline Loading / Generation Compiler Console */}
+                            {taskStatus === 'PROCESSING' && (
+                              <LoadingModal 
+                                isOpen={true} 
+                                inline={true} 
+                                isTerminalOpen={isTerminalOpen}
+                                onToggleTerminal={handleToggleTerminal}
+                              />
+                            )}
+
+                            {/* Empty state prompt - displayed inside scroll area only when no video preview is loaded */}
+                            {!metadata && taskStatus !== 'PROCESSING' && (
+                              <div className="text-center py-12 px-4 border border-zinc-900 bg-zinc-950/20 rounded-xl space-y-3 mt-4">
+                                <div className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-850 text-zinc-400 flex items-center justify-center mx-auto">
+                                  <Layers className="w-4 h-4" />
+                                </div>
+                                <h4 className="text-xs font-bold text-zinc-300">Study Workspace Empty</h4>
+                                <p className="text-[10px] text-zinc-550 max-w-sm mx-auto leading-relaxed">
+                                  Select a study note from your history on the left, or paste a new URL above to begin notes generation.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col h-full min-h-0 space-y-6">
+                            <div className="shrink-0">
+                              <Tabs activeTab={workspaceTab} setActiveTab={setWorkspaceTab} />
+                            </div>
+                            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2">
+                              {workspaceTab === 'notes' && <NotesViewer result={taskResult} isFullscreen={isNotesFullscreen} onToggleFullscreen={setIsNotesFullscreen} />}
+                              {workspaceTab === 'summary' && <SummaryOverview result={taskResult} metadata={metadata} consoleOpen={isTerminalOpen} />}
+                              {workspaceTab === 'qa' && <VideoQa />}
+                            </div>
+                          </div>
                         )}
                       </div>
-                    )}
-
-                    {workspaceTab === 'notes' && (
-                      <NotesViewer
-                        result={taskResult}
-                        isFullscreen={isNotesFullscreen}
-                        onToggleFullscreen={setIsNotesFullscreen}
-                      />
-                    )}
-                    
-                    {workspaceTab === 'summary' && (
-                      <SummaryOverview
-                        result={taskResult}
-                        metadata={metadata}
-                      />
-                    )}
-
-                    {workspaceTab === 'qa' && (
-                      <VideoQa />
-                    )}
-                  </div>
-                )}
-
-                {/* Empty state when workspace has no processed video (only if taskResult is null and IDLE) */}
-                {!taskResult && taskStatus !== 'PROCESSING' && (
-                    <div className="max-w-3xl mx-auto text-center py-16 px-6 rounded-xl bg-zinc-950 border border-zinc-800 my-8 space-y-4 shadow-sm">
-                      <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 flex items-center justify-center mx-auto">
-                        <Layers className="w-5 h-5" />
-                      </div>
-                      <h3 className="text-sm font-bold text-zinc-200">
-                        Study Workspace Empty
-                      </h3>
-                      <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
-                        Paste a YouTube video URL above and click "Preview Video" to fetch details, then click "Generate Notes" to start the multi-agent synthesis.
-                      </p>
                     </div>
-                )}
-              </>
-            )
-          )}
+                  )}
+                </div>
 
-        </main>
+              </div>
+            </div>
 
-        {/* Part 2: Real-time Streaming Terminal (Right Part on Windows/Desktop) */}
-        <LogTerminal
-          logs={logs}
-          isOpen={isTerminalOpen}
-          onClose={() => setIsTerminalOpen(false)}
-          onClear={() => setLogs([])}
-        />
-      </div>
-
-      {/* Api Disconnect Modal */}
-      <ApiDisconnectModal
-        isOpen={showDisconnectModal}
-        onClose={() => setShowDisconnectModal(false)}
-        onConnect={handleConnect}
-        apiStatus={apiStatus}
-      />
-
-      {/* History Sidebar */}
-      <HistorySidebar
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        history={notesHistory}
-        onSelect={handleSelectHistoryNote}
-        onDelete={handleDeleteHistoryNote}
-        isLoading={isHistoryLoading}
-        apiStatus={apiStatus}
-        checkHealth={checkHealth}
-        setShowDisconnectModal={setShowDisconnectModal}
-        isGenerating={taskStatus === 'PROCESSING'}
-        isTerminalOpen={isTerminalOpen}
-        onToggleTerminal={handleToggleTerminal}
-        logCount={logs.length}
-        onOpenAuthModal={handleOpenAuthModal}
-        onOpenApiKeySettings={() => setIsApiKeyModalOpen(true)}
-      />
-
-      {/* Footer */}
-      {!isNotesFullscreen && (
-        <footer className="relative z-10 border-t border-zinc-900 bg-black py-6 text-center text-xs text-zinc-500">
-          <p>NotesMaker AI - All Rights Reserved</p>
-        </footer>
+            {/* Part 2: Real-time Streaming Terminal */}
+            <LogTerminal
+              logs={logs}
+              isOpen={isTerminalOpen}
+              onClose={() => setIsTerminalOpen(false)}
+              onClear={() => setLogs([])}
+            />
+          </div>
+        )
       )}
     </div>
   );

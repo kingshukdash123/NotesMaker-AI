@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Search, Trash2, Copy, Check, ChevronDown, Lock, Unlock } from 'lucide-react';
+import { Terminal, Search, Trash2, Copy, Check, ChevronDown, Lock, Unlock, CrossIcon, Cross, ClosedCaption, EyeClosed, X } from 'lucide-react';
 
 export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
   const [filter, setFilter] = useState('');
@@ -45,9 +45,9 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
   return (
     <div className={`bg-black border-zinc-800 shadow-2xl flex flex-col transition-all duration-300 overflow-hidden
       /* Phone & Tablet: Fixed to lower panel */
-      fixed bottom-0 left-0 right-0 z-30 w-full h-[25vh] border-t rounded-t-xl rounded-b-none
+      fixed bottom-0 left-0 right-0 z-[160] w-full h-[25vh] border-t rounded-t-xl rounded-b-none
       /* Windows / Desktop: Fixed to right side in position */
-      lg:fixed lg:top-[76px] lg:right-6 lg:bottom-auto lg:left-auto lg:z-30 lg:w-[420px] xl:w-[480px] lg:h-[calc(100vh-150px)] lg:rounded-xl lg:border
+      lg:fixed lg:top-[76px] lg:right-6 lg:bottom-auto lg:left-auto lg:z-[160] lg:w-[350px] xl:w-[390px] lg:h-[calc(100vh-150px)] lg:rounded-xl lg:border
       /* Open/Close states */
       ${isOpen 
         ? 'translate-x-0 opacity-100 pointer-events-auto visible' 
@@ -104,14 +104,14 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
           </button>
 
           {/* Clear Logs */}
-          <button
+          {/* <button
             type="button"
             onClick={onClear}
             className="p-1 text-zinc-400 hover:text-orange-500 hover:bg-zinc-900 rounded transition"
             title="Clear Terminal"
           >
             <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          </button> */}
 
           {/* Close / Minimize */}
           <button
@@ -120,7 +120,7 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
             className="p-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 rounded transition"
             title="Close Terminal"
           >
-            <ChevronDown className="w-4 h-4" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
