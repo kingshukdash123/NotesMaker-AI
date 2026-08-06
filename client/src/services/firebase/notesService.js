@@ -118,3 +118,48 @@ export async function getUserApiKeys(userId) {
   
   return { googleApiKey: '', groqApiKey: '' };
 }
+
+/**
+ * Extracts the 11-character YouTube video ID from a URL.
+ * @param {string} url - YouTube URL
+ * @returns {string} YouTube video ID or empty string
+ */
+export function extractYoutubeVideoId(url) {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : '';
+}
+
+/**
+ * Retrieves a single note document belonging to the user matching a YouTube video ID.
+ * @param {string} userId - Auth user ID
+ * @param {string} videoId - YouTube video ID
+ * @returns {Promise<Object|null>} The note document or null
+ */
+export async function getNoteByVideoId(userId, videoId) {
+  if (!userId || !videoId) return null;
+  const notesRef = collection(db, 'notes');
+  const q = query(
+    notesRef,
+    where('userId', '==', userId)
+  );
+  
+  const querySnapshot = await getDocs(q);
+  let foundNote = null;
+  
+  querySnapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const parsedId = extractYoutubeVideoId(data.videoUrl);
+    if (parsedId === videoId) {
+      const createdAtDate = data.createdAt ? data.createdAt.toDate() : new Date();
+      foundNote = {
+        id: docSnap.id,
+        ...data,
+        createdAtDate
+      };
+    }
+  });
+  
+  return foundNote;
+}

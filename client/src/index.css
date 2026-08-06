@@ -263,3 +263,88 @@
 .animate-pulseGlow {
   animation: pulseGlow 2s infinite ease-in-out;
 }
+
+/* Premium Grid Background */
+.premium-grid-bg {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 35px 35px;
+  position: absolute;
+  inset: 0;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 85%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes gridLightSweep {
+  0% {
+    transform: translate(-25%, -25%) rotate(0deg);
+  }
+  50% {
+    transform: translate(25%, 25%) rotate(180deg);
+  }
+  100% {
+    transform: translate(-25%, -25%) rotate(360deg);
+  }
+}
+
+.grid-glow-effect {
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.03) 40%, transparent 70%);
+  filter: blur(50px);
+  animation: gridLightSweep 20s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.grid-glow-secondary {
+  position: absolute;
+  bottom: 10%;
+  right: 15%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+  filter: blur(60px);
+  animation: gridLightSweep 25s infinite ease-in-out reverse;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes gridLineSweep {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+.grid-sweep-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.25), transparent);
+  animation: gridLineSweep 8s infinite linear;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+.typing-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 15px;
+  background-color: #fafafa;
+  margin-left: 4px;
+  animation: blink 0.8s infinite;
+  vertical-align: middle;
+}
