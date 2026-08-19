@@ -1,15 +1,15 @@
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
-  deleteDoc, 
-  doc, 
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  deleteDoc,
+  doc,
   getDoc,
   setDoc,
-  serverTimestamp 
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 
@@ -23,7 +23,7 @@ import { db } from './firebaseConfig';
  */
 export async function saveNotes(userId, videoUrl, metadata, result) {
   if (!userId) throw new Error('User must be logged in to save notes.');
-  
+
   const notesRef = collection(db, 'notes');
   const docRef = await addDoc(notesRef, {
     userId,
@@ -32,7 +32,7 @@ export async function saveNotes(userId, videoUrl, metadata, result) {
     result: result || {},
     createdAt: serverTimestamp()
   });
-  
+
   return docRef.id;
 }
 
@@ -43,29 +43,29 @@ export async function saveNotes(userId, videoUrl, metadata, result) {
  */
 export async function getUserNotes(userId) {
   if (!userId) return [];
-  
+
   const notesRef = collection(db, 'notes');
   const q = query(
-    notesRef, 
-    where('userId', '==', userId), 
+    notesRef,
+    where('userId', '==', userId),
     orderBy('createdAt', 'desc')
   );
-  
+
   const querySnapshot = await getDocs(q);
   const notes = [];
-  
+
   querySnapshot.forEach((docSnap) => {
     const data = docSnap.data();
     // Convert Firestore Timestamp to JS Date if available
     const createdAtDate = data.createdAt ? data.createdAt.toDate() : new Date();
-    
+
     notes.push({
       id: docSnap.id,
       ...data,
       createdAtDate
     });
   });
-  
+
   return notes;
 }
 
@@ -87,7 +87,7 @@ export async function deleteNotes(noteId) {
  */
 export async function saveUserApiKeys(userId, googleApiKey) {
   if (!userId) throw new Error('User must be logged in to save API keys.');
-  
+
   const docRef = doc(db, 'user_api_keys', userId);
   await setDoc(docRef, {
     googleApiKey: googleApiKey || '',
@@ -102,17 +102,17 @@ export async function saveUserApiKeys(userId, googleApiKey) {
  */
 export async function getUserApiKeys(userId) {
   if (!userId) return { googleApiKey: '' };
-  
+
   const docRef = doc(db, 'user_api_keys', userId);
   const docSnap = await getDoc(docRef);
-  
+
   if (docSnap.exists()) {
     const data = docSnap.data();
     return {
       googleApiKey: data.googleApiKey || ''
     };
   }
-  
+
   return { googleApiKey: '' };
 }
 
@@ -141,10 +141,10 @@ export async function getNoteByVideoId(userId, videoId) {
     notesRef,
     where('userId', '==', userId)
   );
-  
+
   const querySnapshot = await getDocs(q);
   let foundNote = null;
-  
+
   querySnapshot.forEach((docSnap) => {
     const data = docSnap.data();
     const parsedId = extractYoutubeVideoId(data.videoUrl);
@@ -157,6 +157,6 @@ export async function getNoteByVideoId(userId, videoId) {
       };
     }
   });
-  
+
   return foundNote;
 }
