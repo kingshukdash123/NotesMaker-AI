@@ -4,9 +4,8 @@ import operator
 from model.metadata import VideoMetadata
 from model.transcript import TranscriptSegment
 from model.outline import LectureOutline
-from model.execution import ExecutionPlan
-from model.notes import GeneratedSection, DraftNotes, FinalNotes
-from model.review import ReviewResult
+from model.execution import ExecutionPlan, ChapterPlan
+from model.notes import GeneratedSection, DraftNotes
 
 
 class NotesState(TypedDict):
@@ -23,11 +22,10 @@ class NotesState(TypedDict):
     # Merged Transcript
     merged_transcript: List[TranscriptSegment]
 
-    # Chunks
-    # chunks: List[Chunk]
-
-    # Chunk Summaries
-    # chunk_summaries: List[ChunkSummary]
+    # Sequential Loop State
+    chapters: List[ChapterPlan]
+    current_chapter_index: int
+    previous_notes_content: str
 
     # Lecture Outline
     lecture_outline: LectureOutline
@@ -40,16 +38,6 @@ class NotesState(TypedDict):
 
     # Draft
     draft_notes: DraftNotes
-
-    # Review_result
-    review_result: ReviewResult
-
-    # Final
-    final_notes: FinalNotes
-
-    # Graph Status
-    success: bool
-    error: Optional[str]
 
     # User API Keys
     google_api_key: Optional[str]

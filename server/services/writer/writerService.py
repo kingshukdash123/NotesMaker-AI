@@ -3,79 +3,79 @@ from langchain_core.prompts import ChatPromptTemplate
 from services.llm.service import LLMService
 from utils.exceptions import NotesMakerError
 from utils.logger import get_logger
-from model.execution import SectionPlan
-from model.metadata import VideoMetadata
+from utils.retry import call_llm_with_retry
+from model.execution import ChapterPlan
 from model.outline import LectureOutline
-from model.notes import GeneratedSection, GeneratedSectionModel
-from prompts.section_writer_prompt import SECTION_WRITER_PROMPT
+from model.notes import GeneratedSection, ChapterNotesModel
+from prompts.chapter_writer_prompt import CHAPTER_WRITER_PROMPT
 
 logger = get_logger(__name__)
 
 
-class SectionWriterService:
+class ChapterWriterService:
     """
-    Service responsible for generating a single lecture section.
+    Service responsible for generating notes for a chapter (a batch of sections).
     """
 
     def __init__(self, google_api_key=None, groq_api_key=None):
 
-        logger.info("Initializing SectionWriterService.")
+        logger.info("Initializing ChapterWriterService.")
 
         self.base_llm = LLMService.get_llm(google_api_key, groq_api_key)
         
         self.llm = self.base_llm.with_structured_output(
-            GeneratedSectionModel
+            ChapterNotesModel
         )
         self.prompt = ChatPromptTemplate.from_template(
-            SECTION_WRITER_PROMPT
+            CHAPTER_WRITER_PROMPT
         )
 
     def run(
         self,
-        # metadata: VideoMetadata,
-        # transcript: str,
         lecture_outline: LectureOutline,
-        section_plan: SectionPlan,
-        research_results: str | None,
-    ) -> GeneratedSection:
+        chapter_plan: ChapterPlan,
+        transcript: str,
+        previous_notes: str,
+    ) -> list[GeneratedSection]:
 
         try:
-
             logger.info(
-                "Generating section %d: %s",
-                section_plan["section_id"],
-                section_plan["title"],
+                "Generating chapter %d: writing sections %s",
+                chapter_plan["chapter_id"],
+                [s["section_id"] for s in chapter_plan["sections"]],
             )
 
             messages = self.prompt.invoke(
                 {
-                    # "metadata": metadata,
-                    # "transcript": transcript,
                     "outline": lecture_outline,
-                    "section": section_plan,
-                    "research": research_results or "No external research available.",
+                    "sections": chapter_plan["sections"],
+                    "transcript": transcript,
+                    "previous_notes": previous_notes or "No previous notes.",
                 }
             )
 
-            generated_section_model = self.llm.invoke(messages)
+            chapter_notes_model = call_llm_with_retry(self.llm, messages)
 
-            generated_section = generated_section_model.model_dump()
+            generated_sections = [
+                sec.model_dump() for sec in chapter_notes_model.sections
+            ]
 
             logger.info(
-                "Section %d generated successfully.",
-                section_plan["section_id"],
+                "Chapter %d generated successfully with %d sections.",
+                chapter_plan["chapter_id"],
+                len(generated_sections),
             )
 
-            return generated_section
+            return generated_sections
 
         except Exception as e:
 
             logger.exception(
-                "Section generation failed."
+                "Chapter generation failed."
             )
 
             raise NotesMakerError(
-                message="Failed to generate lecture section.",
-                code="SECTION_WRITER_SERVICE_ERROR",
+                message="Failed to generate chapter notes.",
+                code="CHAPTER_WRITER_SERVICE_ERROR",
                 status_code=500,
             ) from e

@@ -6,7 +6,8 @@ class SectionPlan(TypedDict):
     section_id: int
     title: str
     topics: List[str]
-    # chunk_ids: List[int]
+    start_segment_id: int
+    end_segment_id: int
     research_required: bool
     research_query: NotRequired[Optional[List[str]]]
     diagram_required: bool
@@ -21,10 +22,17 @@ class ExecutionPlan(TypedDict):
     sections: List[SectionPlan]
 
 
+class ChapterPlan(TypedDict):
+    chapter_id: int
+    sections: List[SectionPlan]
+
+
 class SectionPlanModel(BaseModel):
     section_id: int
     title: str
     topics: List[str]
+    start_segment_id: int
+    end_segment_id: int
     research_required: bool
     research_query: Optional[List[str]] = Field(default=None)
     diagram_required: bool

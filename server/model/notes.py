@@ -24,13 +24,6 @@ class DraftNotes(TypedDict):
     sections: List[GeneratedSection]
 
 
-class FinalNotes(TypedDict):
-    """Final, reviewed and polished lecture notes."""
-    title: str
-    content: str
-    sections: List[GeneratedSection]
-
-
 class ReferenceModel(BaseModel):
     title: str
     url: str
@@ -42,3 +35,7 @@ class GeneratedSectionModel(BaseModel):
     content: str
     word_count: int
     references: List[ReferenceModel]
+
+
+class ChapterNotesModel(BaseModel):
+    sections: List[GeneratedSectionModel]

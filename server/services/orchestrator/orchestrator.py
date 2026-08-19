@@ -1,7 +1,11 @@
+from langchain_core.prompts import ChatPromptTemplate
+
+from services.llm.service import LLMService
+from model.orchestration import OrchestrationResultModel
+from prompts.orchestrator_prompt import ORCHESTRATOR_PROMPT
 from utils.exceptions import NotesMakerError
 from utils.logger import get_logger
-from services.orchestrator.execution import ExecutionPlanner
-from services.orchestrator.outline import OutlineGenerator
+from utils.retry import call_llm_with_retry
 
 logger = get_logger(__name__)
 
@@ -9,24 +13,30 @@ logger = get_logger(__name__)
 class OrchestratorService:
 
     def __init__(self, google_api_key=None, groq_api_key=None):
-        self.outline_generator = OutlineGenerator(google_api_key, groq_api_key)
-        self.execution_planner = ExecutionPlanner(google_api_key, groq_api_key)
+        self.llm = LLMService.get_llm(google_api_key, groq_api_key)
+        self.prompt = ChatPromptTemplate.from_template(ORCHESTRATOR_PROMPT)
 
     def run(self, metadata, transcript):
 
-        logger.info("Starting orchestration service.")
+        logger.info("Starting orchestration service in a single API call.")
 
         try:
-            outline = self.outline_generator.generate(
-                metadata,
-                transcript,
+            messages = self.prompt.invoke(
+                {
+                    "metadata": metadata,
+                    "transcript": transcript,
+                }
             )
 
-            execution_plan = self.execution_planner.generate(
-                metadata,
-                transcript,
-                outline,
+            structured_llm = self.llm.with_structured_output(
+                OrchestrationResultModel
             )
+
+            orchestration_result_model = call_llm_with_retry(structured_llm, messages)
+            orchestration_result = orchestration_result_model.model_dump()
+
+            outline = orchestration_result["outline"]
+            execution_plan = orchestration_result["execution_plan"]
 
             logger.info("Orchestration service completed successfully.")
 

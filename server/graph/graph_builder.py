@@ -2,78 +2,13 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import RetryPolicy
 
 from state.state import NotesState
-from state.sectionState import SectionState
+from utils.decorators import wrap_node
 
 from nodes.transcript_metadata_generator import transcript_metadata_generator
 from nodes.transcript_merger import transcript_merger
 from nodes.orchestrator import orchestrator
-from nodes.fanout import fanout
-from nodes.sectionWriter import section_writer
-from nodes.research import research
-from nodes.research_router import research_router
+from nodes.chapter_worker import chapter_worker_node, chapter_router
 from nodes.reducer import reducer
-
-from utils.logger import current_task_id
-
-# ==========================
-# Task ID Context Propagation Wrapper
-# ==========================
-
-
-def wrap_node(node_func):
-    def wrapper(state):
-        task_id = state.get("task_id") if isinstance(state, dict) else None
-        token = None
-        if task_id:
-            token = current_task_id.set(task_id)
-        try:
-            return node_func(state)
-        finally:
-            if token:
-                current_task_id.reset(token)
-    return wrapper
-
-# ==========================
-# Section Worker Subgraph
-# ==========================
-
-section_builder = StateGraph(SectionState)
-
-section_builder.add_node(
-    "research",
-    wrap_node(research),
-    retry_policy=RetryPolicy(max_attempts=5, backoff_factor=2.0),
-)
-
-section_builder.add_node(
-    "section_writer",
-    wrap_node(section_writer),
-    retry_policy=RetryPolicy(max_attempts=5, backoff_factor=2.0),
-)
-
-# Conditional Routing from START
-section_builder.add_conditional_edges(
-    START,
-    wrap_node(research_router),
-    ["research", "section_writer"]
-)
-
-# Research -> Section Writer
-section_builder.add_edge("research", "section_writer")
-
-# Section Writer -> END
-section_builder.add_edge("section_writer", END)
-
-section_graph = section_builder.compile()
-
-
-# Node function to wrap the subgraph and prevent parent state pollution
-def section_worker_node(state: SectionState):
-    subgraph_state = section_graph.invoke(state)
-    return {
-        "generated_sections": subgraph_state.get("generated_sections", [])
-    }
-
 
 # ==========================
 # Main Graph Builder
@@ -101,8 +36,9 @@ builder.add_node(
 )
 
 builder.add_node(
-    "section_worker",
-    wrap_node(section_worker_node),
+    "chapter_worker",
+    wrap_node(chapter_worker_node),
+    retry_policy=RetryPolicy(max_attempts=5, backoff_factor=2.0),
 )
 
 builder.add_node(
@@ -129,23 +65,19 @@ builder.add_edge(
     "orchestrator",
 )
 
-# ==========================
-# Parallel Fan-out
-# ==========================
+# Run chapters sequentially
+builder.add_edge(
+    "orchestrator",
+    "chapter_worker",
+)
 
 builder.add_conditional_edges(
-    "orchestrator",
-    wrap_node(fanout),
-    ["section_worker"],
+    "chapter_worker",
+    wrap_node(chapter_router),
+    ["chapter_worker", "reducer"],
 )
 
-# Wait for all Section Workers
-builder.add_edge(
-    "section_worker",
-    "reducer",
-)
-
-# Temporary End
+# Reducer -> END
 builder.add_edge(
     "reducer",
     END,

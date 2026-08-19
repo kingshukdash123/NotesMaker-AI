@@ -16,15 +16,43 @@ def orchestrator(state: NotesState) -> NotesState:
             groq_api_key=state.get("groq_api_key"),
         )
 
+        # Format transcript as plain text to eliminate JSON formatting token overhead
+        formatted_transcript = "\n".join(
+            f"[{s['id']}] {s['text']}" for s in state["merged_transcript"]
+        )
+
         outline, execution_plan = service.run(
             metadata=state["metadata"],
-            transcript=state["merged_transcript"],
+            transcript=formatted_transcript,
         )
 
         state["lecture_outline"] = outline
         state["execution_plan"] = execution_plan
 
-        logger.info("Orchestrator node completed successfully.")
+        # Group sections into chapters of size 3
+        sections = execution_plan.get("sections", [])
+        chapters = []
+        batch_size = 3
+        for i in range(0, len(sections), batch_size):
+            chapter_sections = sections[i : i + batch_size]
+            chapter_id = (i // batch_size) + 1
+            chapters.append(
+                {
+                    "chapter_id": chapter_id,
+                    "sections": chapter_sections,
+                }
+            )
+        
+        state["chapters"] = chapters
+        state["current_chapter_index"] = 0
+        state["previous_notes_content"] = ""
+        state["generated_sections"] = []  # Initialize empty list to accumulate sections
+
+        logger.info(
+            "Orchestrator node completed successfully. Grouped %d sections into %d chapters.",
+            len(sections),
+            len(chapters),
+        )
 
         return state
 

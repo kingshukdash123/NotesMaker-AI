@@ -1,3 +1,5 @@
+import base64
+import gzip
 import json
 import httpx
 from config.settings import settings
@@ -53,6 +55,7 @@ async def get_user_api_keys(user_id: str, id_token: str = None) -> tuple[str | N
 def get_cached_transcript(video_id: str) -> list | None:
     """
     Checks Firestore for a cached transcript of the given video_id.
+    Supports both legacy raw JSON and compressed base64+gzip strings.
     """
     project_id = getattr(settings, "FIREBASE_PROJECT_ID", None)
     if not project_id:
@@ -69,7 +72,19 @@ def get_cached_transcript(video_id: str) -> list | None:
                 fields = doc_data.get("fields", {})
                 transcript_json = fields.get("transcript_json", {}).get("stringValue")
                 if transcript_json:
-                    transcript = json.loads(transcript_json)
+                    try:
+                        # 1. Try parsing as raw JSON (backward compatibility)
+                        transcript = json.loads(transcript_json)
+                    except json.JSONDecodeError:
+                        # 2. If that fails, assume it is base64-encoded, gzipped data
+                        try:
+                            compressed_data = base64.b64decode(transcript_json)
+                            decompressed_data = gzip.decompress(compressed_data)
+                            transcript = json.loads(decompressed_data.decode("utf-8"))
+                        except Exception as decompress_err:
+                            logger.exception("Failed to decompress cached transcript for video %s", video_id)
+                            return None
+                    
                     logger.info("Successfully retrieved cached transcript for video %s from Firestore.", video_id)
                     return transcript
             elif response.status_code == 404:
@@ -84,8 +99,8 @@ def get_cached_transcript(video_id: str) -> list | None:
 def save_cached_transcript(video_id: str, transcript: list) -> None:
     """
     Saves a transcript to Firestore transcripts collection.
+    Compresses it using base64+gzip to stay under the 1MB Firestore document limit.
     """
-    import json
     project_id = getattr(settings, "FIREBASE_PROJECT_ID", None)
     if not project_id:
         logger.warning("FIREBASE_PROJECT_ID is not configured. Cannot save transcript cache.")
@@ -93,21 +108,27 @@ def save_cached_transcript(video_id: str, transcript: list) -> None:
 
     url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/transcripts/{video_id}"
     
-    # Construct request payload for PATCH
-    payload = {
-        "fields": {
-            "video_id": {"stringValue": video_id},
-            "transcript_json": {"stringValue": json.dumps(transcript)},
-        }
-    }
-    
     try:
         logger.info("Saving transcript to Firestore cache for video: %s", video_id)
+        
+        # Compress the transcript JSON using gzip + base64 to save space
+        json_str = json.dumps(transcript)
+        compressed_data = gzip.compress(json_str.encode("utf-8"))
+        base64_str = base64.b64encode(compressed_data).decode("utf-8")
+        
+        # Construct request payload
+        payload = {
+            "fields": {
+                "video_id": {"stringValue": video_id},
+                "transcript_json": {"stringValue": base64_str},
+            }
+        }
+        
         with httpx.Client() as client:
             # PATCH creates or overwrites the document at transcripts/{video_id}
             response = client.patch(url, json=payload, timeout=15.0)
             if response.status_code == 200:
-                logger.info("Successfully cached transcript for video %s in Firestore transcripts collection.", video_id)
+                logger.info("Successfully cached transcript for video %s in Firestore transcripts collection (compressed).", video_id)
             else:
                 logger.error("Failed to save transcript to Firestore. Status: %d, Response: %s", response.status_code, response.text)
     except Exception as e:
