@@ -87,7 +87,6 @@ def route_to_chapters(state: NotesState) -> list[Send]:
                     "chapter_plan": chapter,
                     "transcript_segments": state["merged_transcript"],
                     "google_api_key": state.get("google_api_key"),
-                    "groq_api_key": state.get("groq_api_key"),
                     "task_id": state.get("task_id"),
                     "audience": audience,
                     "note_style": note_style,

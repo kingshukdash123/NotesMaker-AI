@@ -45,8 +45,7 @@ class GenerateNotesRequest(BaseModel):
 async def run_pipeline_task(
     task_id: str,
     url: str,
-    google_api_key: Optional[str] = None,
-    groq_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None
 ):
     """
     Asynchronously executes the LangGraph notes generation pipeline,
@@ -61,7 +60,6 @@ async def run_pipeline_task(
         result = await graph.ainvoke({
             "youtube_url": url,
             "google_api_key": google_api_key,
-            "groq_api_key": groq_api_key,
             "task_id": task_id,
         })
         
@@ -125,11 +123,10 @@ async def generate_notes(
         
     # Fetch user API keys from Firestore
     google_api_key = None
-    groq_api_key = None
     if x_user_id:
         try:
             from services.firebase.firestore import get_user_api_keys
-            google_api_key, groq_api_key = await get_user_api_keys(x_user_id, id_token)
+            google_api_key = await get_user_api_keys(x_user_id, id_token)
         except Exception as e:
             logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
     
@@ -153,7 +150,7 @@ async def generate_notes(
     # Run the pipeline in the background using asyncio.create_task.
     # Unlike FastAPI BackgroundTasks, create_task runs completely concurrently
     # and plays perfectly with standard contextvars.
-    asyncio.create_task(run_pipeline_task(task_id, url, google_api_key, groq_api_key))
+    asyncio.create_task(run_pipeline_task(task_id, url, google_api_key))
     
     logger.info(f"Dispatched background task {task_id} for URL {url}")
     return {"task_id": task_id, "status": "PROCESSING"}

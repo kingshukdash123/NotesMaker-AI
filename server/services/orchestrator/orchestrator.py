@@ -12,13 +12,13 @@ logger = get_logger(__name__)
 
 class OrchestratorService:
 
-    def __init__(self, google_api_key=None, groq_api_key=None):
-        self.llm = LLMService.get_llm(google_api_key, groq_api_key)
+    def __init__(self, google_api_key=None):
+        self.llm = LLMService.get_llm(google_api_key)
         self.prompt = ChatPromptTemplate.from_template(ORCHESTRATOR_PROMPT)
 
     def run(self, metadata, transcript):
 
-        logger.info("Starting orchestration service in a single API call.")
+        logger.info("Structuring lecture curriculum.")
 
         try:
             messages = self.prompt.invoke(
@@ -38,12 +38,12 @@ class OrchestratorService:
             outline = orchestration_result["outline"]
             execution_plan = orchestration_result["execution_plan"]
 
-            logger.info("Orchestration service completed successfully.")
+            logger.info("Lecture curriculum structured successfully.")
 
             return outline, execution_plan
 
         except Exception as e:
-            logger.exception("Orchestration service failed.")
+            logger.exception("Failed to structure lecture curriculum.")
 
             raise NotesMakerError(
                 message="Failed to generate lecture outline and execution plan.",

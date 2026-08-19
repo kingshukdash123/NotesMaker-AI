@@ -17,11 +17,11 @@ class ChapterWriterService:
     Service responsible for generating notes for a chapter (a batch of sections).
     """
 
-    def __init__(self, google_api_key=None, groq_api_key=None):
+    def __init__(self, google_api_key=None):
 
-        logger.info("Initializing ChapterWriterService.")
+        logger.info("Initializing study notes generation service.")
 
-        self.base_llm = LLMService.get_llm(google_api_key, groq_api_key)
+        self.base_llm = LLMService.get_llm(google_api_key)
         
         self.llm = self.base_llm.with_structured_output(
             ChapterNotesModel

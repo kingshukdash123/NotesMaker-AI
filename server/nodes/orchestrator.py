@@ -8,12 +8,11 @@ logger = get_logger(__name__)
 
 def orchestrator(state: NotesState) -> NotesState:
 
-    logger.info("Starting Orchestrator node.")
+    logger.info("Analyzing curriculum and planning lecture outline.")
 
     try:
         service = OrchestratorService(
             google_api_key=state.get("google_api_key"),
-            groq_api_key=state.get("groq_api_key"),
         )
 
         # Format transcript as plain text to eliminate JSON formatting token overhead
@@ -47,7 +46,7 @@ def orchestrator(state: NotesState) -> NotesState:
         state["generated_sections"] = []  # Initialize empty list to accumulate sections
 
         logger.info(
-            "Orchestrator node completed successfully. Grouped %d sections into %d chapters.",
+            "Curriculum outline planned successfully. Structured %d sections into %d chapters.",
             len(sections),
             len(chapters),
         )
@@ -55,7 +54,7 @@ def orchestrator(state: NotesState) -> NotesState:
         return state
 
     except Exception as e:
-        logger.exception("Orchestrator node failed.")
+        logger.exception("Curriculum planning failed.")
 
         raise NotesMakerError(
             message="Failed to generate lecture outline and execution plan.",

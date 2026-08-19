@@ -1,3 +1,4 @@
+import re
 import os
 import logging
 import logging.handlers
@@ -39,7 +40,29 @@ class TaskLogHandler(logging.Handler):
             try:
                 from app import tasks
                 if task_id in tasks:
+                    # Strip exception info to prevent raw traceback leaks
+                    record.exc_info = None
+                    record.exc_text = None
+                    
                     msg = self.format(record)
+                    
+                    # Sanitize technical terms to protect privacy
+                    replacements = {
+                        "google": "provider",
+                        "gemini": "model",
+                        "groq": "fallback provider",
+                        "firebase": "database",
+                        "firestore": "database cache",
+                        "oembed": "video API",
+                        "youtubetranscriptapi": "transcript source",
+                        "transcriptapi.com": "transcript service",
+                        "langgraph": "pipeline",
+                        "tavily": "search service",
+                    }
+                    
+                    for tech_word, generic_word in replacements.items():
+                        msg = re.sub(re.escape(tech_word), generic_word, msg, flags=re.IGNORECASE)
+                        
                     if "logs" not in tasks[task_id]:
                         tasks[task_id]["logs"] = []
                     tasks[task_id]["logs"].append(msg)

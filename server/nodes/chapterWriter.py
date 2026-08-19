@@ -13,7 +13,7 @@ def chapter_writer(state: ChapterState) -> dict:
 
     chapter_id = state["chapter_plan"]["chapter_id"]
     logger.info(
-        "Starting Chapter Writer for chapter %d.",
+        "Generating detailed study notes for chapter %d.",
         chapter_id,
     )
 
@@ -47,7 +47,6 @@ def chapter_writer(state: ChapterState) -> dict:
         # 3. Call the ChapterWriterService
         service = ChapterWriterService(
             google_api_key=state.get("google_api_key"),
-            groq_api_key=state.get("groq_api_key"),
         )
 
         generated_sections = service.run(
@@ -59,7 +58,7 @@ def chapter_writer(state: ChapterState) -> dict:
         )
 
         logger.info(
-            "Chapter Writer completed for chapter %d.",
+            "Study notes completed for chapter %d.",
             chapter_id,
         )
 
@@ -69,7 +68,7 @@ def chapter_writer(state: ChapterState) -> dict:
 
     except Exception as e:
 
-        logger.exception("Chapter Writer node failed.")
+        logger.exception("Generation of study notes failed.")
 
         raise NotesMakerError(
             message="Failed to generate chapter notes.",

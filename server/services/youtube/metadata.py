@@ -20,7 +20,7 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
     api_key = os.getenv("TRANSCRIPT_API_KEY")
 
     if is_cloud and api_key:
-        logger.info(f"Fetching metadata using TranscriptAPI.com for video: {video_id}")
+        logger.info("Fetching metadata from metadata service.")
         try:
             url = f"https://transcriptapi.com/api/v2/youtube/info?video_url={video_id}"
             headers = {"Authorization": f"Bearer {api_key}"}
@@ -36,21 +36,21 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
                         "thumbnail": api_metadata.get("thumbnail_url", f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"),
                         "available_languages": data.get("available_languages", []),
                     }
-                    logger.info("Video metadata and languages fetched successfully from TranscriptAPI.")
+                    logger.info("Video metadata and languages fetched successfully.")
                     return metadata
                 else:
-                    logger.error(f"TranscriptAPI info failed with status {response.status_code}: {response.text}")
+                    logger.error(f"Metadata service info failed with status {response.status_code}")
         except Exception as err:
-            logger.exception(f"TranscriptAPI info fetch failed: {str(err)}")
+            logger.exception("Metadata service info fetch failed.")
         
         raise NotesMakerError(
-            message="Failed to fetch video metadata from TranscriptAPI.",
+            message="Failed to fetch video metadata from metadata service.",
             code="METADATA_ERROR",
             status_code=500,
         )
 
     # Local development fallback
-    logger.info("Local environment: Fetching video metadata using oEmbed...")
+    logger.info("Fetching video metadata...")
     metadata: VideoMetadata = {
         "video_id": video_id,
         "title": "YouTube Video",
@@ -69,15 +69,15 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
                 metadata["title"] = data.get("title", "YouTube Video")
                 metadata["channel"] = data.get("author_name", "YouTube Creator")
                 metadata["thumbnail"] = data.get("thumbnail_url", f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg")
-                logger.info("Basic metadata fetched successfully using YouTube oEmbed.")
+                logger.info("Basic metadata fetched successfully.")
             else:
-                logger.warning(f"oEmbed API query failed with status code {response.status_code}")
+                logger.warning(f"Metadata API query failed with status code {response.status_code}")
     except Exception as err:
-        logger.warning(f"oEmbed fetch failed: {str(err)}")
+        logger.warning("Metadata fetch failed.")
 
     # 2. Fetch available languages via local YouTubeTranscriptApi
     try:
-        logger.info("Fetching available transcript languages locally...")
+        logger.info("Fetching available languages locally...")
         transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
         available_languages = []
         for t in transcript_list:
@@ -86,10 +86,10 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
                 "name": t.language
             })
         metadata["available_languages"] = available_languages
-        logger.info(f"Locally found {len(available_languages)} available transcript language(s).")
+        logger.info(f"Locally found {len(available_languages)} available language(s).")
     except (TranscriptsDisabled, NoTranscriptFound) as e:
-        logger.warning(f"No transcripts found locally for {video_id}: {str(e)}")
+        logger.warning("No transcripts found locally.")
     except Exception as err:
-        logger.warning(f"Local transcript listing failed: {str(err)}")
+        logger.warning("Local listing failed.")
 
     return metadata

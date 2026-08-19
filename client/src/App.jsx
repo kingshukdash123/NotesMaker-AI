@@ -14,7 +14,7 @@ import SummaryOverview from './components/SummaryOverview';
 import LoadingModal from './components/LoadingModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs, API_BASE_URL } from './services/server/api';
-import { saveNotes, getUserNotes, deleteNotes, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId } from './services/firebase/notesService';
+import { saveNotes, getUserNotes, deleteNotes, saveUserApiKeys, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId } from './services/firebase/notesService';
 import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown } from 'lucide-react';
 
 const mapErrorMessage = (errorMsg) => {
@@ -29,7 +29,7 @@ const mapErrorMessage = (errorMsg) => {
     msg.includes('resource_exhausted') ||
     msg.includes('quota')
   ) {
-    return 'API Rate Limit reached. Please check your Google Gemini / Groq API key quota limits.';
+    return 'API Rate Limit reached. Please check your Google Gemini API key quota limits.';
   }
 
   // 2. Failed to Fetch Metadata
@@ -237,10 +237,12 @@ function MainApp() {
 
   // 3. API Key Settings States (Embedded Settings form)
   const [activeWorkspaceView, setActiveWorkspaceView] = useState('generator'); // 'generator' | 'configure' | 'profile'
-  const [googleKey, setGoogleKey] = useState('');
-  const [groqKey, setGroqKey] = useState('');
-  const [showGoogle, setShowGoogle] = useState(false);
-  const [showGroq, setShowGroq] = useState(false);
+  const [googleKey1, setGoogleKey1] = useState('');
+  const [googleKey2, setGoogleKey2] = useState('');
+  const [googleKey3, setGoogleKey3] = useState('');
+  const [showGoogle1, setShowGoogle1] = useState(false);
+  const [showGoogle2, setShowGoogle2] = useState(false);
+  const [showGoogle3, setShowGoogle3] = useState(false);
   const [isSavingKeys, setIsSavingKeys] = useState(false);
   const [isFetchingKeys, setIsFetchingKeys] = useState(false);
   const [keysError, setKeysError] = useState('');
@@ -526,18 +528,6 @@ function MainApp() {
     if (!currentUser) {
       handleOpenAuthModal('login', 'Please sign in to generate structured study notes.');
       return;
-    }
-
-    // Check if API keys are set in Firestore
-    try {
-      const keys = await getUserApiKeys(currentUser.uid);
-      if (!keys.googleApiKey || !keys.groqApiKey) {
-        setApiKeyNotice('Please configure your Google Gemini and Groq API keys to generate study notes.');
-        setIsApiKeyModalOpen(true);
-        return;
-      }
-    } catch (err) {
-      console.error('Failed to verify API keys in Firestore:', err);
     }
 
     // Reset task state
@@ -829,8 +819,10 @@ Where:
         setKeysSuccess('');
         try {
           const keys = await getUserApiKeys(currentUser.uid);
-          setGoogleKey(keys.googleApiKey || '');
-          setGroqKey(keys.groqApiKey || '');
+          const splitKeys = (keys.googleApiKey || '').split(',');
+          setGoogleKey1(splitKeys[0] || '');
+          setGoogleKey2(splitKeys[1] || '');
+          setGoogleKey3(splitKeys[2] || '');
         } catch (err) {
           console.error('Failed to load API keys:', err);
           setKeysError('Failed to load your existing API keys.');
@@ -849,7 +841,10 @@ Where:
     setKeysError('');
     setKeysSuccess('');
     try {
-      await saveUserApiKeys(currentUser.uid, googleKey.trim(), groqKey.trim());
+      const combinedKeys = [googleKey1.trim(), googleKey2.trim(), googleKey3.trim()]
+        .filter(Boolean)
+        .join(',');
+      await saveUserApiKeys(currentUser.uid, combinedKeys);
       setKeysSuccess('API Keys saved successfully!');
     } catch (err) {
       console.error('Error saving API keys:', err);
@@ -1168,9 +1163,18 @@ Where:
                         </div>
                       ) : (
                         <form onSubmit={handleSaveApiKeys} className="space-y-5">
+                          <div className="p-3.5 rounded-xl bg-orange-950/10 border border-orange-900/20 text-zinc-400 text-[11px] leading-relaxed">
+                            <span className="font-bold text-orange-400 block mb-1">💡 Key Rotation & Fallback</span>
+                            Upload up to 3 Gemini API keys from different accounts. If one gets rate limited under free tier quotas, the backend will automatically rotate to the next key. If all are blank, default server keys will be used.
+                          </div>
+
+                          {/* Gemini API Key 1 */}
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
-                              <label className="block text-xs font-semibold text-zinc-300">Google Gemini API Key</label>
+                              <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                                Gemini API Key 1 (Primary)
+                              </label>
                               <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 font-semibold underline underline-offset-2">
                                 Get Key <ExternalLink className="w-2.5 h-2.5" />
                               </a>
@@ -1178,38 +1182,60 @@ Where:
                             <div className="relative">
                               <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                               <input
-                                type={showGoogle ? 'text' : 'password'}
-                                value={googleKey}
-                                onChange={(e) => setGoogleKey(e.target.value)}
-                                placeholder="AIzaSy..."
-                                required
+                                type={showGoogle1 ? 'text' : 'password'}
+                                value={googleKey1}
+                                onChange={(e) => setGoogleKey1(e.target.value)}
+                                placeholder="AIzaSy... (First Key)"
                                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
                               />
-                              <button type="button" onClick={() => setShowGoogle(!showGoogle)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
-                                {showGoogle ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              <button type="button" onClick={() => setShowGoogle1(!showGoogle1)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                {showGoogle1 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                               </button>
                             </div>
                           </div>
 
+                          {/* Gemini API Key 2 */}
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
-                              <label className="block text-xs font-semibold text-zinc-300">Groq API Key</label>
-                              <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 font-semibold underline underline-offset-2">
-                                Get Key <ExternalLink className="w-2.5 h-2.5" />
-                              </a>
+                              <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                                Gemini API Key 2 (Rotation Fallback)
+                              </label>
                             </div>
                             <div className="relative">
                               <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                               <input
-                                type={showGroq ? 'text' : 'password'}
-                                value={groqKey}
-                                onChange={(e) => setGroqKey(e.target.value)}
-                                placeholder="gsk_..."
-                                required
+                                type={showGoogle2 ? 'text' : 'password'}
+                                value={googleKey2}
+                                onChange={(e) => setGoogleKey2(e.target.value)}
+                                placeholder="AIzaSy... (Second Key)"
                                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
                               />
-                              <button type="button" onClick={() => setShowGroq(!showGroq)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
-                                {showGroq ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              <button type="button" onClick={() => setShowGoogle2(!showGoogle2)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                {showGoogle2 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Gemini API Key 3 */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                                Gemini API Key 3 (Rotation Fallback)
+                              </label>
+                            </div>
+                            <div className="relative">
+                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                              <input
+                                type={showGoogle3 ? 'text' : 'password'}
+                                value={googleKey3}
+                                onChange={(e) => setGoogleKey3(e.target.value)}
+                                placeholder="AIzaSy... (Third Key)"
+                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
+                              />
+                              <button type="button" onClick={() => setShowGoogle3(!showGoogle3)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                {showGoogle3 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                               </button>
                             </div>
                           </div>

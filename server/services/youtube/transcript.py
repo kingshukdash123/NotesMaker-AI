@@ -41,7 +41,7 @@ def clean_text(text: str) -> str | None:
 
 def _fetch_via_transcriptapi(video_id: str, api_key: str) -> list[TranscriptSegment]:
     """Helper to fetch transcripts using TranscriptAPI.com."""
-    logger.info("Attempting transcript retrieval via TranscriptAPI.com...")
+    logger.info("Attempting retrieval of subtitles from metadata service...")
     url = "https://transcriptapi.com/api/v2/youtube/transcript"
     headers = {"Authorization": f"Bearer {api_key}"}
     params = {
@@ -76,13 +76,13 @@ def _fetch_via_transcriptapi(video_id: str, api_key: str) -> list[TranscriptSegm
                     }
                 )
             logger.info(
-                f"Fetched {len(segments)} cleaned transcript segments using TranscriptAPI."
+                f"Fetched {len(segments)} cleaned transcript segments."
             )
             return segments
         else:
-            logger.warning(f"TranscriptAPI failed to fetch transcript: {response.text}")
+            logger.warning("Metadata service failed to fetch transcript.")
             raise NotesMakerError(
-                message=f"No transcript found via TranscriptAPI.",
+                message="No transcript found.",
                 code="TRANSCRIPT_NOT_FOUND",
                 status_code=response.status_code,
             )
@@ -90,7 +90,7 @@ def _fetch_via_transcriptapi(video_id: str, api_key: str) -> list[TranscriptSegm
 
 def _fetch_via_local_scraper(video_id: str) -> list[TranscriptSegment]:
     """Helper to fetch transcripts using YouTubeTranscriptApi (local scraping)."""
-    logger.info("Attempting local scraping for transcript...")
+    logger.info("Attempting local retrieval for transcript...")
     transcript_list = YouTubeTranscriptApi().list(video_id)
     
     # Pick the first available transcript (any language is acceptable)
@@ -103,7 +103,7 @@ def _fetch_via_local_scraper(video_id: str) -> list[TranscriptSegment]:
         )
     # Pick the first available transcript
     transcript_obj = available[0]
-    logger.info(f"Selected transcript: {transcript_obj.language} ({transcript_obj.language_code})")
+    logger.info(f"Selected transcript language: {transcript_obj.language}")
 
     # Fetch the transcript data
     transcript_data = transcript_obj.fetch()
@@ -127,7 +127,7 @@ def _fetch_via_local_scraper(video_id: str) -> list[TranscriptSegment]:
         )
 
     logger.info(
-        f"Successfully fetched {len(segments)} segments using local scraping."
+        f"Successfully fetched {len(segments)} segments locally."
     )
     return segments
 
@@ -139,12 +139,12 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     If not found, fetches it from the transcript services (TranscriptAPI or local scraper)
     and saves the transcript to Firestore.
     """
-    logger.info(f"Fetching transcript for video: {video_id}")
+    logger.info("Fetching subtitles for video resource.")
 
     # 0. Check Firestore cache first
     cached_transcript = get_cached_transcript(video_id)
     if cached_transcript is not None:
-        logger.info(f"Found cached transcript for video {video_id} in Firestore. Using cache.")
+        logger.info("Found cached transcript. Using cache.")
         return cached_transcript
 
     # 1. Fetch transcript since not cached
@@ -153,15 +153,15 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     transcript = None
 
     if is_cloud and api_key:
-        logger.info("Production environment detected. Routing directly to TranscriptAPI.com.")
+        logger.info("Routing directly to metadata service.")
         try:
             transcript = _fetch_via_transcriptapi(video_id, api_key)
         except Exception as e:
             if isinstance(e, NotesMakerError):
                 raise e
-            logger.exception("TranscriptAPI extraction failed.")
+            logger.exception("Metadata service extraction failed.")
             raise NotesMakerError(
-                message="Failed to fetch transcript from TranscriptAPI.",
+                message="Failed to fetch transcript from metadata service.",
                 code="TRANSCRIPT_ERROR",
                 status_code=500,
             )
@@ -174,16 +174,16 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
                 raise e
                 
             if isinstance(e, (TranscriptsDisabled, NoTranscriptFound)):
-                logger.warning(f"YouTube reports subtitles are disabled/unavailable for video {video_id}.")
+                logger.warning("Subtitles are disabled or unavailable for this video.")
                 raise NotesMakerError(
                     message="No transcripts (subtitles) are available for this video.",
                     code="TRANSCRIPT_NOT_FOUND",
                     status_code=404,
                 )
                 
-            logger.exception("Local scraping failed.")
+            logger.exception("Local extraction failed.")
             raise NotesMakerError(
-                message="Failed to fetch transcript. Subtitles might be disabled or unavailable for this video.",
+                message="Failed to fetch transcript. Subtitles might be disabled or unavailable.",
                 code="TRANSCRIPT_ERROR",
                 status_code=500,
             )
@@ -193,6 +193,6 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
         try:
             save_cached_transcript(video_id, transcript)
         except Exception as err:
-            logger.warning(f"Failed to cache transcript to Firestore: {str(err)}")
+            logger.warning("Failed to save transcript to cache.")
 
     return transcript

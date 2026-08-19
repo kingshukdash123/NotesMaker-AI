@@ -9,12 +9,12 @@ def transcript_merger(state: dict) -> dict:
     Merge transcript into paragraphs.
     """
 
-    logger.info("Transcript Merger node started.")
+    logger.info("Segmenting and formatting transcript content.")
 
     state["merged_transcript"] = merge_transcript(
         state["transcript_segments"]
     )
 
-    logger.info("Transcript Merger node completed.")
+    logger.info("Transcript formatting completed.")
 
     return state

@@ -1,5 +1,6 @@
 import time
 from utils.logger import get_logger
+from utils.exceptions import NotesMakerError
 
 logger = get_logger(__name__)
 
@@ -26,4 +27,11 @@ def call_llm_with_retry(llm_callable, prompt_messages, max_retries=3, delay=25):
                     )
                     time.sleep(delay)
                     continue
+                else:
+                    logger.error("Rate limit retry attempts exhausted. Raising generic rate limit exception.")
+                    raise NotesMakerError(
+                        message="The service is currently experiencing very high demand. Please wait a few moments and try again.",
+                        code="RATE_LIMIT_EXHAUSTED",
+                        status_code=429,
+                    ) from e
             raise e

@@ -12,7 +12,7 @@ def reducer(state: NotesState) -> NotesState:
     Merge all generated sections into a single DraftNotes object.
     """
 
-    logger.info("Starting Reducer node.")
+    logger.info("Synthesizing and assembling final study guide.")
 
     try:
 
@@ -35,13 +35,13 @@ def reducer(state: NotesState) -> NotesState:
         if current_task_id.get(None) is None:
             output_file = save_notes_to_output(draft_notes["title"], draft_notes["content"])
             logger.info(
-                "Reducer completed successfully. Total sections merged: %d. Saved notes to %s",
+                "Synthesis completed. Total sections merged: %d. Saved notes to %s",
                 len(sections),
                 output_file,
             )
         else:
             logger.info(
-                "Reducer completed successfully. Total sections merged: %d. (Skipped local file save in API mode)",
+                "Synthesis completed successfully. Total sections merged: %d.",
                 len(sections),
             )
 
@@ -49,7 +49,7 @@ def reducer(state: NotesState) -> NotesState:
 
     except Exception as e:
 
-        logger.exception("Reducer node failed.")
+        logger.exception("Synthesis failed.")
 
         raise NotesMakerError(
             message="Failed to merge generated sections.",

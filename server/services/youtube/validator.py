@@ -11,7 +11,7 @@ def extract_video_id(url: str) -> str:
     Validate a YouTube URL and return the video ID.
     """
 
-    logger.info("Validating YouTube URL...")
+    logger.info("Validating video source URL...")
 
     parsed_url = urlparse(url)
 
@@ -24,7 +24,7 @@ def extract_video_id(url: str) -> str:
         video_id = parse_qs(parsed_url.query).get("v", [None])[0]
 
     else:
-        logger.error("Invalid YouTube URL.")
+        logger.error("Invalid video source URL.")
         raise NotesMakerError(
             message="Invalid YouTube URL.",
             code="INVALID_URL",
@@ -39,6 +39,6 @@ def extract_video_id(url: str) -> str:
             status_code=400,
         )
 
-    logger.info(f"Video ID extracted: {video_id}")
+    logger.info("Video resource validated successfully.")
 
     return video_id

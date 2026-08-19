@@ -11,7 +11,7 @@ def generate_transcript_and_metadata(url: str) -> dict:
     Generate transcript and metadata for a YouTube video.
     """
 
-    logger.info("Starting transcript generation...")
+    logger.info("Retrieving video content and metadata.")
 
     # Validate URL
     video_id = extract_video_id(url)
@@ -22,7 +22,7 @@ def generate_transcript_and_metadata(url: str) -> dict:
     # Fetch transcript
     transcript = get_transcript(video_id)
 
-    logger.info("Transcript generation completed successfully.")
+    logger.info("Video content and metadata retrieved successfully.")
 
     return {
         "metadata": metadata,
