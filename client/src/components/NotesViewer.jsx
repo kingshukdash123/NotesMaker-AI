@@ -27,7 +27,7 @@ const preprocessMarkdown = (content) => {
   return processed;
 };
 
-export default function NotesViewer({ result, isFullscreen = false, onToggleFullscreen }) {
+export default function NotesViewer({ result, isFullscreen = false, onToggleFullscreen, versionSuffix = '' }) {
   if (!result || !result.draft_notes) return null;
 
   const draftNotes = result.draft_notes;
@@ -41,9 +41,16 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
       {/* Notes Content Body */}
       <div className="p-3 sm:p-8 space-y-6">
         {/* Title Header */}
-        <div className="flex justify-between border-b border-zinc-800 pb-5">
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent mb-2 leading-tight">
-            {draftNotes.title || 'Comprehensive Lecture Notes'}
+        <div className="flex justify-between items-center border-b border-zinc-800 pb-5">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-100 mb-2 leading-tight flex flex-wrap items-center gap-2.5">
+            <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
+              {draftNotes.title || 'Comprehensive Lecture Notes'}
+            </span>
+            {versionSuffix && (
+              <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-md bg-orange-950/40 border border-orange-900/30 text-orange-400 select-none">
+                {versionSuffix.replace(/^\s*\|\s*/, '')}
+              </span>
+            )}
           </h1>
 
           <button

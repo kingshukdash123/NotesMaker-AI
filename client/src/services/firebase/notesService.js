@@ -160,3 +160,26 @@ export async function getNoteByVideoId(userId, videoId) {
 
   return foundNote;
 }
+
+/**
+ * Retrieves a single note document by its Firestore document ID.
+ * @param {string} noteId - Firestore document ID
+ * @returns {Promise<Object|null>} The note document or null
+ */
+export async function getNoteById(noteId) {
+  if (!noteId) return null;
+  const docRef = doc(db, 'notes', noteId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    const createdAtDate = data.createdAt ? data.createdAt.toDate() : new Date();
+    return {
+      id: docSnap.id,
+      ...data,
+      createdAtDate
+    };
+  }
+
+  return null;
+}

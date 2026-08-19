@@ -14,7 +14,7 @@ import SummaryOverview from './components/SummaryOverview';
 import LoadingModal from './components/LoadingModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs, API_BASE_URL } from './services/server/api';
-import { saveNotes, getUserNotes, deleteNotes, saveUserApiKeys, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId } from './services/firebase/notesService';
+import { saveNotes, getUserNotes, deleteNotes, saveUserApiKeys, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId, getNoteById } from './services/firebase/notesService';
 import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown, MoreVertical } from 'lucide-react';
 
 const mapErrorMessage = (errorMsg) => {
@@ -309,15 +309,50 @@ function MainApp() {
       if (activeNote) {
         const videoId = extractYoutubeVideoId(activeNote.videoUrl);
         if (videoId) {
-          setExpandedVideoIds(prev => ({
-            ...prev,
-            [videoId]: true
-          }));
+          setExpandedVideoIds(prev => {
+            if (prev[videoId] !== undefined) return prev;
+            return {
+              ...prev,
+              [videoId]: true
+            };
+          });
         }
       }
     }
   }, [loadedNoteId, notesHistory]);
   const [isInitialRouteResolved, setIsInitialRouteResolved] = useState(false);
+
+  const getActiveVersionLabel = () => {
+    if (!loadedNoteId || notesHistory.length === 0) return '';
+    
+    const groups = {};
+    notesHistory.forEach((item) => {
+      const videoId = extractYoutubeVideoId(item.videoUrl);
+      if (!videoId) return;
+      if (!groups[videoId]) {
+        groups[videoId] = { generations: [] };
+      }
+      groups[videoId].generations.push(item);
+    });
+
+    for (const videoId in groups) {
+      const group = groups[videoId];
+      group.generations.sort((a, b) => {
+        const dateA = a.createdAtDate || (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+        const dateB = b.createdAtDate || (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+        return dateB - dateA;
+      });
+
+      const idx = group.generations.findIndex(g => g.id === loadedNoteId);
+      if (idx !== -1) {
+        const hasMultiple = group.generations.length > 1;
+        if (hasMultiple) {
+          return ` | Version ${group.generations.length - idx}`;
+        }
+      }
+    }
+    return '';
+  };
 
   // 10. Terminal & Logs State
   const [logs, setLogs] = useState([]);
@@ -345,7 +380,7 @@ function MainApp() {
         }
         if (!currentUser) return; // Wait until auth state is resolved
 
-        const view = parts[1] || 'generator';
+        const view = parts[1] || 'notes';
         setGlobalTab('workspace');
 
         if (view === 'configure') {
@@ -353,15 +388,69 @@ function MainApp() {
         } else if (view === 'profile') {
           setActiveWorkspaceView('profile');
         } else {
-          // Default to generator
           setActiveWorkspaceView('generator');
-          const subTab = parts[2] || 'notes';
           const validSubTabs = ['notes', 'summary', 'qa'];
-          const activeSubTab = validSubTabs.includes(subTab) ? subTab : 'notes';
+          const activeSubTab = validSubTabs.includes(view) ? view : 'notes';
           setWorkspaceTab(activeSubTab);
 
-          const videoId = parts[3] || '';
-          if (videoId) {
+          const videoId = validSubTabs.includes(parts[1]) ? (parts[2] || '') : '';
+          const versionId = validSubTabs.includes(parts[1]) ? (parts[3] || '') : '';
+
+          if (versionId) {
+            const currentNoteId = loadedNoteId;
+            if (currentNoteId === versionId && taskResult) {
+              setIsInitialRouteResolved(true);
+              return;
+            }
+
+            setIsHistoryLoading(true);
+            try {
+              const foundNote = await getNoteById(versionId);
+              if (foundNote && foundNote.userId === currentUser.uid) {
+                setUrl(foundNote.videoUrl);
+                setLoadedUrl(foundNote.videoUrl);
+                setLoadedNoteId(foundNote.id);
+                setMetadata(foundNote.metadata);
+                setTaskResult(foundNote.result);
+                setTaskStatus('COMPLETED');
+                setShowMetadata(true);
+                setShowNotes(true);
+                setIsViewingHistory(true);
+                const videoIdOfNote = extractYoutubeVideoId(foundNote.videoUrl);
+                if (videoIdOfNote) {
+                  setExpandedVideoIds(prev => ({ ...prev, [videoIdOfNote]: true }));
+                }
+              } else {
+                // Version document not found or belongs to another user, load latest version for this videoId
+                const foundLatestNote = await getNoteByVideoId(currentUser.uid, videoId);
+                if (foundLatestNote) {
+                  setUrl(foundLatestNote.videoUrl);
+                  setLoadedUrl(foundLatestNote.videoUrl);
+                  setLoadedNoteId(foundLatestNote.id);
+                  setMetadata(foundLatestNote.metadata);
+                  setTaskResult(foundLatestNote.result);
+                  setTaskStatus('COMPLETED');
+                  setShowMetadata(true);
+                  setShowNotes(true);
+                  setIsViewingHistory(true);
+                } else {
+                  setUrl('');
+                  setLoadedUrl('');
+                  setLoadedNoteId(null);
+                  setMetadata(null);
+                  setTaskResult(null);
+                  setTaskStatus('IDLE');
+                  setShowMetadata(false);
+                  setShowNotes(false);
+                  window.history.replaceState(null, '', `/workspace/${activeSubTab}`);
+                }
+              }
+            } catch (err) {
+              console.error('Failed to load note by version ID:', err);
+            } finally {
+              setIsHistoryLoading(false);
+            }
+          } else if (videoId) {
             const currentVideoId = extractYoutubeVideoId(loadedUrl);
             if (currentVideoId === videoId && taskResult) {
               setIsInitialRouteResolved(true);
@@ -391,7 +480,7 @@ function MainApp() {
                 setTaskStatus('IDLE');
                 setShowMetadata(false);
                 setShowNotes(false);
-                window.history.replaceState(null, '', '/workspace/generator');
+                window.history.replaceState(null, '', `/workspace/${activeSubTab}`);
               }
             } catch (err) {
               console.error('Failed to load note by video ID:', err);
@@ -440,16 +529,20 @@ function MainApp() {
         // activeWorkspaceView === 'generator'
         const videoId = extractYoutubeVideoId(loadedUrl);
         if (videoId) {
-          targetPath = `/workspace/generator/${workspaceTab}/${videoId}`;
+          if (loadedNoteId) {
+            targetPath = `/workspace/${workspaceTab}/${videoId}/${loadedNoteId}`;
+          } else {
+            targetPath = `/workspace/${workspaceTab}/${videoId}`;
+          }
         } else {
-          targetPath = `/workspace/generator`;
+          targetPath = `/workspace/${workspaceTab}`;
         }
       }
     }
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
     }
-  }, [isInitialRouteResolved, globalTab, activeWorkspaceView, workspaceTab, loadedUrl]);
+  }, [isInitialRouteResolved, globalTab, activeWorkspaceView, workspaceTab, loadedUrl, loadedNoteId]);
 
   useEffect(() => {
     setIsNotesFullscreen(false);
@@ -899,7 +992,7 @@ Where:
     }, 2000);
   };
 
-  const handleSelectHistoryNote = (note) => {
+  const handleSelectHistoryNote = (note, keepMobileAccordionOpen = false) => {
     clearMockTimers();
     const noteUrl = note.videoUrl || '';
     setUrl(noteUrl);
@@ -915,7 +1008,9 @@ Where:
     setIsViewingHistory(true);
     setGlobalTab('workspace');
     setWorkspaceTab('notes');
-    setIsMobileHistoryExpanded(false);
+    if (!keepMobileAccordionOpen) {
+      setIsMobileHistoryExpanded(false);
+    }
   };
 
   const handleSetWorkspaceTab = (tabId) => {
@@ -1413,7 +1508,7 @@ Where:
                             <div className="flex flex-col w-full h-full min-h-0">
                               {/* Header row with squeeze trigger */}
                               <div className="flex items-center justify-between px-1 py-1.5 border-b border-zinc-900/60 mb-2">
-                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Workspace</span>
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">HISTORY</span>
                                 <button
                                   type="button"
                                   onClick={() => setIsSidebarSqueezed(true)}
@@ -1480,7 +1575,7 @@ Where:
                                     return (
                                       <div
                                         key={group.videoId}
-                                        className={`border rounded-xl p-2.5 flex flex-col gap-2.5 transition ${group.generations.some(g => g.id === loadedNoteId)
+                                        className={`border rounded-xl p-2.5 flex flex-col gap-2.5 transition relative ${activeMenuNoteId === group.videoId ? 'z-40' : 'z-10'} ${group.generations.some(g => g.id === loadedNoteId)
                                           ? 'bg-zinc-900/50 border-zinc-700/60 shadow-lg'
                                           : 'bg-zinc-900/20 border-zinc-900/80 hover:border-zinc-800'
                                           }`}
@@ -1489,7 +1584,9 @@ Where:
                                         <div
                                           className="flex gap-2 cursor-pointer group/card pr-7 relative"
                                           onClick={(e) => {
-                                            handleSelectHistoryNote(latestItem);
+                                            if (!group.generations.some(g => g.id === loadedNoteId)) {
+                                              handleSelectHistoryNote(latestItem);
+                                            }
                                             handleToggleVideoExpand(group.videoId, e);
                                           }}
                                         >
@@ -1522,7 +1619,7 @@ Where:
                                           </div>
 
                                           {/* 3-Dot Options Dropdown for parent video */}
-                                          <div className="absolute right-1 top-1/2 -translate-y-1/2 z-20" onClick={(e) => e.stopPropagation()}>
+                                          <div className={`absolute right-1 top-1/2 -translate-y-1/2 ${activeMenuNoteId === group.videoId ? 'z-30' : 'z-20'}`} onClick={(e) => e.stopPropagation()}>
                                             <button
                                               type="button"
                                               onClick={() => {
@@ -1536,7 +1633,7 @@ Where:
 
                                             {/* Dropdown Menu */}
                                             {activeMenuNoteId === group.videoId && (
-                                              <div className="absolute right-0 top-7 w-28 bg-zinc-950 border border-zinc-800 shadow-2xl rounded-xl p-1 space-y-0.5 z-30 animate-in fade-in slide-in-from-top-1 duration-100">
+                                              <div className="absolute right-0 top-7 w-28 bg-zinc-950 border border-zinc-800 shadow-2xl rounded-xl p-1 space-y-0.5 z-50 animate-in fade-in slide-in-from-top-1 duration-100">
                                                 <button
                                                   type="button"
                                                   onClick={(e) => {
@@ -1575,7 +1672,7 @@ Where:
 
                                         {/* Generations compact stack list */}
                                         {expandedVideoIds[group.videoId] && (
-                                          <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                                          <div className="space-y-1 pl-1 max-h-28 overflow-y-auto custom-scrollbar pr-1 animate-in fade-in slide-in-from-top-1 duration-150">
                                             {group.generations.map((gen, idx) => {
                                               const timestamp = gen.createdAtDate || (gen.createdAt ? (gen.createdAt.toDate ? gen.createdAt.toDate() : new Date(gen.createdAt)) : new Date());
                                               const dateStr = timestamp.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -1600,7 +1697,7 @@ Where:
                                                   </div>
 
                                                   {/* Direct Trash delete button for version item */}
-                                                  <div className="absolute right-1 top-1/2 -translate-y-1/2 z-20">
+                                                  <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10">
                                                     <button
                                                       type="button"
                                                       onClick={(e) => {
@@ -1628,8 +1725,33 @@ Where:
                           )}
                         </div>
 
-                        {/* MOBILE SIDEBAR VIEW (Always Expanded, Collapsed via mobile toggle accordion) */}
-                        <div className="flex xl:hidden flex-col gap-2 w-full min-h-0">
+                        {/* MOBILE SIDEBAR VIEW */}
+                        <div className="flex xl:hidden flex-col gap-3 w-full pb-2">
+                          {/* Generate Button - Shown when active notes are loaded (hidden on generation page) */}
+                          {taskResult && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                clearMockTimers();
+                                setUrl('');
+                                setLoadedUrl('');
+                                setLoadedNoteId(null);
+                                setMetadata(null);
+                                setTaskResult(null);
+                                setTaskStatus('IDLE');
+                                setShowMetadata(false);
+                                setShowNotes(false);
+                                setWorkspaceTab('notes');
+                                setIsViewingHistory(false);
+                                setIsMobileHistoryExpanded(false);
+                              }}
+                              className="w-full py-2.5 px-4 rounded-xl bg-zinc-100 text-zinc-950 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow hover:scale-[1.02] cursor-pointer"
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span>Generate</span>
+                            </button>
+                          )}
+
                           {/* Mobile Expander Toggle Bar */}
                           <button
                             type="button"
@@ -1643,184 +1765,182 @@ Where:
                             <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${isMobileHistoryExpanded ? 'rotate-180' : ''}`} />
                           </button>
 
-                          {/* History content collapsible block */}
-                          <div className={`flex-col ${isMobileHistoryExpanded ? 'flex' : 'hidden'} w-full min-h-0`}>
-                            {/* Search History box */}
-                            <div className="relative mb-4 mt-2">
-                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
-                              <input
-                                type="text"
-                                placeholder="Search history..."
-                                value={historySearchQuery}
-                                onChange={(e) => setHistorySearchQuery(e.target.value)}
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-4 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition"
-                              />
-                            </div>
-
-                            {/* History list */}
-                            <div className="flex-1 overflow-y-auto max-h-[300px] space-y-2.5 custom-scrollbar pr-1">
+                          {/* Horizontal Ingestion History list (rendered only when accordion is expanded) */}
+                          {isMobileHistoryExpanded && (
+                            <div className="flex flex-col gap-1 w-full min-h-0 animate-in fade-in slide-in-from-top-1 duration-150">
                               {isHistoryLoading ? (
-                                <div className="py-8 flex flex-col items-center justify-center text-zinc-500 gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
-                                  <span className="text-[10px]">Loading history...</span>
+                                <div className="py-4 flex justify-center items-center">
+                                  <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
                                 </div>
                               ) : groupedHistory.length === 0 ? (
-                                <div className="text-center py-8 text-[10px] text-zinc-500">
-                                  {historySearchQuery ? 'No results found.' : 'No notes generated yet.'}
+                                <div className="text-left text-[10px] text-zinc-650 py-1 px-1">
+                                  No history notes.
                                 </div>
                               ) : (
-                                groupedHistory.map((group) => {
-                                  const latestItem = group.generations[0];
-                                  const hasMultiple = group.generations.length > 1;
+                                <div className="flex flex-row overflow-x-auto gap-3 py-1.5 px-1 custom-scrollbar w-full min-w-0 items-start">
+                                  {groupedHistory.map((group) => {
+                                    const latestItem = group.generations[0];
+                                    const hasMultiple = group.generations.length > 1;
+                                    const isLoaded = group.generations.some(g => g.id === loadedNoteId);
 
-                                  return (
-                                    <div
-                                      key={group.videoId}
-                                      className={`border rounded-xl p-2.5 flex flex-col gap-2.5 transition ${group.generations.some(g => g.id === loadedNoteId)
-                                        ? 'bg-zinc-900/50 border-zinc-700/60 shadow-lg'
-                                        : 'bg-zinc-900/20 border-zinc-900/80 hover:border-zinc-800'
-                                        }`}
-                                    >
-                                      {/* Video Summary Card Header */}
+                                    return (
                                       <div
-                                        className="flex gap-2 cursor-pointer group/card pr-7 relative"
-                                        onClick={(e) => {
-                                          handleSelectHistoryNote(latestItem);
-                                          handleToggleVideoExpand(group.videoId, e);
-                                        }}
+                                        key={group.videoId}
+                                        className={`shrink-0 w-32 border rounded-xl p-3 flex flex-col gap-2 transition-all relative ${activeMenuNoteId === group.videoId ? 'z-40' : 'z-10'} ${
+                                          isLoaded
+                                            ? 'bg-zinc-900/60 border-zinc-700/60 shadow-md' 
+                                            : 'bg-zinc-900/20 border-zinc-900/80'
+                                        }`}
                                       >
                                         {/* Thumbnail preview */}
-                                        <div className="relative shrink-0 w-16 aspect-video rounded overflow-hidden bg-zinc-950 border border-zinc-900">
+                                        <div 
+                                          onClick={(e) => {
+                                            if (!isLoaded) {
+                                              handleSelectHistoryNote(latestItem, true);
+                                            }
+                                            handleToggleVideoExpand(group.videoId, e);
+                                          }}
+                                          className="relative w-full aspect-video rounded-md overflow-hidden bg-zinc-950 border border-zinc-900 shrink-0 cursor-pointer animate-in fade-in"
+                                        >
                                           {group.metadata?.thumbnail ? (
                                             <img src={group.metadata.thumbnail} alt="" className="w-full h-full object-cover" />
                                           ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-zinc-650">
-                                              <Video className="w-3.5 h-3.5" />
+                                              <Video className="w-3 h-3" />
                                             </div>
                                           )}
                                         </div>
-                                        <div className="flex-1 min-w-0 pr-1">
-                                          <h4 className="text-[11px] font-bold text-zinc-200 line-clamp-2 leading-tight group-hover/card:text-orange-400 transition">
-                                            {group.metadata?.title || 'Study Notes'}
-                                          </h4>
-                                          <div className="flex items-center justify-between mt-1">
-                                            <p className="text-[9px] text-zinc-500 truncate max-w-[110px]">{group.metadata?.channel || 'YouTube Video'}</p>
-                                            <div className="flex items-center gap-1 shrink-0">
+
+                                        {/* Text details - bottom */}
+                                        <div className="w-full min-w-0 flex flex-col gap-1.5 mt-1">
+                                          {/* Row 1: Title & 3-Dot menu */}
+                                          <div className="flex items-start justify-between gap-1.5 w-full relative">
+                                            <h4 
+                                              onClick={(e) => {
+                                                if (!isLoaded) {
+                                                  handleSelectHistoryNote(latestItem, true);
+                                                }
+                                                handleToggleVideoExpand(group.videoId, e);
+                                              }}
+                                              className="text-[10px] font-bold text-zinc-200 line-clamp-2 leading-tight flex-1 min-w-0 cursor-pointer hover:text-orange-400 transition"
+                                            >
+                                              {group.metadata?.title || 'Study Notes'}
+                                            </h4>
+                                            
+                                            <div className={`shrink-0 relative ${activeMenuNoteId === group.videoId ? 'z-30' : 'z-10'}`} onClick={(e) => e.stopPropagation()}>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  setActiveMenuNoteId(activeMenuNoteId === group.videoId ? null : group.videoId);
+                                                }}
+                                                className={`p-0.5 rounded hover:bg-zinc-800 transition duration-150 text-zinc-500 hover:text-zinc-300 cursor-pointer ${
+                                                  activeMenuNoteId === group.videoId ? 'bg-zinc-800 text-zinc-300' : ''
+                                                }`}
+                                              >
+                                                <MoreVertical className="w-3.5 h-3.5" />
+                                              </button>
+
+                                              {/* Dropdown Menu */}
+                                              {activeMenuNoteId === group.videoId && (
+                                                <div className="absolute right-0 top-6 w-28 bg-zinc-950 border border-zinc-800 shadow-2xl rounded-xl p-1 space-y-0.5 z-50">
+                                                  <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                      handleCopyUrl(e, latestItem.videoUrl, group.videoId);
+                                                      setTimeout(() => setActiveMenuNoteId(null), 1000);
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[9px] font-bold text-zinc-300 hover:text-zinc-100 hover:bg-zinc-900 transition text-left cursor-pointer"
+                                                  >
+                                                    {copiedId === group.videoId ? 'Copied!' : 'Copy Link'}
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setActiveMenuNoteId(null);
+                                                      handleDeleteAllVersions(group.generations);
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[9px] font-bold text-red-400 hover:text-red-300 hover:bg-red-950/20 transition text-left cursor-pointer"
+                                                  >
+                                                    <span>Delete Video</span>
+                                                  </button>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          {/* Row 2: Channel & Expand button */}
+                                          <div className="flex items-center justify-between gap-1 w-full">
+                                            <p className="text-[8px] text-zinc-555 truncate flex-1 min-w-0">
+                                              {group.metadata?.channel || 'YouTube Video'}
+                                            </p>
+                                            <div className="flex items-center gap-1 shrink-0 ml-1">
                                               {hasMultiple && (
-                                                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md bg-orange-950/40 border border-orange-900/30 text-orange-400">
-                                                  {group.generations.length} versions
+                                                <span className="text-[7px] font-bold px-1 py-0.5 rounded bg-orange-950/40 border border-orange-900/30 text-orange-400">
+                                                  {group.generations.length}v
                                                 </span>
                                               )}
-                                              {/* Expand/Collapse Chevron (Passive indicator) */}
-                                              <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 group-hover/card:text-zinc-300 transition-transform duration-300 ${expandedVideoIds[group.videoId] ? 'rotate-180 text-orange-500' : ''}`} />
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleToggleVideoExpand(group.videoId, e);
+                                                }}
+                                                className="p-0.5 rounded hover:bg-zinc-800 text-zinc-550 hover:text-zinc-350 transition cursor-pointer"
+                                              >
+                                                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${expandedVideoIds[group.videoId] ? 'rotate-180 text-orange-500' : ''}`} />
+                                              </button>
                                             </div>
                                           </div>
                                         </div>
 
-                                        {/* 3-Dot Options Dropdown for parent video */}
-                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 z-20" onClick={(e) => e.stopPropagation()}>
-                                          <button
-                                            type="button"
-                                            onClick={() => {
-                                              setActiveMenuNoteId(activeMenuNoteId === group.videoId ? null : group.videoId);
-                                            }}
-                                            className={`p-1 rounded hover:bg-zinc-800 transition duration-150 text-zinc-500 hover:text-zinc-300 cursor-pointer ${activeMenuNoteId === group.videoId ? 'bg-zinc-800 text-zinc-300 animate-pulse' : ''
-                                              }`}
-                                          >
-                                            <MoreVertical className="w-3.5 h-3.5" />
-                                          </button>
+                                        {/* Nested list of versions within the card */}
+                                        {expandedVideoIds[group.videoId] && (
+                                          <div className="space-y-1 mt-auto border-t border-zinc-900/60 pt-2 max-h-20 overflow-y-auto custom-scrollbar pr-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                                            {group.generations.map((gen, idx) => {
+                                              const timestamp = gen.createdAtDate || (gen.createdAt ? (gen.createdAt.toDate ? gen.createdAt.toDate() : new Date(gen.createdAt)) : new Date());
+                                              const dateStr = timestamp.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                              const isGenLoaded = loadedNoteId === gen.id;
 
-                                          {/* Dropdown Menu */}
-                                          {activeMenuNoteId === group.videoId && (
-                                            <div className="absolute right-0 top-7 w-28 bg-zinc-950 border border-zinc-800 shadow-2xl rounded-xl p-1 space-y-0.5 z-30 animate-in fade-in slide-in-from-top-1 duration-100">
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  handleCopyUrl(e, latestItem.videoUrl, group.videoId);
-                                                  setTimeout(() => setActiveMenuNoteId(null), 1000);
-                                                }}
-                                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[9px] font-bold text-zinc-300 hover:text-zinc-100 hover:bg-zinc-900 transition text-left cursor-pointer"
-                                              >
-                                                {copiedId === group.videoId ? (
-                                                  <>
-                                                    <Check className="w-2.5 h-2.5 text-orange-450 shrink-0" />
-                                                    <span className="text-orange-450">Copied!</span>
-                                                  </>
-                                                ) : (
-                                                  <>
-                                                    <Copy className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
-                                                    <span>Copy Link</span>
-                                                  </>
-                                                )}
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  setActiveMenuNoteId(null);
-                                                  handleDeleteAllVersions(group.generations);
-                                                }}
-                                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[9px] font-bold text-red-400 hover:text-red-300 hover:bg-red-950/20 transition text-left cursor-pointer"
-                                              >
-                                                <Trash2 className="w-2.5 h-2.5 text-red-500 shrink-0" />
-                                                <span>Delete Video</span>
-                                              </button>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-
-                                      {/* Generations compact stack list */}
-                                      {expandedVideoIds[group.videoId] && (
-                                        <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                                          {group.generations.map((gen, idx) => {
-                                            const timestamp = gen.createdAtDate || (gen.createdAt ? (gen.createdAt.toDate ? gen.createdAt.toDate() : new Date(gen.createdAt)) : new Date());
-                                            const dateStr = timestamp.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-                                            return (
-                                              <div
-                                                key={gen.id}
-                                                className={`group/gen relative flex items-center justify-between pl-2 pr-8 py-1.5 text-[10px] rounded-lg border transition duration-150 cursor-pointer ${loadedNoteId === gen.id
-                                                  ? 'bg-orange-950/20 text-orange-400 border-orange-900/30 font-bold'
-                                                  : 'bg-zinc-950/40 border-zinc-900/50 hover:bg-zinc-900/60 text-zinc-400 hover:text-zinc-300'
+                                              return (
+                                                <div
+                                                  key={gen.id}
+                                                  className={`relative flex items-center justify-between pl-2 pr-7 py-1 text-[9px] rounded-md border transition duration-150 cursor-pointer ${
+                                                    isGenLoaded 
+                                                      ? 'bg-orange-950/20 text-orange-400 border-orange-900/30 font-bold' 
+                                                      : 'bg-zinc-950/40 border-zinc-900/50 hover:bg-zinc-900/60 text-zinc-400 hover:text-zinc-300'
                                                   }`}
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleSelectHistoryNote(gen);
-                                                }}
-                                              >
-                                                <div className="flex items-center gap-1.5 truncate">
-                                                  <span className={`w-1 h-1 rounded-full shrink-0 ${loadedNoteId === gen.id ? 'bg-orange-500' : 'bg-zinc-600 group-hover/gen:bg-orange-500'}`}></span>
-                                                  <span className="truncate">
-                                                    {hasMultiple ? `Version ${group.generations.length - idx}: ` : ''}{dateStr}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSelectHistoryNote(gen, false);
+                                                  }}
+                                                >
+                                                  <span className="truncate text-[8px] sm:text-[9px]">
+                                                    {hasMultiple ? `V${group.generations.length - idx}: ` : ''}{dateStr}
                                                   </span>
-                                                </div>
-
-                                                {/* Direct Trash delete button for version item */}
-                                                <div className="absolute right-1 top-1/2 -translate-y-1/2 z-20">
                                                   <button
                                                     type="button"
                                                     onClick={(e) => {
                                                       e.stopPropagation();
-                                                      if (confirm('Are you sure you want to delete this specific version of the study notes?')) {
+                                                      if (confirm('Are you sure you want to delete this version?')) {
                                                         handleDeleteHistoryNote(gen.id);
                                                       }
                                                     }}
-                                                    className="p-1 rounded text-zinc-500 hover:text-red-500 hover:bg-zinc-900/50 transition duration-150 cursor-pointer"
+                                                    className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-zinc-500 hover:text-red-500 transition cursor-pointer"
                                                   >
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    <Trash2 className="w-2.5 h-2.5" />
                                                   </button>
                                                 </div>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                               )}
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
 
@@ -1886,7 +2006,7 @@ Where:
                               <Tabs activeTab={workspaceTab} setActiveTab={setWorkspaceTab} />
                             </div>
                             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2">
-                              {workspaceTab === 'notes' && <NotesViewer result={taskResult} isFullscreen={isNotesFullscreen} onToggleFullscreen={setIsNotesFullscreen} />}
+                              {workspaceTab === 'notes' && <NotesViewer result={taskResult} isFullscreen={isNotesFullscreen} onToggleFullscreen={setIsNotesFullscreen} versionSuffix={getActiveVersionLabel()} />}
                               {workspaceTab === 'summary' && <SummaryOverview result={taskResult} metadata={metadata} consoleOpen={isTerminalOpen} />}
                               {workspaceTab === 'qa' && <VideoQa />}
                             </div>
