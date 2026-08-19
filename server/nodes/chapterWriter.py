@@ -54,7 +54,8 @@ def chapter_writer(state: ChapterState) -> dict:
             lecture_outline=state["lecture_outline"],
             chapter_plan=state["chapter_plan"],
             transcript=sliced_text,
-            previous_notes=state.get("previous_notes", ""),
+            audience=state.get("audience", "All Students"),
+            note_style=state.get("note_style", "Standard Lecture Notes"),
         )
 
         logger.info(

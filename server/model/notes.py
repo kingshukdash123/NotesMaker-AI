@@ -1,5 +1,5 @@
 from typing import TypedDict, List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Reference(TypedDict):
@@ -25,17 +25,17 @@ class DraftNotes(TypedDict):
 
 
 class ReferenceModel(BaseModel):
-    title: str
-    url: str
+    title: str = Field(description="The title of the reference source.")
+    url: str = Field(description="The URL of the reference source.")
 
 
 class GeneratedSectionModel(BaseModel):
-    section_id: int
-    title: str
-    content: str
-    word_count: int
-    references: List[ReferenceModel]
+    section_id: int = Field(description="The unique integer ID of the section, matching the section plan.")
+    title: str = Field(description="The title of the section, matching the section plan.")
+    content: str = Field(description="The complete and detailed study notes for this section in Markdown format. You MUST write the full generated notes content in this field. Do not leave it empty.")
+    word_count: int = Field(description="The total word count of the generated content in the content field.")
+    references: List[ReferenceModel] = Field(default=[], description="List of reference links. Leave empty since web search is disabled.")
 
 
 class ChapterNotesModel(BaseModel):
-    sections: List[GeneratedSectionModel]
+    sections: List[GeneratedSectionModel] = Field(description="The list of generated note sections for the chapter.")

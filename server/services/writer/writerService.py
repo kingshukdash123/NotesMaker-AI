@@ -35,7 +35,8 @@ class ChapterWriterService:
         lecture_outline: LectureOutline,
         chapter_plan: ChapterPlan,
         transcript: str,
-        previous_notes: str,
+        audience: str = "All Students",
+        note_style: str = "Standard Lecture Notes",
     ) -> list[GeneratedSection]:
 
         try:
@@ -50,7 +51,8 @@ class ChapterWriterService:
                     "outline": lecture_outline,
                     "sections": chapter_plan["sections"],
                     "transcript": transcript,
-                    "previous_notes": previous_notes or "No previous notes.",
+                    "audience": audience,
+                    "note_style": note_style,
                 }
             )
 

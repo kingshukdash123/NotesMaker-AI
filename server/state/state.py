@@ -24,8 +24,6 @@ class NotesState(TypedDict):
 
     # Sequential Loop State
     chapters: List[ChapterPlan]
-    current_chapter_index: int
-    previous_notes_content: str
 
     # Lecture Outline
     lecture_outline: LectureOutline

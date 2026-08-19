@@ -44,8 +44,6 @@ def orchestrator(state: NotesState) -> NotesState:
             )
         
         state["chapters"] = chapters
-        state["current_chapter_index"] = 0
-        state["previous_notes_content"] = ""
         state["generated_sections"] = []  # Initialize empty list to accumulate sections
 
         logger.info(

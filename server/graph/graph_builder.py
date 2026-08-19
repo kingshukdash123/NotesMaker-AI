@@ -1,5 +1,5 @@
 from langgraph.graph import StateGraph, START, END
-from langgraph.types import RetryPolicy
+from langgraph.types import RetryPolicy, Send
 
 from state.state import NotesState
 from utils.decorators import wrap_node
@@ -7,7 +7,7 @@ from utils.decorators import wrap_node
 from nodes.transcript_metadata_generator import transcript_metadata_generator
 from nodes.transcript_merger import transcript_merger
 from nodes.orchestrator import orchestrator
-from nodes.chapter_worker import chapter_worker_node, chapter_router
+from nodes.chapter_worker import chapter_worker_node
 from nodes.reducer import reducer
 
 # ==========================
@@ -23,6 +23,7 @@ builder = StateGraph(NotesState)
 builder.add_node(
     "transcript_metadata_generator",
     wrap_node(transcript_metadata_generator),
+    retry_policy=RetryPolicy(max_attempts=3, backoff_factor=2.0),
 )
 
 builder.add_node(
@@ -33,12 +34,13 @@ builder.add_node(
 builder.add_node(
     "orchestrator",
     wrap_node(orchestrator),
+    retry_policy=RetryPolicy(max_attempts=3, backoff_factor=2.0),
 )
 
 builder.add_node(
     "chapter_worker",
     wrap_node(chapter_worker_node),
-    retry_policy=RetryPolicy(max_attempts=5, backoff_factor=2.0),
+    retry_policy=RetryPolicy(max_attempts=3, backoff_factor=2.0),
 )
 
 builder.add_node(
@@ -65,16 +67,47 @@ builder.add_edge(
     "orchestrator",
 )
 
-# Run chapters sequentially
-builder.add_edge(
+
+def route_to_chapters(state: NotesState) -> list[Send]:
+    """
+    Creates parallel chapter worker tasks using LangGraph's Send API.
+    """
+    chapters = state.get("chapters", [])
+    execution_plan = state.get("execution_plan", {})
+    audience = execution_plan.get("audience", "All Students")
+    note_style = execution_plan.get("note_style", "Standard Lecture Notes")
+    
+    sends = []
+    for chapter in chapters:
+        sends.append(
+            Send(
+                "chapter_worker",
+                {
+                    "lecture_outline": state["lecture_outline"],
+                    "chapter_plan": chapter,
+                    "transcript_segments": state["merged_transcript"],
+                    "google_api_key": state.get("google_api_key"),
+                    "groq_api_key": state.get("groq_api_key"),
+                    "task_id": state.get("task_id"),
+                    "audience": audience,
+                    "note_style": note_style,
+                },
+            )
+        )
+    return sends
+
+
+# Map chapter generation to parallel workers
+builder.add_conditional_edges(
     "orchestrator",
-    "chapter_worker",
+    wrap_node(route_to_chapters),
+    ["chapter_worker"],
 )
 
-builder.add_conditional_edges(
+# Reduce all parallel outputs into reducer
+builder.add_edge(
     "chapter_worker",
-    wrap_node(chapter_router),
-    ["chapter_worker", "reducer"],
+    "reducer",
 )
 
 # Reducer -> END
