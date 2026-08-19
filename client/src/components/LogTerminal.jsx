@@ -30,8 +30,8 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
     if (line.includes('WARNING')) {
       return 'text-orange-400';
     }
-    if (line.includes('COMPLETED') || line.includes('completed') || line.includes('success')) {
-      return 'text-orange-400 font-semibold';
+    if (line.includes('COMPLETED') || line.includes('completed') || line.includes('success') || line.includes('SUCCESS') || line.includes('successfully')) {
+      return 'text-green-400 font-semibold';
     }
     if (line.includes('[SYSTEM]')) {
       return 'text-cyan-400 italic';
@@ -40,6 +40,17 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
       return 'text-zinc-300';
     }
     return 'text-zinc-400';
+  };
+
+  const formatLogLine = (line) => {
+    const parts = line.split('|');
+    if (parts.length >= 5) {
+      const dateTime = parts[0].trim();
+      const status = parts[1].trim();
+      const message = parts.slice(4).join('|').trim();
+      return `${dateTime} | ${status} | ${message}`;
+    }
+    return line;
   };
 
   return (
@@ -137,7 +148,7 @@ export default function LogTerminal({ logs = [], isOpen, onClose, onClear }) {
               key={index}
               className={`leading-relaxed px-1 py-0.5 rounded ${getLogStyle(log)}`}
             >
-              {log}
+              {formatLogLine(log)}
             </div>
           ))
         )}

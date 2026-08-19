@@ -1,7 +1,31 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/atom-one-dark.css';
+import katex from 'katex';
 import { BookOpen, ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
+
+const preprocessMarkdown = (content) => {
+  if (!content) return '';
+
+  // 1. Unescape any escaped dollar signs (e.g. \$ -> $)
+  let processed = content.replace(/\\(\$)/g, '$1');
+
+  // 2. Safe single-line delimiter balancing (does not cross lines or other dollar signs)
+  processed = processed.replace(/\$\$([^\n$]+)\$(?!\$)/g, '$$$1$$');
+  processed = processed.replace(/(?<!\$)\$([^\n$]+)\$\$/g, '$$$1$$');
+
+  // 3. Convert all inline math $formula$ to custom code blocks `$$inline-math$$formula`
+  processed = processed.replace(/(?<!\$)\$([^\n$]+)\$(?!\$)/g, (match, p1) => {
+    if (p1.startsWith('$') || p1.endsWith('$')) return match;
+    return '`$$inline-math$$' + p1 + '`';
+  });
+
+  return processed;
+};
 
 export default function NotesViewer({ result, isFullscreen = false, onToggleFullscreen }) {
   if (!result || !result.draft_notes) return null;
@@ -9,16 +33,16 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
   const draftNotes = result.draft_notes;
 
   return (
-    <div className={`bg-zinc-950 border border-zinc-800 shadow-xl overflow-hidden transition-all duration-300 ${
+    <div className={`bg-black border border-zinc-800 shadow-xl overflow-hidden transition-all duration-300 ${
       isFullscreen 
-        ? 'fixed inset-0 z-[120] w-screen h-screen overflow-y-auto p-4 sm:p-8 bg-black' 
+        ? 'fixed inset-0 z-[120] w-screen h-screen overflow-y-auto p-2 sm:p-8 bg-black' 
         : 'w-full rounded-xl mb-12'
     }`}>
       {/* Notes Content Body */}
-      <div className="p-5 sm:p-8 space-y-6">
+      <div className="p-3 sm:p-8 space-y-6">
         {/* Title Header */}
         <div className="flex justify-between border-b border-zinc-800 pb-5">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-50 mb-2">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent mb-2 leading-tight">
             {draftNotes.title || 'Comprehensive Lecture Notes'}
           </h1>
 
@@ -34,9 +58,32 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
 
         {/* Markdown Notes Text */}
         {draftNotes.content && (
-          <div className="markdown-content text-xs sm:text-sm text-zinc-305 leading-relaxed bg-zinc-900/60 p-3.5 rounded-lg border border-zinc-800">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {draftNotes.content}
+          <div className="markdown-content text-sm sm:text-base text-zinc-300 leading-relaxed bg-black p-3 sm:p-6 rounded-lg border border-zinc-800">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]} 
+              rehypePlugins={[rehypeKatex, rehypeHighlight]}
+              components={{
+                code({node, className, children, ...props}) {
+                  const codeText = String(children);
+                  if (codeText.startsWith('$$inline-math$$')) {
+                    const formula = codeText.replace('$$inline-math$$', '');
+                    // Convert all spaces and backslash-spaces into KaTeX text spaces (\text{ })
+                    const formattedFormula = formula.replace(/\\? /g, '\\text{ }');
+                    try {
+                      const html = katex.renderToString(formattedFormula, { 
+                        displayMode: false,
+                        throwOnError: false
+                      });
+                      return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block" />;
+                    } catch (err) {
+                      return <span className="text-red-400 font-semibold">{formula}</span>;
+                    }
+                  }
+                  return <code className={className} {...props}>{children}</code>;
+                }
+              }}
+            >
+              {preprocessMarkdown(draftNotes.content)}
             </ReactMarkdown>
           </div>
         )}

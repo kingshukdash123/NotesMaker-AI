@@ -48,7 +48,7 @@ Write as if preparing professional university lecture notes comfortable and acce
 
 3. **Accessibility & Adaptability (For All Students & Subjects):**
    - **Accessible Explanations:** Keep explanations clear and understandable. If a technical term is used, define it simply so that non-technical students can follow.
-   - **For Technical Subjects:** Focus on step-by-step logic, equations/formulas, code blocks, and precise definitions.
+   - **For Technical Subjects:** Focus on step-by-step logic, equations/formulas, code blocks, and precise definitions. You MUST always wrap variables, mathematical symbols, parameters, and formulas/equations in standard LaTeX math delimiters (e.g., use `$R_1$` or `$x$` for inline math expressions, and use `$$y = f(x)$$` for display/block math equations on their own lines). Do not leave math symbols or variables as unformatted raw text.
    - **For Non-Technical Subjects (e.g., Humanities, History, Social Sciences):** Focus on the core arguments, context, thematic connections, key events, and definitions. Avoid overly complex jargon without explanation.
 
 4. **Hierarchy & Structured Formatting:**
