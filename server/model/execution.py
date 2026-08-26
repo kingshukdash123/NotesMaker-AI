@@ -8,8 +8,6 @@ class SectionPlan(TypedDict):
     topics: List[str]
     start_segment_id: int
     end_segment_id: int
-    research_required: bool
-    research_query: NotRequired[Optional[List[str]]]
     diagram_required: bool
     table_required: bool
     example_required: bool
@@ -33,8 +31,6 @@ class SectionPlanModel(BaseModel):
     topics: List[str]
     start_segment_id: int
     end_segment_id: int
-    research_required: bool
-    research_query: Optional[List[str]] = Field(default=None)
     diagram_required: bool
     table_required: bool
     example_required: bool

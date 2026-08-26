@@ -11,11 +11,9 @@ class LectureOutline(TypedDict):
     """A structured outline of a lecture."""
     title: str
     overview: str
-    main_topics: List[str]
     topic_hierarchy: List[TopicNode]
     learning_objectives: List[str]
     concepts: List[str]
-    candidate_sections: List[str]
     lecture_type: str
     difficulty: str
 
@@ -27,10 +25,8 @@ class TopicNodeModel(BaseModel):
 class LectureOutlineModel(BaseModel):
     title: str
     overview: str
-    main_topics: List[str]
     topic_hierarchy: List[TopicNodeModel]
     learning_objectives: List[str]
     concepts: List[str]
-    candidate_sections: List[str]
     lecture_type: str
     difficulty: str

@@ -7,8 +7,8 @@ from utils.logger import get_logger
 logger = get_logger(__name__)
 
 # Throttle chapter generation concurrency to prevent API rate limit issues (TPM/RPM)
-# Default limit is 2 concurrent chapters
-CONCURRENT_CHAPTER_LIMIT = int(os.getenv("CONCURRENT_CHAPTER_LIMIT", "2"))
+# Default limit is 10 concurrent chapters
+CONCURRENT_CHAPTER_LIMIT = int(os.getenv("CONCURRENT_CHAPTER_LIMIT", "5"))
 concurrency_semaphore = threading.Semaphore(CONCURRENT_CHAPTER_LIMIT)
 
 
