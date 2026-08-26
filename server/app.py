@@ -1,4 +1,5 @@
 import os
+
 os.environ["NOTESMAKER_MODE"] = "API"
 
 import asyncio
@@ -12,6 +13,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, HttpUrl
 
 from utils.logger import get_logger, current_task_id
+from services.firebase.firestore import get_user_api_keys
+from services.rag.service import RAGService
 from services.youtube.metadata import get_video_metadata
 from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
@@ -125,7 +128,6 @@ async def generate_notes(
     google_api_key = None
     if x_user_id:
         try:
-            from services.firebase.firestore import get_user_api_keys
             google_api_key = await get_user_api_keys(x_user_id, id_token)
         except Exception as e:
             logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
@@ -154,6 +156,45 @@ async def generate_notes(
     
     logger.info(f"Dispatched background task {task_id} for URL {url}")
     return {"task_id": task_id, "status": "PROCESSING"}
+
+
+class QARequest(BaseModel):
+    video_id: str
+    question: str
+
+
+@app.post("/api/notes/qa")
+async def ask_question(
+    request: QARequest,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+):
+    """
+    Endpoint to ask questions about a video using RAG search over transcript.
+    """
+    logger.info(f"Q&A request received for video: {request.video_id}")
+
+    # Parse Firebase Authorization ID Token if present
+    id_token = None
+    if authorization and authorization.startswith("Bearer "):
+        id_token = authorization.split("Bearer ")[1]
+
+    # Fetch user API key from Firestore if authenticated
+    google_api_key = None
+    if x_user_id:
+        try:
+            google_api_key = await get_user_api_keys(x_user_id, id_token)
+        except Exception as e:
+            logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
+
+    # Execute QA answering via RAGService
+    try:
+        rag_service = RAGService(google_api_key=google_api_key)
+        response = rag_service.answer_question(video_id=request.video_id, question=request.question)
+        return response
+    except Exception as e:
+        logger.exception("Q&A answering process failed.")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/notes/status/{task_id}")

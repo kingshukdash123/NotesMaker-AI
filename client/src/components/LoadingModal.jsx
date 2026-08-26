@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal } from 'lucide-react';
+import { Cpu } from 'lucide-react';
 
 const CONCISE_STEPS = [
-  "► Initializing notes generator pipeline...",
-  "► Segmenting video audio & transcripts...",
-  "► Mapping lecture outline syllabus...",
-  "► Extracting technical formulas & concepts...",
-  "► Assembling final study workspace notes..."
+  "► Downloading video audio & transcripts...",
+  "► Partitioning video sections & syllabus...",
+  "► Generating notes & summary dashboard...",
+  "► Creating embeddings & indexing Pinecone...",
+  "► Compiling interactive study workspace..."
 ];
 
 export default function LoadingModal({ 
@@ -32,69 +32,64 @@ export default function LoadingModal({
     return () => clearInterval(interval);
   }, []);
 
-  const renderCard = (bgClass = "bg-zinc-950/40", shadowClass = "shadow-xl", borderClass = "border-zinc-800", paddingClass = "p-5 sm:p-6") => (
-    <div className={`w-full border ${borderClass} ${bgClass} rounded-2xl ${paddingClass} ${shadowClass} space-y-4 relative overflow-hidden`}>
-      {/* Header toolbar */}
-      <div className="flex items-center justify-between pb-3 border-b border-zinc-900">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
-          </span>
-          <h3 className="text-xs font-mono font-bold tracking-wider uppercase text-zinc-100">
+  const renderCard = (bgClass = "bg-zinc-950/40", shadowClass = "shadow-xl", borderClass = "border-zinc-800", paddingClass = "p-6") => (
+    <div className={`w-full border ${borderClass} ${bgClass} rounded-2xl ${paddingClass} ${shadowClass} relative overflow-hidden flex flex-col items-center justify-center`}>
+      
+      {/* Premium Circular Spinner Area */}
+      <div className="flex flex-col items-center justify-center py-4 text-center space-y-6 w-full">
+        <div className="relative flex items-center justify-center">
+          {/* Outer spinning gradient ring */}
+          <div className="w-16 h-16 rounded-full border-[3px] border-orange-500/10 border-t-orange-500 border-r-orange-500 animate-spin"></div>
+          {/* Inner pulsing orange circle */}
+          <div className="absolute w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center animate-pulse">
+            <Cpu className="w-5 h-5 text-orange-500" />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <h3 className="text-xs font-black text-zinc-100 flex items-center justify-center gap-2 tracking-wide uppercase">
             AI Synthesis Active
           </h3>
+          <p className="text-[10px] text-zinc-450 max-w-[250px] mx-auto leading-relaxed">
+            Structuring lecture chapters, indexing transcript vectors, and formatting study notes.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onToggleTerminal}
-            className="px-2 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-850 text-[10px] font-mono text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5 cursor-pointer"
-          >
-            <Terminal className="w-3.5 h-3.5 text-zinc-400" />
-            <span>{isTerminalOpen ? 'Hide Logs' : 'Show Logs'}</span>
-          </button>
-          <span className="text-[10px] font-mono text-zinc-550">
-            Step {currentStepIndex + 1}/{CONCISE_STEPS.length}
-          </span>
-        </div>
-      </div>
 
-      {/* Concise Typewriter Compiler Console */}
-      <div className="relative text-xs text-zinc-305 leading-relaxed bg-black/60 p-4 rounded-xl border border-zinc-900/60 font-mono min-h-[140px] space-y-2">
-        <div className="absolute top-2 right-2 text-[9px] text-zinc-650 font-bold uppercase tracking-wider">
-          Agent Output
-        </div>
-        
-        {CONCISE_STEPS.slice(0, currentStepIndex + 1).map((step, idx) => (
-          <div key={idx} className="transition-all duration-300 animate-fadeIn">
-            {step}
+        {/* Clean Progress Tracker */}
+        <div className="w-full max-w-xs bg-zinc-900/50 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between text-[9px] font-bold text-zinc-500 tracking-wider uppercase">
+            <span>SYNTHESIS PROGRESS</span>
+            <span className="text-orange-500 font-mono font-bold">{Math.round((currentStepIndex + 1) * 20)}%</span>
           </div>
-        ))}
-        
-        <div className="flex items-center gap-1.5 text-[10px] text-orange-500 pt-2">
-          <span>Compiling study guides...</span>
-          <span className="typing-cursor" />
+          
+          {/* Progress Bar */}
+          <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900">
+            <div 
+              className="h-full bg-gradient-to-r from-orange-600 to-orange-400 transition-all duration-500 rounded-full"
+              style={{ width: `${(currentStepIndex + 1) * 20}%` }}
+            />
+          </div>
+
+          <div className="text-[9px] font-mono text-zinc-400 font-semibold tracking-tight text-center animate-pulse py-0.5">
+            {CONCISE_STEPS[currentStepIndex]}
+          </div>
         </div>
       </div>
 
-      {/* Bottom text */}
-      <p className="text-[10px] text-zinc-550 font-medium tracking-wide text-center uppercase tracking-widest animate-pulse">
-        Please keep this tab open. Synthesizing notes.
+      {/* Bottom warning */}
+      <p className="text-[9px] text-zinc-550 font-bold tracking-wider text-center uppercase tracking-widest animate-pulse mt-2">
+        Please keep this workspace tab open.
       </p>
     </div>
   );
 
   if (inline) {
-    return <div className="mt-4 animate-fadeIn">{renderCard("bg-zinc-950/20", "shadow-md", "border-zinc-900", "p-4 sm:p-5")}</div>;
+    return <div className="mt-4 animate-fadeIn">{renderCard("bg-zinc-950/20", "shadow-md", "border-zinc-900", "p-5")}</div>;
   }
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md animate-fadeIn">
-      {/* Ambient glowing radial glow */}
-      <div className="absolute w-[450px] h-[450px] rounded-full bg-zinc-200/5 blur-[120px] pointer-events-none"></div>
-
-      <div className="max-w-md w-full mx-4 relative z-10">
+      <div className="max-w-sm w-full mx-4 relative z-10">
         {renderCard("bg-zinc-950/90 backdrop-blur-sm", "shadow-2xl", "border-zinc-800", "p-6")}
       </div>
     </div>

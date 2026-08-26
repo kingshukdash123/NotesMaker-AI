@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Loader2, Cpu, FileText, Layers, GitMerge, Sparkles, AlertTriangle, X } from 'lucide-react';
+import { Check, Loader2, Cpu, FileText, Layers, GitMerge, AlertTriangle, X } from 'lucide-react';
 
 const STAGES = [
   {
@@ -30,7 +30,7 @@ const STAGES = [
     id: 'reducer',
     name: 'Reducer Node',
     desc: 'Synthesis & Final Assembly',
-    icon: Sparkles,
+    icon: GitMerge,
   },
 ];
 

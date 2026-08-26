@@ -18,23 +18,11 @@ class LLMService:
         Primary: ChatGoogleGenerativeAI (Gemini) with multiple key rotation.
         """
         try:
-            # Parse user-supplied Gemini keys (comma separated)
-            google_keys = []
-            if google_api_key:
-                google_keys = [k.strip() for k in google_api_key.split(",") if k.strip()]
+            # If no user-provided key, fall back to environment variables
+            if not google_api_key:
+                google_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY_1")
 
-            # If no user-provided keys, fall back to environment variables
-            if not google_keys:
-                env_keys = os.getenv("GEMINI_API_KEYS")
-                if env_keys:
-                    google_keys = [k.strip() for k in env_keys.split(",") if k.strip()]
-                else:
-                    for var_name in ["GEMINI_API_KEY", "GEMINI_API_KEY_1", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3"]:
-                        val = os.getenv(var_name)
-                        if val:
-                            google_keys.append(val.strip())
-
-            if not google_keys:
+            if not google_api_key:
                 logger.error("API key is missing.")
                 raise NotesMakerError(
                     message="API key is missing. Please set it in Settings.",
@@ -42,26 +30,14 @@ class LLMService:
                     status_code=400,
                 )
 
-            logger.info("Initializing key rotation with %d key(s).", len(google_keys))
+            logger.info("Initializing Gemini model with a single API key.")
 
-            primary_llms = []
-            for key in google_keys:
-                primary_llms.append(
-                    ChatGoogleGenerativeAI(
-                        model="gemini-3.5-flash-lite",
-                        google_api_key=key,
-                        temperature=0.2,
-                        max_retries=0, # Fail fast on rate limits to rotate keys instantly
-                    )
-                )
-
-            # Build the LangChain fallback chain
-            if len(primary_llms) == 1:
-                final_llm = primary_llms[0]
-            else:
-                final_llm = primary_llms[0].with_fallbacks(primary_llms[1:])
-
-            return final_llm
+            return ChatGoogleGenerativeAI(
+                model="gemini-3.5-flash-lite",
+                google_api_key=google_api_key.strip(),
+                temperature=0.2,
+                max_retries=3,
+            )
 
         except Exception as e:
             if isinstance(e, NotesMakerError):

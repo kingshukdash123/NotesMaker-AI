@@ -145,6 +145,16 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     cached_transcript = get_cached_transcript(video_id)
     if cached_transcript is not None:
         logger.info("Found cached transcript. Using cache.")
+        if cached_transcript:
+            last_segment = cached_transcript[-1]
+            video_duration_sec = last_segment.get("end", 0.0)
+            if video_duration_sec > 7200:
+                logger.error("Cached video duration of %s seconds exceeds 2-hour limit.", video_duration_sec)
+                raise NotesMakerError(
+                    message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
+                    code="VIDEO_TOO_LONG",
+                    status_code=400,
+                )
         return cached_transcript
 
     # 1. Fetch transcript since not cached
@@ -194,5 +204,17 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
             save_cached_transcript(video_id, transcript)
         except Exception as err:
             logger.warning("Failed to save transcript to cache.")
+
+    # 4. Enforce 2-hour video duration limit (7,200 seconds)
+    if transcript:
+        last_segment = transcript[-1]
+        video_duration_sec = last_segment.get("end", 0.0)
+        if video_duration_sec > 7200:
+            logger.error("Video duration of %s seconds exceeds 2-hour limit.", video_duration_sec)
+            raise NotesMakerError(
+                message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
+                code="VIDEO_TOO_LONG",
+                status_code=400,
+            )
 
     return transcript

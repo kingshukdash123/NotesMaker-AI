@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { X, LogIn, UserPlus, Lock, User, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, LogIn, UserPlus, Lock, User, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login', notice = null }) {
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
@@ -111,10 +111,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
           </p>
         </div>
 
-        {/* Optional Action Notice */}
         {notice && (
           <div className="mb-4 p-3 rounded-lg bg-orange-950/20 border border-orange-500/30 text-orange-300 text-xs flex items-center gap-2.5">
-            <Sparkles className="w-4 h-4 shrink-0 text-orange-400" />
+            <LogIn className="w-4 h-4 shrink-0 text-orange-400" />
             <span>{notice}</span>
           </div>
         )}

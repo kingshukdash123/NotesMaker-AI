@@ -35,7 +35,7 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
   return (
     <div className={`bg-black border border-zinc-800 shadow-xl overflow-hidden transition-all duration-300 ${
       isFullscreen 
-        ? 'fixed inset-0 z-[120] w-screen h-screen overflow-y-auto p-2 sm:p-8 bg-black' 
+        ? 'w-full h-full rounded-xl overflow-y-auto flex-1 min-h-0' 
         : 'w-full rounded-xl mb-12'
     }`}>
       {/* Notes Content Body */}
@@ -52,15 +52,6 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
               </span>
             )}
           </h1>
-
-          <button
-            type="button"
-            onClick={() => onToggleFullscreen && onToggleFullscreen(!isFullscreen)}
-            className="flex items-center justify-center p-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition"
-            title={isFullscreen ? "Exit full screen" : "Enter full screen"}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
         </div>
 
         {/* Markdown Notes Text */}

@@ -430,3 +430,41 @@
   animation: blink 0.8s infinite;
   vertical-align: middle;
 }
+
+/* Animated Orange Border — wrapper div approach (works in all browsers) */
+@keyframes spinGradient {
+  0%   { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+
+/* Smooth 360-Degree Rotating Gradient Border */
+@keyframes spinGradient {
+  0%   { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.animated-orange-border {
+  width: 400px;
+  height: 400px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 50%,
+    rgba(249, 115, 22, 0.3) 70%,
+    rgba(249, 115, 22, 0.9) 85%,
+    rgba(254, 215, 170, 1) 92%,
+    rgba(249, 115, 22, 0.9) 97%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  animation: spinGradient 3s linear infinite;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  z-index: 0;
+}
+
+
+

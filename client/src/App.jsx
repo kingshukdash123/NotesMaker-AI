@@ -15,11 +15,16 @@ import LoadingModal from './components/LoadingModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs, API_BASE_URL } from './services/server/api';
 import { saveNotes, getUserNotes, deleteNotes, saveUserApiKeys, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId, getNoteById } from './services/firebase/notesService';
-import { Sparkles, Video, Terminal, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown, MoreVertical } from 'lucide-react';
+import { Video, Terminal, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const mapErrorMessage = (errorMsg) => {
   if (!errorMsg) return 'Notes generation failed.';
   const msg = errorMsg.toLowerCase();
+
+  // 0. Video Length Exceeded
+  if (msg.includes('too long') || msg.includes('2 hours') || msg.includes('duration') || msg.includes('exceeds')) {
+    return 'Video is too long. In this prototype, only videos up to 2 hours are supported.';
+  }
 
   // 1. API Rate Limit Reached
   if (
@@ -226,7 +231,7 @@ function MainApp() {
   // 1. Navigation & Viewport State
   const [globalTab, setGlobalTab] = useState('home');
   const [workspaceTab, setWorkspaceTab] = useState('notes');
-  const [isNotesFullscreen, setIsNotesFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
 
@@ -237,12 +242,9 @@ function MainApp() {
 
   // 3. API Key Settings States (Embedded Settings form)
   const [activeWorkspaceView, setActiveWorkspaceView] = useState('generator'); // 'generator' | 'configure' | 'profile'
-  const [googleKey1, setGoogleKey1] = useState('');
-  const [googleKey2, setGoogleKey2] = useState('');
-  const [googleKey3, setGoogleKey3] = useState('');
-  const [showGoogle1, setShowGoogle1] = useState(false);
-  const [showGoogle2, setShowGoogle2] = useState(false);
-  const [showGoogle3, setShowGoogle3] = useState(false);
+  const [isNavSidebarCollapsed, setIsNavSidebarCollapsed] = useState(true);
+  const [googleApiKey, setGoogleApiKey] = useState('');
+  const [showGoogle, setShowGoogle] = useState(false);
   const [isSavingKeys, setIsSavingKeys] = useState(false);
   const [isFetchingKeys, setIsFetchingKeys] = useState(false);
   const [keysError, setKeysError] = useState('');
@@ -545,8 +547,8 @@ function MainApp() {
   }, [isInitialRouteResolved, globalTab, activeWorkspaceView, workspaceTab, loadedUrl, loadedNoteId]);
 
   useEffect(() => {
-    setIsNotesFullscreen(false);
-  }, [globalTab, activeWorkspaceView, workspaceTab]);
+    setIsFullscreen(false);
+  }, [globalTab, activeWorkspaceView]);
 
   const checkHealth = async () => {
     if (isConnectingRef.current) return;
@@ -633,6 +635,7 @@ function MainApp() {
 
     setIsLoadingMeta(true);
     setMetaError(null);
+    setTaskError(null);
     try {
       const data = await fetchYoutubeMetadata(targetUrl);
       setMetadata(data);
@@ -947,10 +950,7 @@ Where:
         setKeysSuccess('');
         try {
           const keys = await getUserApiKeys(currentUser.uid);
-          const splitKeys = (keys.googleApiKey || '').split(',');
-          setGoogleKey1(splitKeys[0] || '');
-          setGoogleKey2(splitKeys[1] || '');
-          setGoogleKey3(splitKeys[2] || '');
+          setGoogleApiKey(keys.googleApiKey || '');
         } catch (err) {
           console.error('Failed to load API keys:', err);
           setKeysError('Failed to load your existing API keys.');
@@ -969,11 +969,8 @@ Where:
     setKeysError('');
     setKeysSuccess('');
     try {
-      const combinedKeys = [googleKey1.trim(), googleKey2.trim(), googleKey3.trim()]
-        .filter(Boolean)
-        .join(',');
-      await saveUserApiKeys(currentUser.uid, combinedKeys);
-      setKeysSuccess('API Keys saved successfully!');
+      await saveUserApiKeys(currentUser.uid, googleApiKey.trim());
+      setKeysSuccess('API Key saved successfully!');
     } catch (err) {
       console.error('Error saving API keys:', err);
       setKeysError(err.message || 'An error occurred while saving your keys.');
@@ -1095,16 +1092,14 @@ Where:
   };
 
   const groupedHistory = groupHistoryByVideo(filteredHistory);
+  const isWorkspaceActive = globalTab === 'workspace' && currentUser;
+  const isAnyFullscreen = isFullscreen;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col selection:bg-zinc-800 relative overflow-hidden">
-      {/* Smooth White Ambient Light Blobs */}
-      <div className="fixed -top-24 -left-24 w-[350px] sm:w-[550px] h-[350px] sm:h-[550px] bg-gradient-to-br from-white/25 via-zinc-200/10 to-transparent rounded-full blur-[75px] pointer-events-none z-0 opacity-100"></div>
-      <div className="fixed -top-24 -right-24 w-[400px] sm:w-[650px] h-[400px] sm:h-[650px] bg-gradient-to-bl from-white/20 via-zinc-300/10 to-transparent rounded-full blur-[85px] pointer-events-none z-0 opacity-50"></div>
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[200px] bg-white/[0.08] rounded-full blur-[100px] pointer-events-none z-0"></div>
+    <div className={`${isWorkspaceActive ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} bg-black text-zinc-100 flex flex-col selection:bg-zinc-800 relative`}>
 
       {/* Top Header Navbar rendered globally */}
-      {!isNotesFullscreen && (
+      {!isFullscreen && (
         <Header
           globalTab={globalTab}
           setGlobalTab={setGlobalTab}
@@ -1145,7 +1140,7 @@ Where:
             </main>
           </div>
 
-          {!isNotesFullscreen && (
+          {!isFullscreen && (
             <footer className="relative z-10 border-t border-zinc-900 bg-black py-6 text-center text-xs text-zinc-500">
               <p>NotesMaker AI - All Rights Reserved</p>
             </footer>
@@ -1176,7 +1171,7 @@ Where:
           </>
         ) : (
           /* Authenticated Sidebar Dashboard Workspace Layout (Header rendered separately at top) */
-          <div className="flex-1 w-full flex relative min-h-screen">
+          <div className="flex-1 w-full flex relative h-[calc(100vh-53px)] overflow-hidden">
 
             {/* Mobile Sidebar Backdrop Overlay */}
             {isSidebarMobileOpen && (
@@ -1187,15 +1182,41 @@ Where:
             )}
 
             {/* Left Fixed Full-Height Navigation Sidebar - positioned below Header */}
-            <aside className={`fixed top-[53px] bottom-0 left-0 w-64 bg-zinc-950 border-r border-zinc-900 z-[80] flex flex-col p-4 transition-transform duration-300 lg:translate-x-0 ${isSidebarMobileOpen ? 'translate-x-0' : '-translate-x-full'
-              } ${isNotesFullscreen ? 'hidden lg:hidden' : ''}`}>
+            <aside className={`fixed top-[53px] bottom-0 left-0 ${isNavSidebarCollapsed ? 'lg:w-16' : 'lg:w-64'} w-64 bg-zinc-950 border-r border-zinc-900 z-[80] flex flex-col p-4 transition-all duration-300 lg:translate-x-0 ${isSidebarMobileOpen ? 'translate-x-0' : '-translate-x-full'
+              } ${isAnyFullscreen ? 'hidden lg:hidden' : ''}`}>
 
 
               <div className="h-px mb-4" />
 
               {/* Sidebar Navigation */}
               <div className="flex-1">
-                <h3 className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-500 mb-3 px-2">
+                {!isNavSidebarCollapsed ? (
+                  <div className="flex items-center justify-between mb-3 px-2 lg:flex hidden">
+                    <h3 className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-500">
+                      Study Space
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsNavSidebarCollapsed(true)}
+                      className="p-1 rounded hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
+                      title="Collapse Sidebar"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center mb-4 lg:flex hidden">
+                    <button
+                      type="button"
+                      onClick={() => setIsNavSidebarCollapsed(false)}
+                      className="p-1 rounded hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
+                      title="Expand Sidebar"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+                <h3 className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-500 mb-3 px-2 lg:hidden block">
                   Workspace
                 </h3>
                 <nav className="flex flex-col gap-1.5">
@@ -1204,39 +1225,42 @@ Where:
                       setActiveWorkspaceView('generator');
                       setIsSidebarMobileOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${activeWorkspaceView === 'generator'
+                    className={`w-full flex items-center ${isNavSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-2.5 px-3 py-2.5'} rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${activeWorkspaceView === 'generator'
                       ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                      : 'text-zinc-450 hover:text-zinc-200 hover:bg-zinc-900/40'
                       }`}
+                    title="Notes Generator"
                   >
-                    <Cpu className="w-4 h-4" />
-                    <span>Notes Generator</span>
+                    <Cpu className="w-4 h-4 shrink-0" />
+                    <span className={isNavSidebarCollapsed ? 'lg:hidden' : ''}>Notes Generator</span>
                   </button>
                   <button
                     onClick={() => {
                       setActiveWorkspaceView('configure');
                       setIsSidebarMobileOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${activeWorkspaceView === 'configure'
+                    className={`w-full flex items-center ${isNavSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-2.5 px-3 py-2.5'} rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${activeWorkspaceView === 'configure'
                       ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                      : 'text-zinc-450 hover:text-zinc-200 hover:bg-zinc-900/40'
                       }`}
+                    title="Configure Settings"
                   >
-                    <Settings className="w-4 h-4" />
-                    <span>Configure Settings</span>
+                    <Settings className="w-4 h-4 shrink-0" />
+                    <span className={isNavSidebarCollapsed ? 'lg:hidden' : ''}>Configure Settings</span>
                   </button>
                   <button
                     onClick={() => {
                       setActiveWorkspaceView('profile');
                       setIsSidebarMobileOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${activeWorkspaceView === 'profile'
+                    className={`w-full flex items-center ${isNavSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-2.5 px-3 py-2.5'} rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${activeWorkspaceView === 'profile'
                       ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                      : 'text-zinc-450 hover:text-zinc-200 hover:bg-zinc-900/40'
                       }`}
+                    title="User Profile"
                   >
-                    <User className="w-4 h-4" />
-                    <span>User Profile</span>
+                    <User className="w-4 h-4 shrink-0" />
+                    <span className={isNavSidebarCollapsed ? 'lg:hidden' : ''}>User Profile</span>
                   </button>
                 </nav>
               </div>
@@ -1247,16 +1271,17 @@ Where:
                 <button
                   type="button"
                   onClick={handleToggleTerminal}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer border ${isTerminalOpen
+                  className={`w-full flex items-center ${isNavSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'justify-between px-3 py-2.5'} rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer border ${isTerminalOpen
                     ? 'bg-orange-950/20 text-orange-400 border-orange-900/30 font-bold'
                     : 'bg-zinc-950/30 border-zinc-900 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
                     }`}
+                  title="Real-time Console"
                 >
                   <div className="flex items-center gap-2.5">
                     <Terminal className="w-4 h-4" />
-                    <span>Real-time Console</span>
+                    <span className={isNavSidebarCollapsed ? 'lg:hidden' : ''}>Real-time Console</span>
                   </div>
-                  {taskStatus === 'PROCESSING' && (
+                  {!isNavSidebarCollapsed && taskStatus === 'PROCESSING' && (
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
@@ -1272,44 +1297,45 @@ Where:
                       checkHealth();
                     }
                   }}
-                  className="cursor-pointer flex items-center gap-2 p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-900 hover:bg-zinc-900 transition text-[10px] font-medium"
+                  className={`cursor-pointer flex items-center ${isNavSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-2 p-2.5'} rounded-xl bg-zinc-900/40 border border-zinc-900 hover:bg-zinc-900 transition text-[10px] font-medium`}
+                  title="API Health Status"
                 >
                   {apiStatus === 'checking' && (
                     <>
                       <RefreshCw className="w-3.5 h-3.5 text-orange-500 animate-spin" />
-                      <span className="text-zinc-500">API: Connecting...</span>
+                      <span className={`text-zinc-550 ${isNavSidebarCollapsed ? 'lg:hidden' : ''}`}>API: Connecting...</span>
                     </>
                   )}
                   {apiStatus === 'healthy' && (
                     <>
-                      <span className="relative flex h-2 w-2">
+                      <span className="relative flex h-2 w-2 shrink-0">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                       </span>
-                      <span className="text-orange-500 font-semibold">API Connected</span>
+                      <span className={`text-orange-500 font-semibold ${isNavSidebarCollapsed ? 'lg:hidden' : ''}`}>API Connected</span>
                     </>
                   )}
                   {apiStatus === 'unhealthy' && (
                     <>
-                      <AlertCircle className="w-3.5 h-3.5 text-orange-600 animate-pulse" />
-                      <span className="text-orange-600 font-semibold">API Offline</span>
+                      <AlertCircle className="w-3.5 h-3.5 text-orange-600 animate-pulse shrink-0" />
+                      <span className={`text-orange-600 font-semibold ${isNavSidebarCollapsed ? 'lg:hidden' : ''}`}>API Offline</span>
                     </>
                   )}
                 </div>
               </div>
             </aside>
 
-            {/* Right Side main scrollable Workspace Content Pane - pt-[53px] offset for Header */}
-            <div className="flex-1 min-w-0 lg:pl-64 flex flex-col pt-[53px]">
-              <div className={`flex-1 w-full px-4 sm:px-8 py-6 transition-all duration-300 relative z-10 ${isRightPanelOpen
-                ? 'max-w-[1700px] lg:mx-0 lg:ml-0 lg:mr-auto lg:pr-[370px] xl:pr-[410px]'
-                : 'max-w-7xl mx-auto'
-                }`}>
+            {/* Right Side main scrollable Workspace Content Workspace Pane */}
+            <div className={`flex-1 min-w-0 ${isAnyFullscreen ? '' : (isNavSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64')} flex flex-col h-screen overflow-hidden ${isAnyFullscreen ? '' : 'pt-[53px]'}`}>
+              <div className={`flex-1 w-full transition-all duration-300 relative z-10 ${isRightPanelOpen && !isAnyFullscreen
+                ? 'lg:pr-[370px] xl:pr-[410px]'
+                : ''
+                } overflow-hidden flex flex-col h-full min-h-0`}>
 
-                <div className="bg-zinc-950/20 border border-zinc-900 rounded-2xl p-4 sm:p-6 shadow-xl w-full">
+                <div className="bg-zinc-950/10 w-full flex-1 min-h-0 flex flex-col overflow-hidden">
                   {/* 1. API Configuration Settings view */}
                   {activeWorkspaceView === 'configure' && (
-                    <div className="max-w-xl mx-auto space-y-6 py-4">
+                    <div className="max-w-xl mx-auto space-y-6 py-4 flex-1 min-h-0 overflow-y-auto w-full pr-2 custom-scrollbar">
                       <div className="space-y-1.5 pb-4 border-b border-zinc-900">
                         <h3 className="text-lg font-bold text-zinc-50">API Key Configurations</h3>
                         <p className="text-xs text-zinc-400">Keys are stored securely and only used for your note generations.</p>
@@ -1337,16 +1363,16 @@ Where:
                       ) : (
                         <form onSubmit={handleSaveApiKeys} className="space-y-5">
                           <div className="p-3.5 rounded-xl bg-orange-950/10 border border-orange-900/20 text-zinc-400 text-[11px] leading-relaxed">
-                            <span className="font-bold text-orange-400 block mb-1">💡 Key Rotation & Fallback</span>
-                            Upload up to 3 Gemini API keys from different accounts. If one gets rate limited under free tier quotas, the backend will automatically rotate to the next key. If all are blank, default server keys will be used.
+                            <span className="font-bold text-orange-400 block mb-1">💡 Gemini API Configuration</span>
+                            Provide a Gemini API Key to serve your LLM interactions. If left blank, the application will attempt to use default server configuration.
                           </div>
 
-                          {/* Gemini API Key 1 */}
+                          {/* Gemini API Key */}
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
                               <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                                Gemini API Key 1 (Primary)
+                                Gemini API Key
                               </label>
                               <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 font-semibold underline underline-offset-2">
                                 Get Key <ExternalLink className="w-2.5 h-2.5" />
@@ -1355,60 +1381,14 @@ Where:
                             <div className="relative">
                               <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                               <input
-                                type={showGoogle1 ? 'text' : 'password'}
-                                value={googleKey1}
-                                onChange={(e) => setGoogleKey1(e.target.value)}
-                                placeholder="AIzaSy... (First Key)"
+                                type={showGoogle ? 'text' : 'password'}
+                                value={googleApiKey}
+                                onChange={(e) => setGoogleApiKey(e.target.value)}
+                                placeholder="AIzaSy... (Gemini Key)"
                                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
                               />
-                              <button type="button" onClick={() => setShowGoogle1(!showGoogle1)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
-                                {showGoogle1 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Gemini API Key 2 */}
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
-                                Gemini API Key 2 (Rotation Fallback)
-                              </label>
-                            </div>
-                            <div className="relative">
-                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                              <input
-                                type={showGoogle2 ? 'text' : 'password'}
-                                value={googleKey2}
-                                onChange={(e) => setGoogleKey2(e.target.value)}
-                                placeholder="AIzaSy... (Second Key)"
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
-                              />
-                              <button type="button" onClick={() => setShowGoogle2(!showGoogle2)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
-                                {showGoogle2 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Gemini API Key 3 */}
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
-                                Gemini API Key 3 (Rotation Fallback)
-                              </label>
-                            </div>
-                            <div className="relative">
-                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                              <input
-                                type={showGoogle3 ? 'text' : 'password'}
-                                value={googleKey3}
-                                onChange={(e) => setGoogleKey3(e.target.value)}
-                                placeholder="AIzaSy... (Third Key)"
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
-                              />
-                              <button type="button" onClick={() => setShowGoogle3(!showGoogle3)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
-                                {showGoogle3 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              <button type="button" onClick={() => setShowGoogle(!showGoogle)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                {showGoogle ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                               </button>
                             </div>
                           </div>
@@ -1424,7 +1404,7 @@ Where:
 
                   {/* 2. User Profile view */}
                   {activeWorkspaceView === 'profile' && (
-                    <div className="max-w-md mx-auto space-y-6 py-4 flex flex-col items-center text-center">
+                    <div className="max-w-md mx-auto space-y-6 py-4 flex flex-col items-center text-center flex-1 min-h-0 overflow-y-auto w-full pr-2 custom-scrollbar">
                       <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 text-orange-500 flex items-center justify-center text-xl font-black uppercase shadow-inner">
                         {getUserDisplayName(currentUser).charAt(0)}
                       </div>
@@ -1457,25 +1437,28 @@ Where:
 
                   {/* 3. Notes Generator View (Has embedded History & Active generator panel) */}
                   {activeWorkspaceView === 'generator' && (
-                    <div className="w-full flex flex-col xl:flex-row gap-6 items-stretch">
+                    <div className="w-full flex flex-col xl:flex-row gap-6 items-stretch flex-1 min-h-0">
 
                       {/* Notes History Pane (Left side inside Notes Generator view) */}
-                      <div className={`w-full shrink-0 flex flex-col border-b xl:border-b-0 xl:border-r border-zinc-900 pb-4 xl:pb-0 xl:sticky xl:top-[77px] xl:h-[calc(100vh-101px)] gap-2 transition-all duration-300 ${isSidebarSqueezed ? 'xl:w-14 xl:pr-0 xl:items-start xl:pl-0' : 'xl:w-72 xl:pr-4'
-                        }`}>
+                      <div className={`w-full shrink-0 flex flex-col border-b xl:border-b-0 xl:border-r border-zinc-900 p-4 xl:h-full gap-2 transition-all duration-300 ${isSidebarSqueezed ? 'xl:w-14 xl:px-2.5' : 'xl:w-72'
+                        } ${isAnyFullscreen ? 'hidden xl:hidden' : ''}`}>
+
+                        {/* Spacer to align top gaps */}
+                        <div className="hidden xl:block h-px mb-4" />
 
                         {/* DESKTOP SIDEBAR VIEW */}
                         <div className="hidden xl:flex flex-col w-full h-full min-h-0">
                           {isSidebarSqueezed ? (
                             /* Squeezed View on Desktop */
-                            <div className="flex flex-col items-start gap-4 py-2 w-full pl-0">
+                            <div className="flex flex-col items-center gap-4 py-2 w-full pl-0">
                               {/* Expand Button */}
                               <button
                                 type="button"
                                 onClick={() => setIsSidebarSqueezed(false)}
-                                className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 transition flex items-center justify-center cursor-pointer shadow-sm"
+                                className="p-1 rounded hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
                                 title="Expand Sidebar"
                               >
-                                <ArrowRight className="w-4 h-4" />
+                                <ChevronRight className="w-3.5 h-3.5" />
                               </button>
 
                               {/* Circular Generate Button */}
@@ -1515,7 +1498,7 @@ Where:
                                   className="p-1 rounded hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
                                   title="Collapse Sidebar"
                                 >
-                                  <ArrowLeft className="w-3.5 h-3.5" />
+                                  <ChevronLeft className="w-3.5 h-3.5" />
                                 </button>
                               </div>
 
@@ -1945,8 +1928,8 @@ Where:
                       </div>
 
                       {/* Active Ingestion & Viewer Panel (Right side inside Notes Generator view) */}
-                      <div className="flex-1 min-w-0 xl:sticky xl:top-[77px] xl:h-[calc(100vh-101px)] flex flex-col min-h-0">
-                        {metaError && (
+                      <div className="flex-1 min-w-0 flex flex-col min-h-0 h-full overflow-hidden p-4 sm:p-5">
+                         {metaError && (
                           <div className="mb-4 p-3 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
                             <div>
@@ -1955,8 +1938,18 @@ Where:
                           </div>
                         )}
 
+                        {taskError && (
+                          <div className="mb-4 p-3 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
+                            <div>
+                              <span className="font-bold">Pipeline Execution Error:</span> {taskError}
+                            </div>
+                          </div>
+                        )}
+
                         {!taskResult ? (
-                          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2 space-y-6">
+                          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2 flex flex-col">
+                            <div className="max-w-xl w-full mx-auto space-y-5 py-6 my-auto">
                             <UrlInput
                               url={url}
                               setUrl={setUrl}
@@ -1987,28 +1980,64 @@ Where:
                               />
                             )}
 
-                            {/* Empty state prompt - displayed inside scroll area only when no video preview is loaded */}
+                            {/* Empty state — demo link */}
                             {!metadata && taskStatus !== 'PROCESSING' && (
-                              <div className="text-center py-12 px-4 border border-zinc-900 bg-zinc-950/20 rounded-xl space-y-3 mt-4">
-                                <div className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-850 text-zinc-400 flex items-center justify-center mx-auto">
-                                  <Layers className="w-4 h-4" />
+                              <div className="flex flex-col items-center text-center space-y-4 pt-2">
+
+                                {/* Demo shortcut */}
+                                <div className="pt-2 border-t border-zinc-800 w-full flex items-center justify-center gap-2.5 text-xs text-zinc-400">
+                                  <span>Want to see it in action?</span>
+                                  <button
+                                    type="button"
+                                    onClick={handleLoadMockData}
+                                    className="text-orange-500 hover:text-orange-400 font-bold tracking-wider uppercase transition cursor-pointer flex items-center gap-1"
+                                  >
+                                    <span>Try Quick Demo</span>
+                                    <ArrowRight className="w-3 h-3" />
+                                  </button>
                                 </div>
-                                <h4 className="text-xs font-bold text-zinc-300">Study Workspace Empty</h4>
-                                <p className="text-[10px] text-zinc-550 max-w-sm mx-auto leading-relaxed">
-                                  Select a study note from your history on the left, or paste a new URL above to begin notes generation.
-                                </p>
                               </div>
                             )}
+                            </div>{/* end max-w-xl wrapper */}
                           </div>
                         ) : (
-                          <div className="flex flex-col h-full min-h-0 space-y-6">
+                          <div className={`flex flex-col h-full min-h-0 ${
+                            isFullscreen
+                              ? 'fixed inset-0 z-[120] w-screen h-screen bg-black p-4 sm:p-6'
+                              : 'space-y-6'
+                          }`}>
                             <div className="shrink-0">
-                              <Tabs activeTab={workspaceTab} setActiveTab={setWorkspaceTab} />
+                              <Tabs 
+                                activeTab={workspaceTab} 
+                                setActiveTab={setWorkspaceTab} 
+                                isFullscreen={isFullscreen}
+                                onToggleFullscreen={setIsFullscreen}
+                              />
                             </div>
                             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2">
-                              {workspaceTab === 'notes' && <NotesViewer result={taskResult} isFullscreen={isNotesFullscreen} onToggleFullscreen={setIsNotesFullscreen} versionSuffix={getActiveVersionLabel()} />}
-                              {workspaceTab === 'summary' && <SummaryOverview result={taskResult} metadata={metadata} consoleOpen={isTerminalOpen} />}
-                              {workspaceTab === 'qa' && <VideoQa />}
+                              {workspaceTab === 'notes' && (
+                                <NotesViewer 
+                                  result={taskResult} 
+                                  isFullscreen={isFullscreen} 
+                                  onToggleFullscreen={setIsFullscreen} 
+                                  versionSuffix={getActiveVersionLabel()} 
+                                />
+                              )}
+                              {workspaceTab === 'summary' && (
+                                <SummaryOverview 
+                                  result={taskResult} 
+                                  metadata={metadata} 
+                                  consoleOpen={isTerminalOpen} 
+                                  isFullscreen={isFullscreen}
+                                />
+                              )}
+                              {workspaceTab === 'qa' && (
+                                <VideoQa 
+                                  videoId={extractYoutubeVideoId(loadedUrl) || (metadata && metadata.video_id)} 
+                                  currentUser={currentUser} 
+                                  isFullscreen={isFullscreen}
+                                />
+                              )}
                             </div>
                           </div>
                         )}

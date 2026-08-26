@@ -65,6 +65,38 @@ export async function getTaskStatus(taskId) {
 }
 
 /**
+ * Asks a question about a video transcript using RAG.
+ * @param {string} videoId - YouTube video ID
+ * @param {string} question - Question to ask
+ * @param {string} userId - Auth user ID
+ * @param {string} idToken - Auth ID token
+ * @returns {Promise<Object>} The answer and source references
+ */
+export async function askVideoQuestion(videoId, question, userId, idToken) {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  if (userId) {
+    headers['X-User-Id'] = userId;
+  }
+  if (idToken) {
+    headers['Authorization'] = `Bearer ${idToken}`;
+  }
+  const response = await fetch(`${API_BASE_URL}/notes/qa`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ video_id: videoId, question: question }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to get an answer (${response.status})`);
+  }
+
+  return response.json();
+}
+
+/**
  * Subscribes to SSE real-time log streaming for a task.
  * @param {string} taskId - Background task ID
  * @param {Function} onMessage - Callback for each log message string

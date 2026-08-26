@@ -9,6 +9,7 @@ from nodes.transcript_merger import transcript_merger
 from nodes.orchestrator import orchestrator
 from nodes.chapter_worker import chapter_worker_node
 from nodes.reducer import reducer
+from nodes.vector_indexer import vector_indexer_node
 
 # ==========================
 # Main Graph Builder
@@ -48,6 +49,11 @@ builder.add_node(
     wrap_node(reducer),
 )
 
+builder.add_node(
+    "vector_indexer",
+    wrap_node(vector_indexer_node),
+)
+
 # ==========================
 # Main Pipeline
 # ==========================
@@ -65,6 +71,11 @@ builder.add_edge(
 builder.add_edge(
     "transcript_merger",
     "orchestrator",
+)
+
+builder.add_edge(
+    "transcript_merger",
+    "vector_indexer",
 )
 
 
@@ -106,6 +117,11 @@ builder.add_conditional_edges(
 # Reduce all parallel outputs into reducer
 builder.add_edge(
     "chapter_worker",
+    "reducer",
+)
+
+builder.add_edge(
+    "vector_indexer",
     "reducer",
 )
 
