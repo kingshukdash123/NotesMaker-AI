@@ -28,17 +28,24 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
   const preprocessMessageMarkdown = (content) => {
     if (!content) return '';
 
+    // 0. Restore LaTeX backslashes that were parsed as escape control characters (e.g. \t, \f, \b, \v)
+    let processed = content
+      .replace(/\x0c/g, '\\f') // Form Feed -> \f (e.g. \frac)
+      .replace(/\x09/g, '\\t') // Horizontal Tab -> \t (e.g. \text, \theta)
+      .replace(/\x08/g, '\\b') // Backspace -> \b (e.g. \beta, \begin)
+      .replace(/\x0b/g, '\\v'); // Vertical Tab -> \v (e.g. \vec)
+
     // 1. Unescape any escaped dollar signs (e.g. \$ -> $)
-    let processed = content.replace(/\\(\$)/g, '$1');
+    processed = processed.replace(/\\(\$)/g, '$1');
 
     // 2. Safe delimiter balancing for single-line inline math blocks
     processed = processed.replace(/\$\$([^\n$]+)\$(?!\$)/g, '$$$1$$');
     processed = processed.replace(/(?<!\$)\$([^\n$]+)\$\$/g, '$$$1$$');
 
-    // 3. Convert all inline math $formula$ to custom code blocks `$$inline-math$$formula`
+    // 3. Convert all inline math $formula$ to custom code blocks `__INLINE_MATH__formula`
     processed = processed.replace(/(?<!\$)\$([^\n$]+)\$(?!\$)/g, (match, p1) => {
       if (p1.startsWith('$') || p1.endsWith('$')) return match;
-      return '`$$inline-math$$' + p1 + '`';
+      return '`__INLINE_MATH__' + p1 + '`';
     });
 
     // 4. Pre-process [hh:mm:ss] or [mm:ss] timestamps into custom markdown link tokens
@@ -85,11 +92,10 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
           },
           code({node, className, children, ...props}) {
             const codeText = String(children);
-            if (codeText.startsWith('$$inline-math$$')) {
-              const formula = codeText.replace('$$inline-math$$', '');
-              const formattedFormula = formula.replace(/\\? /g, '\\text{ }');
+            if (codeText.startsWith('__INLINE_MATH__')) {
+              const formula = codeText.replace('__INLINE_MATH__', '');
               try {
-                const html = katex.renderToString(formattedFormula, { 
+                const html = katex.renderToString(formula, { 
                   displayMode: false, 
                   throwOnError: false 
                 });

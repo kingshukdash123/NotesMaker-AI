@@ -122,7 +122,7 @@ builder.add_edge(
 
 builder.add_edge(
     "vector_indexer",
-    "reducer",
+    END,
 )
 
 # Reducer -> END

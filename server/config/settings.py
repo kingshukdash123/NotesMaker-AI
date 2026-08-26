@@ -4,7 +4,7 @@ load_dotenv()
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    TAVILY_API_KEY: str
+    TAVILY_API_KEY: str | None = None
     FIREBASE_PROJECT_ID: str | None = None
     PINECONE_API_KEY: str | None = None
     PINECONE_INDEX_NAME: str | None = None
