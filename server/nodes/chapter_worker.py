@@ -3,13 +3,15 @@ import threading
 from state.sectionState import ChapterState
 from nodes.chapterWriter import chapter_writer
 from utils.logger import get_logger
+from config.constants import CONCURRENT_CHAPTER_LIMIT
 
 logger = get_logger(__name__)
 
 # Throttle chapter generation concurrency to prevent API rate limit issues (TPM/RPM)
 # Default limit is 10 concurrent chapters
-CONCURRENT_CHAPTER_LIMIT = int(os.getenv("CONCURRENT_CHAPTER_LIMIT", "5"))
+
 concurrency_semaphore = threading.Semaphore(CONCURRENT_CHAPTER_LIMIT)
+
 
 
 def chapter_worker_node(state: ChapterState) -> dict:

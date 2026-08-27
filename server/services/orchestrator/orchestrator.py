@@ -5,7 +5,8 @@ from model.orchestration import OrchestrationResultModel
 from prompts.orchestrator_prompt import ORCHESTRATOR_PROMPT
 from utils.exceptions import NotesMakerError
 from utils.logger import get_logger
-from utils.retry import call_llm_with_retry
+
+from config.constants import ORCHESTRATOR_MODEL
 
 logger = get_logger(__name__)
 
@@ -13,7 +14,9 @@ logger = get_logger(__name__)
 class OrchestratorService:
 
     def __init__(self, google_api_key=None):
-        self.llm = LLMService.get_llm(google_api_key)
+        self.llm = LLMService.get_gemini_llm(google_api_key, model_name=ORCHESTRATOR_MODEL)
+
+
         self.prompt = ChatPromptTemplate.from_template(ORCHESTRATOR_PROMPT)
 
     def run(self, metadata, transcript):
@@ -32,7 +35,7 @@ class OrchestratorService:
                 OrchestrationResultModel
             )
 
-            orchestration_result_model = call_llm_with_retry(structured_llm, messages)
+            orchestration_result_model = structured_llm.invoke(messages)
             orchestration_result = orchestration_result_model.model_dump()
 
             outline = orchestration_result["outline"]

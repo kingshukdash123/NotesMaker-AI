@@ -2,11 +2,13 @@ import os
 import time
 from typing import List, Dict, Any, Optional
 from pinecone import Pinecone, ServerlessSpec
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from config.settings import settings
 from utils.logger import get_logger
 from utils.exceptions import NotesMakerError
+from services.llm.service import LLMService
+from config.constants import PINECONE_INDEX_DIMENSION, PINECONE_BATCH_SIZE, PINECONE_UPSERT_DELAY
+
 
 logger = get_logger(__name__)
 
@@ -18,30 +20,24 @@ class PineconeIndexer:
     """
 
     def __init__(self, google_api_key: Optional[str] = None):
-        # Resolve Gemini API Key
-        self.google_api_key = google_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY_1")
-        if not self.google_api_key:
-            raise NotesMakerError(
-                message="Google API key is missing. Cannot initialize embedding generator.",
-                code="MISSING_API_KEY",
-                status_code=400,
-            )
+        self.google_api_key = google_api_key
 
         # Initialize langchain-google-genai embeddings (Gemini Embedding 2 outputs 3072 dimensions)
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/gemini-embedding-2-preview",
-            google_api_key=self.google_api_key,
+        self.embeddings = LLMService.get_embeddings(
+            google_api_key=self.google_api_key
         )
 
+
         # Connect to Pinecone
-        pinecone_api_key = getattr(settings, "PINECONE_API_KEY", None) or os.getenv("PINECONE_API_KEY")
+        pinecone_api_key = settings.PINECONE_API_KEY
         if not pinecone_api_key:
             logger.warning("PINECONE_API_KEY is missing. Indexer is disabled.")
             self.pc = None
             return
 
         self.pc = Pinecone(api_key=pinecone_api_key)
-        self.index_name = getattr(settings, "PINECONE_INDEX_NAME", None) or os.getenv("PINECONE_INDEX_NAME") or "notesmaker-ai"
+        self.index_name = settings.PINECONE_INDEX_NAME
+
 
         try:
             self._ensure_index_setup()
@@ -57,10 +53,11 @@ class PineconeIndexer:
         if self.index_name in existing_indexes:
             # Check dimension
             desc = self.pc.describe_index(self.index_name)
-            if desc.dimension != 3072:
+            if desc.dimension != PINECONE_INDEX_DIMENSION:
                 logger.info(
-                    "Pinecone index dimension mismatch (%d vs 3072). Deleting and recreating...",
+                    "Pinecone index dimension mismatch (%d vs %d). Deleting and recreating...",
                     desc.dimension,
+                    PINECONE_INDEX_DIMENSION,
                 )
                 self.pc.delete_index(self.index_name)
                 self._create_index()
@@ -68,14 +65,15 @@ class PineconeIndexer:
             self._create_index()
 
     def _create_index(self):
-        """Creates the Pinecone index on serverless AWS with 3072 dimensions."""
-        logger.info("Creating new Pinecone index '%s' with 3072 dimensions...", self.index_name)
+        """Creates the Pinecone index on serverless AWS with configured dimension."""
+        logger.info("Creating new Pinecone index '%s' with %d dimensions...", self.index_name, PINECONE_INDEX_DIMENSION)
         self.pc.create_index(
             name=self.index_name,
-            dimension=3072,
+            dimension=PINECONE_INDEX_DIMENSION,
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region="us-east-1"),
         )
+
         # Wait until the index is fully ready
         while not self.pc.describe_index(self.index_name).status["ready"]:
             logger.info("Waiting for Pinecone index to initialize...")
@@ -114,8 +112,9 @@ class PineconeIndexer:
             video_id,
         )
 
-        batch_size = 40  # Batch size chosen to consume ~8,000 tokens per batch (well under 30K TPM)
+        batch_size = PINECONE_BATCH_SIZE  # Batch size chosen to consume ~8,000 tokens per batch (well under 30K TPM)
         total_batches = (len(segments) + batch_size - 1) // batch_size
+
 
         for i in range(total_batches):
             start_idx = i * batch_size
@@ -167,8 +166,9 @@ class PineconeIndexer:
 
             # Introduce delay to avoid hitting the 30K TPM rate limit on Gemini Embedding 2
             if i < total_batches - 1:
-                sleep_time = 18.0
-                logger.info("Sleeping for %s seconds to respect the 30K TPM rate limit...", sleep_time)
+                sleep_time = PINECONE_UPSERT_DELAY
+                logger.info("Sleeping for %s seconds to respect the rate limit...", sleep_time)
                 time.sleep(sleep_time)
+
 
         logger.info("Pinecone indexing completed successfully for video: %s", video_id)

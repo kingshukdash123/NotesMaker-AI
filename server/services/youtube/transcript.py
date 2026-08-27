@@ -8,6 +8,9 @@ from utils.exceptions import NotesMakerError
 from utils.logger import get_logger
 from model.transcript import TranscriptSegment
 from services.firebase.firestore import get_cached_transcript, save_cached_transcript
+from config.constants import MAX_VIDEO_DURATION_SECONDS
+from config.settings import settings
+
 
 logger = get_logger(__name__)
 
@@ -148,19 +151,21 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
         if cached_transcript:
             last_segment = cached_transcript[-1]
             video_duration_sec = last_segment.get("end", 0.0)
-            if video_duration_sec > 7200:
-                logger.error("Cached video duration of %s seconds exceeds 2-hour limit.", video_duration_sec)
+            if video_duration_sec > MAX_VIDEO_DURATION_SECONDS:
+                logger.error("Cached video duration of %s seconds exceeds limit.", video_duration_sec)
                 raise NotesMakerError(
                     message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
                     code="VIDEO_TOO_LONG",
                     status_code=400,
                 )
+
         return cached_transcript
 
     # 1. Fetch transcript since not cached
-    api_key = os.getenv("TRANSCRIPT_API_KEY")
-    is_cloud = os.getenv("ENV") == "production"
+    api_key = settings.TRANSCRIPT_API_KEY
+    is_cloud = settings.ENV == "production"
     transcript = None
+
 
     if is_cloud and api_key:
         logger.info("Routing directly to metadata service.")
@@ -209,12 +214,13 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     if transcript:
         last_segment = transcript[-1]
         video_duration_sec = last_segment.get("end", 0.0)
-        if video_duration_sec > 7200:
-            logger.error("Video duration of %s seconds exceeds 2-hour limit.", video_duration_sec)
+        if video_duration_sec > MAX_VIDEO_DURATION_SECONDS:
+            logger.error("Video duration of %s seconds exceeds limit.", video_duration_sec)
             raise NotesMakerError(
                 message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
                 code="VIDEO_TOO_LONG",
                 status_code=400,
             )
+
 
     return transcript

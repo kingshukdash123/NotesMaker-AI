@@ -244,7 +244,10 @@ function MainApp() {
   const [activeWorkspaceView, setActiveWorkspaceView] = useState('generator'); // 'generator' | 'configure' | 'profile'
   const [isNavSidebarCollapsed, setIsNavSidebarCollapsed] = useState(true);
   const [googleApiKey, setGoogleApiKey] = useState('');
+  const [groqApiKey, setGroqApiKey] = useState('');
   const [showGoogle, setShowGoogle] = useState(false);
+  const [showGroq, setShowGroq] = useState(false);
+
   const [isSavingKeys, setIsSavingKeys] = useState(false);
   const [isFetchingKeys, setIsFetchingKeys] = useState(false);
   const [keysError, setKeysError] = useState('');
@@ -951,6 +954,8 @@ Where:
         try {
           const keys = await getUserApiKeys(currentUser.uid);
           setGoogleApiKey(keys.googleApiKey || '');
+          setGroqApiKey(keys.groqApiKey || '');
+
         } catch (err) {
           console.error('Failed to load API keys:', err);
           setKeysError('Failed to load your existing API keys.');
@@ -969,8 +974,9 @@ Where:
     setKeysError('');
     setKeysSuccess('');
     try {
-      await saveUserApiKeys(currentUser.uid, googleApiKey.trim());
-      setKeysSuccess('API Key saved successfully!');
+      await saveUserApiKeys(currentUser.uid, googleApiKey.trim(), groqApiKey.trim());
+      setKeysSuccess('API Keys saved successfully!');
+
     } catch (err) {
       console.error('Error saving API keys:', err);
       setKeysError(err.message || 'An error occurred while saving your keys.');
@@ -1393,10 +1399,37 @@ Where:
                             </div>
                           </div>
 
+                          {/* Groq API Key */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="block text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                                Groq API Key
+                              </label>
+                              <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 font-semibold underline underline-offset-2">
+                                Get Key <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            </div>
+                            <div className="relative">
+                              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                              <input
+                                type={showGroq ? 'text' : 'password'}
+                                value={groqApiKey}
+                                onChange={(e) => setGroqApiKey(e.target.value)}
+                                placeholder="gsk_... (Groq Key)"
+                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition font-mono"
+                              />
+                              <button type="button" onClick={() => setShowGroq(!showGroq)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                {showGroq ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
+                          </div>
+
                           <button type="submit" disabled={isSavingKeys} className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-sm rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg disabled:opacity-50">
                             {isSavingKeys ? <Loader2 className="w-4 h-4 animate-spin text-zinc-950" /> : <Save className="w-4 h-4" />}
                             <span>Save Configurations</span>
                           </button>
+
                         </form>
                       )}
                     </div>

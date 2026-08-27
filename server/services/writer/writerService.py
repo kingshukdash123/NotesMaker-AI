@@ -3,11 +3,12 @@ from langchain_core.prompts import ChatPromptTemplate
 from services.llm.service import LLMService
 from utils.exceptions import NotesMakerError
 from utils.logger import get_logger
-from utils.retry import call_llm_with_retry
+
 from model.execution import ChapterPlan
 from model.outline import LectureOutline
 from model.notes import GeneratedSection, ChapterNotesModel
 from prompts.chapter_writer_prompt import CHAPTER_WRITER_PROMPT
+from config.constants import WRITER_MODEL
 
 logger = get_logger(__name__)
 
@@ -21,7 +22,9 @@ class ChapterWriterService:
 
         logger.info("Initializing study notes generation service.")
 
-        self.base_llm = LLMService.get_llm(google_api_key)
+        self.base_llm = LLMService.get_gemini_llm(google_api_key, model_name=WRITER_MODEL)
+
+
         
         self.llm = self.base_llm.with_structured_output(
             ChapterNotesModel
@@ -56,7 +59,7 @@ class ChapterWriterService:
                 }
             )
 
-            chapter_notes_model = call_llm_with_retry(self.llm, messages)
+            chapter_notes_model = self.llm.invoke(messages)
 
             generated_sections = [
                 sec.model_dump() for sec in chapter_notes_model.sections

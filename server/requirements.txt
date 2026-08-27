@@ -2,12 +2,12 @@ fastapi
 uvicorn[standard]
 pydantic
 pydantic-settings
-google-generativeai
 langchain-google-genai
 langchain
 langgraph
-pinecone-client
+pinecone
 langchain-pinecone
 youtube-transcript-api
 pytube
 python-dotenv
+langchain-groq

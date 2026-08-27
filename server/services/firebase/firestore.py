@@ -7,21 +7,22 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-async def get_user_api_keys(user_id: str, id_token: str = None) -> str | None:
+async def get_user_api_keys(user_id: str, id_token: str = None) -> dict:
     """
-    Fetches the Google API key for a specific user from Firestore.
+    Fetches the Google API key and Groq API key for a specific user from Firestore.
     
     Args:
         user_id: The Firebase UID of the user.
         id_token: The Firebase Auth ID token (optional, but recommended if Firestore rules are enabled).
         
     Returns:
-        The google_api_key string or None.
+        A dictionary containing "google_api_key" and "groq_api_key" (values can be str or None).
     """
     project_id = getattr(settings, "FIREBASE_PROJECT_ID", None)
+    keys = {"google_api_key": None, "groq_api_key": None}
     if not project_id:
         logger.warning("Database configuration missing. Cannot fetch user keys.")
-        return None
+        return keys
         
     # Firestore REST API URL for document: user_api_keys/{user_id}
     url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/user_api_keys/{user_id}"
@@ -37,14 +38,16 @@ async def get_user_api_keys(user_id: str, id_token: str = None) -> str | None:
             if response.status_code == 200:
                 doc_data = response.json()
                 fields = doc_data.get("fields", {})
-                google_key = fields.get("googleApiKey", {}).get("stringValue")
-                return google_key
+                keys["google_api_key"] = fields.get("googleApiKey", {}).get("stringValue")
+                keys["groq_api_key"] = fields.get("groqApiKey", {}).get("stringValue")
+                return keys
             else:
                 logger.error("Failed to fetch user keys.")
-                return None
+                return keys
     except Exception as e:
         logger.exception("Error retrieving user keys.")
-        return None
+        return keys
+
 
 
 def get_cached_transcript(video_id: str) -> list | None:

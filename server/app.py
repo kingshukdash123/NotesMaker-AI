@@ -19,6 +19,8 @@ from services.youtube.metadata import get_video_metadata
 from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
 import time
+from config.settings import settings
+
 
 logger = get_logger(__name__)
 
@@ -31,7 +33,7 @@ app = FastAPI(
 # CORS Setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("CLIENT_ORIGIN", "http://localhost:3000")],
+    allow_origins=[settings.CLIENT_ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -128,9 +130,11 @@ async def generate_notes(
     google_api_key = None
     if x_user_id:
         try:
-            google_api_key = await get_user_api_keys(x_user_id, id_token)
+            keys = await get_user_api_keys(x_user_id, id_token)
+            google_api_key = keys.get("google_api_key")
         except Exception as e:
             logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
+
     
     
     # Prune tasks older than 1 hour to keep memory usage low
@@ -179,19 +183,24 @@ async def ask_question(
     if authorization and authorization.startswith("Bearer "):
         id_token = authorization.split("Bearer ")[1]
 
-    # Fetch user API key from Firestore if authenticated
+    # Fetch user API keys from Firestore if authenticated
     google_api_key = None
+    groq_api_key = None
     if x_user_id:
         try:
-            google_api_key = await get_user_api_keys(x_user_id, id_token)
+            keys = await get_user_api_keys(x_user_id, id_token)
+            google_api_key = keys.get("google_api_key")
+            groq_api_key = keys.get("groq_api_key")
         except Exception as e:
             logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
 
+
     # Execute QA answering via RAGService
     try:
-        rag_service = RAGService(google_api_key=google_api_key)
+        rag_service = RAGService(google_api_key=google_api_key, groq_api_key=groq_api_key)
         response = rag_service.answer_question(video_id=request.video_id, question=request.question)
         return response
+
     except Exception as e:
         logger.exception("Q&A answering process failed.")
         raise HTTPException(status_code=500, detail=str(e))

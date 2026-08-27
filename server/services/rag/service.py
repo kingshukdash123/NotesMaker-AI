@@ -1,11 +1,13 @@
 import os
 from typing import List, Dict, Any, Optional
 from pinecone import Pinecone
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
 from config.settings import settings
 from utils.logger import get_logger
 from utils.exceptions import NotesMakerError
+from config.constants import CHAT_MODEL, RAG_TOP_K
+
+from services.llm.service import LLMService
 
 logger = get_logger(__name__)
 
@@ -13,34 +15,28 @@ logger = get_logger(__name__)
 class RAGService:
     """
     Service responsible for Retrieval-Augmented Generation (RAG) Q&A.
-    Queries Pinecone for transcripts within a specific video namespace and answers using Gemini 3.5 Flash.
+    Queries Pinecone for transcripts within a specific video namespace and answers using Groq model (openai/gpt-oss-20b).
     """
 
-    def __init__(self, google_api_key: Optional[str] = None):
-        # Resolve Gemini API Key
-        self.google_api_key = google_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY_1")
-        if not self.google_api_key:
-            raise NotesMakerError(
-                message="Google API key is missing. Cannot initialize Q&A model.",
-                code="MISSING_API_KEY",
-                status_code=400,
-            )
+    def __init__(self, google_api_key: Optional[str] = None, groq_api_key: Optional[str] = None):
+        self.google_api_key = google_api_key
+        self.groq_api_key = groq_api_key
 
         # Initialize langchain-google-genai embeddings
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/gemini-embedding-2-preview",
-            google_api_key=self.google_api_key,
+        self.embeddings = LLMService.get_embeddings(
+            google_api_key=self.google_api_key
         )
 
-        # Initialize Gemini 3.5 Flash model
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-3.5-flash-lite",
-            google_api_key=self.google_api_key,
-            temperature=0.2,
+
+        # Initialize Groq Chat model
+        self.llm = LLMService.get_groq_llm(
+            groq_api_key=groq_api_key,
+            model_name=CHAT_MODEL
         )
+
 
         # Connect to Pinecone
-        pinecone_api_key = getattr(settings, "PINECONE_API_KEY", None) or os.getenv("PINECONE_API_KEY")
+        pinecone_api_key = settings.PINECONE_API_KEY
         if not pinecone_api_key:
             raise NotesMakerError(
                 message="Pinecone configurations are missing in the server settings.",
@@ -49,7 +45,8 @@ class RAGService:
             )
 
         self.pc = Pinecone(api_key=pinecone_api_key)
-        self.index_name = getattr(settings, "PINECONE_INDEX_NAME", None) or os.getenv("PINECONE_INDEX_NAME") or "notesmaker-ai"
+        self.index_name = settings.PINECONE_INDEX_NAME
+
         
         try:
             self.index = self.pc.Index(self.index_name)
@@ -84,9 +81,10 @@ class RAGService:
             response = self.index.query(
                 namespace=video_id,
                 vector=query_vector,
-                top_k=5,
+                top_k=RAG_TOP_K,
                 include_metadata=True,
             )
+
         except Exception as e:
             logger.exception("Pinecone query execution failed.")
             raise NotesMakerError(

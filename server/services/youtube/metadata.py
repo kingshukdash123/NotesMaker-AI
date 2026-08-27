@@ -1,6 +1,7 @@
 import os
 import httpx
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
+from config.settings import settings
 
 from utils.logger import get_logger
 from utils.exceptions import NotesMakerError
@@ -16,8 +17,9 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
     In local development, falls back to YouTube's public oEmbed API for basic info,
     and lists available languages using YouTubeTranscriptApi.
     """
-    is_cloud = os.getenv("ENV") == "production"
-    api_key = os.getenv("TRANSCRIPT_API_KEY")
+    is_cloud = settings.ENV == "production"
+    api_key = settings.TRANSCRIPT_API_KEY
+
 
     if is_cloud and api_key:
         logger.info("Fetching metadata from metadata service.")

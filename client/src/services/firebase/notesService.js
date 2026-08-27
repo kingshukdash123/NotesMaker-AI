@@ -84,13 +84,15 @@ export async function deleteNotes(noteId) {
  * Saves or updates user API keys in Firestore.
  * @param {string} userId - Auth user ID (UID)
  * @param {string} googleApiKey - Gemini API Key
+ * @param {string} groqApiKey - Groq API Key
  */
-export async function saveUserApiKeys(userId, googleApiKey) {
+export async function saveUserApiKeys(userId, googleApiKey, groqApiKey) {
   if (!userId) throw new Error('User must be logged in to save API keys.');
 
   const docRef = doc(db, 'user_api_keys', userId);
   await setDoc(docRef, {
     googleApiKey: googleApiKey || '',
+    groqApiKey: groqApiKey || '',
     updatedAt: serverTimestamp()
   }, { merge: true });
 }
@@ -98,10 +100,10 @@ export async function saveUserApiKeys(userId, googleApiKey) {
 /**
  * Retrieves the user's API keys from Firestore.
  * @param {string} userId - Auth user ID (UID)
- * @returns {Promise<{googleApiKey: string}>} The API keys object
+ * @returns {Promise<{googleApiKey: string, groqApiKey: string}>} The API keys object
  */
 export async function getUserApiKeys(userId) {
-  if (!userId) return { googleApiKey: '' };
+  if (!userId) return { googleApiKey: '', groqApiKey: '' };
 
   const docRef = doc(db, 'user_api_keys', userId);
   const docSnap = await getDoc(docRef);
@@ -109,12 +111,14 @@ export async function getUserApiKeys(userId) {
   if (docSnap.exists()) {
     const data = docSnap.data();
     return {
-      googleApiKey: data.googleApiKey || ''
+      googleApiKey: data.googleApiKey || '',
+      groqApiKey: data.groqApiKey || ''
     };
   }
 
-  return { googleApiKey: '' };
+  return { googleApiKey: '', groqApiKey: '' };
 }
+
 
 /**
  * Extracts the 11-character YouTube video ID from a URL.
