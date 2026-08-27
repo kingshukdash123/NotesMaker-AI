@@ -8,6 +8,7 @@ from utils.exceptions import NotesMakerError
 from config.constants import CHAT_MODEL, RAG_TOP_K
 
 from services.llm.service import LLMService
+from prompts.video_qna_prompt import VIDEO_QNA_PROMPT
 
 logger = get_logger(__name__)
 
@@ -114,12 +115,14 @@ class RAGService:
             start = meta.get("start", 0.0)
             end = meta.get("end", 0.0)
 
-            # Format timestamp display (e.g. "01:23 - 02:45")
-            start_min = int(start // 60)
+            # Format timestamp display as accurate start timestamp (e.g. "35:13")
+            start_hour = int(start // 3600)
+            start_min = int((start % 3600) // 60)
             start_sec = int(start % 60)
-            end_min = int(end // 60)
-            end_sec = int(end % 60)
-            time_str = f"{start_min:02d}:{start_sec:02d} - {end_min:02d}:{end_sec:02d}"
+            if start_hour > 0:
+                time_str = f"{start_hour:02d}:{start_min:02d}:{start_sec:02d}"
+            else:
+                time_str = f"{start_min:02d}:{start_sec:02d}"
 
             context_blocks.append(f"[{time_str}]: {text}")
             sources.append(
@@ -134,26 +137,7 @@ class RAGService:
         context_text = "\n".join(context_blocks)
 
         # 4. Invoke LLM to answer the question using the context
-        system_prompt = (
-            "You are an academic learning assistant helping a student understand a lecture video.\n"
-            "Answer the student's question based strictly on the transcript context provided below.\n"
-            "If the context doesn't contain the answer, say honestly that you cannot find it in the video.\n"
-            "Keep your response concise, professional, well-structured, and use markdown formatting where helpful.\n\n"
-            "If user asks any question which is not related to the transcript context, politely refuse to answer.\n\n"
-            "act like you watch the video and understood it well, then answer the question.\n\n"
-            "Don't use the words 'transcript' or 'context' in your answer.\n\n"
-            "When explaining concepts, you may mention the relevant timestamp in your response in [hh:mm:ss] format (or [mm:ss]) if needed to guide the student to the exact moment in the video.\n\n"
-            "CRITICAL MATH FORMATTING RULES:\n"
-            "- Always wrap mathematical equations and symbols in standard LaTeX delimiters: use $equation$ for inline math, and $$equation$$ on its own line for display block math.\n"
-            "- NEVER wrap the math delimiters ($ or $$) or the formula in markdown backticks (do NOT write ` $formula$ ` or ` $$formula$$ `). Write them directly as plain text.\n"
-            "- Ensure all starting and ending delimiters ($ or $$) are perfectly matched and balanced. Never mix them (e.g. do not write $formula$$).\n"
-            "- Double-check all LaTeX syntax: Ensure all opening and closing braces ({}), brackets ([]), and parentheses (()) are perfectly matched (e.g. no unmatched \\left or \\right).\n"
-            "- Never mix plain text and display math delimiters (e.g. do not put a whole sentence inside $$...$$). Only wrap the pure mathematical formula itself.\n"
-            "- Do not write prefixes like 'inline-math' inside math delimiters or backticks. Only output valid LaTeX expressions.\n\n"
-            f"Transcript Context:\n{context_text}\n\n"
-            f"Question: {question}\n"
-            "Answer:"
-        )
+        system_prompt = VIDEO_QNA_PROMPT.format(context=context_text, question=question)
 
         try:
             answer_response = self.llm.invoke(system_prompt)

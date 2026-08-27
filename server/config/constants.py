@@ -2,8 +2,8 @@ MAX_RETRIES = 3
 RETRY_DELAY = 2
 
 # LLM Models
-ORCHESTRATOR_MODEL = "gemini-3.5-flash-lite"
-WRITER_MODEL = "gemini-3.1-flash-lite"
+ORCHESTRATOR_MODEL = "gemini-3.1-flash-lite"
+WRITER_MODEL = "gemini-3.5-flash-lite"
 CHAT_MODEL = "openai/gpt-oss-20b"
 EMBEDDING_MODEL = "models/gemini-embedding-2-preview"
 

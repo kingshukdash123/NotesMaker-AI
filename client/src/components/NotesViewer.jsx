@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/atom-one-dark.css';
 import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import { BookOpen, ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
 
 const preprocessMarkdown = (content) => {
@@ -18,20 +17,109 @@ const preprocessMarkdown = (content) => {
     .replace(/\x08/g, '\\b') // Backspace -> \b (e.g. \beta, \begin)
     .replace(/\x0b/g, '\\v'); // Vertical Tab -> \v (e.g. \vec)
 
+  // Convert standard LaTeX delimiters \( \) and \[ \] to $ and $$
+  processed = processed
+    .replace(/\\\[([\s\S]*?)\\\]/g, '$$$$$1$$$$') // \[ ... \] -> $$ ... $$
+    .replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');     // \( ... \) -> $ ... $
+
   // 1. Unescape any escaped dollar signs (e.g. \$ -> $)
   processed = processed.replace(/\\(\$)/g, '$1');
 
-  // 2. Safe single-line delimiter balancing (does not cross lines or other dollar signs)
-  processed = processed.replace(/\$\$([^\n$]+)\$(?!\$)/g, '$$$1$$');
-  processed = processed.replace(/(?<!\$)\$([^\n$]+)\$\$/g, '$$$1$$');
 
-  // 3. Convert all inline math $formula$ to custom code blocks `__INLINE_MATH__formula`
-  processed = processed.replace(/(?<!\$)\$([^\n$]+)\$(?!\$)/g, (match, p1) => {
-    if (p1.startsWith('$') || p1.endsWith('$')) return match;
-    return '`__INLINE_MATH__' + p1 + '`';
-  });
 
-  return processed;
+  // 3. Robust state machine to tokenize and replace inline math $...$
+  let result = '';
+  let i = 0;
+  const len = processed.length;
+
+  while (i < len) {
+    // 3a. Skip code blocks (``` ... ```)
+    if (processed.startsWith('```', i)) {
+      const endIdx = processed.indexOf('```', i + 3);
+      if (endIdx !== -1) {
+        result += processed.substring(i, endIdx + 3);
+        i = endIdx + 3;
+      } else {
+        result += processed.substring(i);
+        break;
+      }
+      continue;
+    }
+
+    // 3b. Skip inline code (` ... `)
+    if (processed[i] === '`') {
+      const endIdx = processed.indexOf('`', i + 1);
+      if (endIdx !== -1) {
+        result += processed.substring(i, endIdx + 1);
+        i = endIdx + 1;
+      } else {
+        result += processed[i];
+        i++;
+      }
+      continue;
+    }
+
+    // 3c. Handle block math ($$ ... $$) — convert to __BLOCK_MATH__ token
+    if (processed.startsWith('$$', i)) {
+      let endIdx = -1;
+      let nextSearchIdx = i + 2;
+      
+      // Look for the next $$ that forms a valid block (does not cross paragraphs or headings)
+      while (true) {
+        const foundIdx = processed.indexOf('$$', nextSearchIdx);
+        if (foundIdx === -1) break;
+        
+        const innerText = processed.substring(i + 2, foundIdx);
+        if (!innerText.includes('\n\n') && !innerText.includes('\r\n\r\n') && !innerText.includes('\n#') && !innerText.includes('\r\n#')) {
+          endIdx = foundIdx;
+          break;
+        }
+        // If it was invalid, keep searching from the next character
+        nextSearchIdx = foundIdx + 1;
+      }
+
+      if (endIdx !== -1) {
+        let mathContent = processed.substring(i + 2, endIdx).trim();
+        // Fix single-backslash+newline to double-backslash+newline for LaTeX line breaks
+        mathContent = mathContent.replace(/(?<!\\)\\\n/g, '\\\\\n');
+        // Encode newlines so inline code block stays single-line
+        const encoded = mathContent.replace(/\n/g, '§NL§');
+        result += '`__BLOCK_MATH__' + encoded + '`';
+        i = endIdx + 2;
+        continue;
+      }
+    }
+
+    // 3d. Handle inline math ($ ... $)
+    if (processed[i] === '$') {
+      // Find closing $ on the same line
+      let endIdx = -1;
+      for (let j = i + 1; j < len; j++) {
+        if (processed[j] === '\n') {
+          break; // Must be on the same line
+        }
+        if (processed[j] === '$') {
+          endIdx = j;
+          break;
+        }
+      }
+
+      if (endIdx !== -1 && endIdx > i + 1) {
+        const formula = processed.substring(i + 1, endIdx);
+        // Ensure it's not just spaces or empty
+        if (formula.trim().length > 0) {
+          result += '`__INLINE_MATH__' + formula + '`';
+          i = endIdx + 1;
+          continue;
+        }
+      }
+    }
+
+    result += processed[i];
+    i++;
+  }
+
+  return result;
 };
 
 export default function NotesViewer({ result, isFullscreen = false, onToggleFullscreen, versionSuffix = '' }) {
@@ -65,11 +153,34 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
         {draftNotes.content && (
           <div className="markdown-content text-sm sm:text-base text-zinc-300 leading-relaxed bg-black p-3 sm:p-6 rounded-lg border border-zinc-800">
             <ReactMarkdown 
-              remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]} 
-              rehypePlugins={[rehypeKatex, rehypeHighlight]}
+              remarkPlugins={[remarkGfm]} 
+              rehypePlugins={[rehypeHighlight]}
               components={{
                 code({node, className, children, ...props}) {
-                  const codeText = String(children);
+                  const getRawText = (n) => {
+                    if (typeof n === 'string') return n;
+                    if (typeof n === 'number') return String(n);
+                    if (Array.isArray(n)) return n.map(getRawText).join('');
+                    if (n && n.props && n.props.children) {
+                      return getRawText(n.props.children);
+                    }
+                    return '';
+                  };
+                  const codeText = getRawText(children);
+                  // Block math (from $$ blocks)
+                  if (codeText.startsWith('__BLOCK_MATH__')) {
+                    const formula = codeText.replace('__BLOCK_MATH__', '').replace(/§NL§/g, '\n');
+                    try {
+                      const html = katex.renderToString(formula, { 
+                        displayMode: true,
+                        throwOnError: false
+                      });
+                      return <span dangerouslySetInnerHTML={{ __html: html }} className="block my-4 overflow-x-auto" />;
+                    } catch (err) {
+                      return <span className="text-red-400 font-semibold block my-4">{formula}</span>;
+                    }
+                  }
+                  // Inline math (from $ blocks)
                   if (codeText.startsWith('__INLINE_MATH__')) {
                     const formula = codeText.replace('__INLINE_MATH__', '');
                     try {
