@@ -12,6 +12,7 @@ import AuthWall from './components/AuthWall';
 import VideoQa from './components/VideoQa';
 import SummaryOverview from './components/SummaryOverview';
 import LoadingModal from './components/LoadingModal';
+import VideoPlayer from './components/VideoPlayer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs, API_BASE_URL } from './services/server/api';
 import { saveNotes, getUserNotes, deleteNotes, saveUserApiKeys, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId, getNoteById } from './services/firebase/notesService';
@@ -1169,7 +1170,7 @@ Where:
                 </div>
               </AuthWall>
             </div>
-            {!isNotesFullscreen && (
+            {!isFullscreen && (
               <footer className="relative z-10 border-t border-zinc-900 bg-black py-6 text-center text-xs text-zinc-500">
                 <p>NotesMaker AI - All Rights Reserved</p>
               </footer>
@@ -2034,45 +2035,57 @@ Where:
                             </div>{/* end max-w-xl wrapper */}
                           </div>
                         ) : (
-                          <div className={`flex flex-col h-full min-h-0 ${
-                            isFullscreen
-                              ? 'fixed inset-0 z-[120] w-screen h-screen bg-black p-4 sm:p-6'
-                              : 'space-y-6'
-                          }`}>
-                            <div className="shrink-0">
-                              <Tabs 
-                                activeTab={workspaceTab} 
-                                setActiveTab={setWorkspaceTab} 
-                                isFullscreen={isFullscreen}
-                                onToggleFullscreen={setIsFullscreen}
-                              />
-                            </div>
-                            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2">
-                              {workspaceTab === 'notes' && (
-                                <NotesViewer 
-                                  result={taskResult} 
-                                  isFullscreen={isFullscreen} 
-                                  onToggleFullscreen={setIsFullscreen} 
-                                  versionSuffix={getActiveVersionLabel()} 
-                                />
-                              )}
-                              {workspaceTab === 'summary' && (
-                                <SummaryOverview 
-                                  result={taskResult} 
-                                  metadata={metadata} 
-                                  consoleOpen={isTerminalOpen} 
-                                  isFullscreen={isFullscreen}
-                                />
-                              )}
-                              {workspaceTab === 'qa' && (
-                                <VideoQa 
-                                  videoId={extractYoutubeVideoId(loadedUrl) || (metadata && metadata.video_id)} 
-                                  currentUser={currentUser} 
-                                  isFullscreen={isFullscreen}
-                                />
-                              )}
-                            </div>
-                          </div>
+                          (() => {
+                            const videoId = extractYoutubeVideoId(loadedUrl) || (metadata && metadata.video_id);
+                            return (
+                              <div className={`flex flex-col lg:flex-row gap-6 h-full min-h-0 ${
+                                isFullscreen
+                                  ? 'fixed inset-0 z-[120] w-screen h-screen bg-black p-4 sm:p-6'
+                                  : ''
+                              }`}>
+                                {videoId && (
+                                  <div className="w-full lg:w-[45%] xl:w-[42%] flex flex-col shrink-0 min-h-0">
+                                    <VideoPlayer videoId={videoId} metadata={metadata} />
+                                  </div>
+                                )}
+                                <div className="flex-1 flex flex-col min-h-0">
+                                  <div className="shrink-0">
+                                    <Tabs 
+                                      activeTab={workspaceTab} 
+                                      setActiveTab={setWorkspaceTab} 
+                                      isFullscreen={isFullscreen}
+                                      onToggleFullscreen={setIsFullscreen}
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2">
+                                    {workspaceTab === 'notes' && (
+                                      <NotesViewer 
+                                        result={taskResult} 
+                                        isFullscreen={isFullscreen} 
+                                        onToggleFullscreen={setIsFullscreen} 
+                                        versionSuffix={getActiveVersionLabel()} 
+                                      />
+                                    )}
+                                    {workspaceTab === 'summary' && (
+                                      <SummaryOverview 
+                                        result={taskResult} 
+                                        metadata={metadata} 
+                                        consoleOpen={isTerminalOpen} 
+                                        isFullscreen={isFullscreen}
+                                      />
+                                    )}
+                                    {workspaceTab === 'qa' && (
+                                      <VideoQa 
+                                        videoId={videoId} 
+                                        currentUser={currentUser} 
+                                        isFullscreen={isFullscreen}
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()
                         )}
                       </div>
                     </div>
