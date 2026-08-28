@@ -4,8 +4,9 @@ os.environ["NOTESMAKER_MODE"] = "API"
 
 import asyncio
 import uuid
+import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -165,6 +166,7 @@ async def generate_notes(
 class QARequest(BaseModel):
     video_id: str
     question: str
+    history: Optional[List[Dict[str, Any]]] = None
 
 
 @app.post("/api/notes/qa")
@@ -175,6 +177,7 @@ async def ask_question(
 ):
     """
     Endpoint to ask questions about a video using RAG search over transcript.
+    Streams back JSON lines with chunk updates.
     """
     logger.info(f"Q&A request received for video: {request.video_id}")
 
@@ -194,16 +197,20 @@ async def ask_question(
         except Exception as e:
             logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
 
+    async def stream_generator():
+        try:
+            rag_service = RAGService(google_api_key=google_api_key, groq_api_key=groq_api_key)
+            async for chunk in rag_service.answer_question_stream(
+                video_id=request.video_id,
+                question=request.question,
+                history=request.history
+            ):
+                yield chunk + "\n"
+        except Exception as e:
+            logger.exception("Q&A streaming process failed.")
+            yield json.dumps({"type": "error", "data": str(e)}) + "\n"
 
-    # Execute QA answering via RAGService
-    try:
-        rag_service = RAGService(google_api_key=google_api_key, groq_api_key=groq_api_key)
-        response = rag_service.answer_question(video_id=request.video_id, question=request.question)
-        return response
-
-    except Exception as e:
-        logger.exception("Q&A answering process failed.")
-        raise HTTPException(status_code=500, detail=str(e))
+    return StreamingResponse(stream_generator(), media_type="text/event-stream")
 
 
 @app.get("/api/notes/status/{task_id}")

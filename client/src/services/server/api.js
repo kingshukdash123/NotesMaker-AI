@@ -97,6 +97,93 @@ export async function askVideoQuestion(videoId, question, userId, idToken) {
 }
 
 /**
+ * Asks a video Q&A question and streams the response chunk by chunk.
+ * @param {string} videoId - YouTube video ID
+ * @param {string} question - Question to ask
+ * @param {Array} history - Message history list
+ * @param {string} userId - Auth user ID
+ * @param {string} idToken - Auth ID token
+ * @param {Function} onChunk - Callback for when a text chunk is received
+ * @param {Function} onError - Callback for handling errors during streaming
+ */
+export async function askVideoQuestionStream(
+  videoId,
+  question,
+  history,
+  userId,
+  idToken,
+  onChunk,
+  onError
+) {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  if (userId) {
+    headers['X-User-Id'] = userId;
+  }
+  if (idToken) {
+    headers['Authorization'] = `Bearer ${idToken}`;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/notes/qa`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        video_id: videoId,
+        question: question,
+        history: history.map(h => ({
+          sender: h.sender,
+          text: h.text
+        }))
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Failed to get an answer (${response.status})`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // Keep unfinished line in buffer
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.type === 'content') {
+            onChunk(parsed.data);
+          } else if (parsed.type === 'error') {
+            throw new Error(parsed.data);
+          }
+        } catch (e) {
+          console.error('Error parsing stream line:', line, e);
+          if (e.message && e.message !== 'Unexpected token') {
+            throw e;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    if (onError) {
+      onError(err);
+    } else {
+      throw err;
+    }
+  }
+}
+
+
+/**
  * Subscribes to SSE real-time log streaming for a task.
  * @param {string} taskId - Background task ID
  * @param {Function} onMessage - Callback for each log message string

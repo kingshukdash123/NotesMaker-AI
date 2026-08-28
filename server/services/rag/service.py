@@ -1,6 +1,8 @@
 import os
+import json
 from typing import List, Dict, Any, Optional
 from pinecone import Pinecone
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 from config.settings import settings
 from utils.logger import get_logger
@@ -59,12 +61,16 @@ class RAGService:
                 status_code=500,
             ) from e
 
-    def answer_question(self, video_id: str, question: str) -> Dict[str, Any]:
+
+
+    async def answer_question_stream(
+        self, video_id: str, question: str, history: Optional[List[Dict[str, Any]]] = None
+    ):
         """
-        Retrieves matching transcript segments for a video namespace from Pinecone,
-        constructs a grounded context, and answers the user's question.
+        Retrieves matching transcript segments, constructs the prompt with history context,
+        and streams the answer chunk by chunk.
         """
-        logger.info("RAG Q&A: Querying for video %s, Question: %s", video_id, question)
+        logger.info("RAG Q&A Stream: Querying for video %s, Question: %s", video_id, question)
 
         try:
             # 1. Embed user query using Gemini Embedding 2
@@ -85,7 +91,6 @@ class RAGService:
                 top_k=RAG_TOP_K,
                 include_metadata=True,
             )
-
         except Exception as e:
             logger.exception("Pinecone query execution failed.")
             raise NotesMakerError(
@@ -97,14 +102,14 @@ class RAGService:
         matches = response.get("matches", [])
         if not matches:
             logger.info("No matching transcript segments found in Pinecone for video %s.", video_id)
-            return {
-                "answer": "I couldn't find any relevant sections in the transcript to answer your question. Make sure notes generation completed successfully for this video first.",
-                "sources": [],
-            }
+            yield json.dumps({
+                "type": "content",
+                "data": "I couldn't find any relevant sections in the transcript to answer your question. Make sure notes generation completed successfully for this video first."
+            })
+            return
 
         # 3. Build context and keep track of source segments
         context_blocks = []
-        sources = []
         
         # Sort matches chronologically by their start time to help LLM reason about temporal flow
         sorted_matches = sorted(matches, key=lambda x: x.get("metadata", {}).get("start", 0.0))
@@ -125,38 +130,48 @@ class RAGService:
                 time_str = f"{start_min:02d}:{start_sec:02d}"
 
             context_blocks.append(f"[{time_str}]: {text}")
-            sources.append(
-                {
-                    "text": text,
-                    "start": start,
-                    "end": end,
-                    "score": float(match.get("score", 0.0)),
-                }
-            )
 
         context_text = "\n".join(context_blocks)
 
-        # 4. Invoke LLM to answer the question using the context
-        system_prompt = VIDEO_QNA_PROMPT.format(context=context_text, question=question)
+        # 4. Construct message history for LLM
+        # Adapt VIDEO_QNA_PROMPT to remove the specific question block, as it is appended dynamically in the messages.
+        # Replacing 'Question: {question}' with empty space to reuse prompt rules.
+        clean_rules = VIDEO_QNA_PROMPT.replace("Question: {question}", "").strip()
+        system_content = clean_rules.format(context=context_text)
 
+        messages = [SystemMessage(content=system_content)]
+
+        if history:
+            # Send last 5 messages from history to keep short term memory
+            last_5 = history[-5:]
+            for msg in last_5:
+                role = msg.get("sender") or msg.get("role")
+                text = msg.get("text") or msg.get("content")
+                if role == "user":
+                    messages.append(HumanMessage(content=text))
+                elif role in ("assistant", "ai"):
+                    messages.append(AIMessage(content=text))
+
+        # Add current question
+        messages.append(HumanMessage(content=question))
+
+        # 5. Stream LLM response
         try:
-            answer_response = self.llm.invoke(system_prompt)
-            answer_text = answer_response.content
-            
-            # Handle newer LangChain list content structures
-            if isinstance(answer_text, list):
-                answer_text = "".join(
-                    block.get("text", "") if isinstance(block, dict) else str(block)
-                    for block in answer_text
-                )
+            async for chunk in self.llm.astream(messages):
+                content = chunk.content
+                # Handle newer LangChain list content structures
+                if isinstance(content, list):
+                    content = "".join(
+                        block.get("text", "") if isinstance(block, dict) else str(block)
+                        for block in content
+                    )
+                if content:
+                    yield json.dumps({"type": "content", "data": content})
         except Exception as e:
-            logger.exception("Failed to generate response via LLM.")
+            logger.exception("Failed to stream response via LLM.")
             raise NotesMakerError(
-                message="Failed to generate an answer due to an AI service error.",
-                code="LLM_GENERATION_FAILED",
+                message="Failed to generate a streamed answer due to an AI service error.",
+                code="LLM_STREAMING_FAILED",
                 status_code=500,
             ) from e
 
-        logger.info("RAG Q&A: Successfully generated answer.")
-
-        return {"answer": answer_text, "sources": sources}

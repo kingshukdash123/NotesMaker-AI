@@ -187,3 +187,54 @@ export async function getNoteById(noteId) {
 
   return null;
 }
+
+/**
+ * Saves the entire video QnA chat history for a specific user and video.
+ * @param {string} userId - Auth user ID
+ * @param {string} videoId - YouTube video ID
+ * @param {Array} messages - List of chat messages
+ */
+export async function saveVideoQnAChat(userId, videoId, messages) {
+  if (!userId || !videoId) return;
+  const docRef = doc(db, 'video_qnas', `${userId}_${videoId}`);
+  await setDoc(docRef, {
+    userId,
+    videoId,
+    messages: messages.map(m => ({
+      sender: m.sender,
+      text: m.text,
+      isError: m.isError || false,
+      timestamp: m.timestamp || new Date().toISOString()
+    })),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+
+/**
+ * Retrieves the video QnA chat history for a specific user and video.
+ * @param {string} userId - Auth user ID
+ * @param {string} videoId - YouTube video ID
+ * @returns {Promise<Array>} List of chat messages
+ */
+export async function getVideoQnAChat(userId, videoId) {
+  if (!userId || !videoId) return [];
+  const docRef = doc(db, 'video_qnas', `${userId}_${videoId}`);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return docSnap.data().messages || [];
+  }
+  return [];
+}
+
+/**
+ * Deletes the video QnA chat history for a specific user and video.
+ * @param {string} userId - Auth user ID
+ * @param {string} videoId - YouTube video ID
+ */
+export async function deleteVideoQnAChat(userId, videoId) {
+  if (!userId || !videoId) return;
+  const docRef = doc(db, 'video_qnas', `${userId}_${videoId}`);
+  await deleteDoc(docRef);
+}
+
+
