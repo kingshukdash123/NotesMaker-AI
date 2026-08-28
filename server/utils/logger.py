@@ -1,4 +1,3 @@
-import re
 import os
 import logging
 import logging.handlers
@@ -24,50 +23,6 @@ current_task_id: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "current_task_id", 
     default=None
 )
-
-# -----------------------------------------------------------------------------
-# Task-specific Logging Handler
-# -----------------------------------------------------------------------------
-
-class TaskLogHandler(logging.Handler):
-    """
-    A custom logging handler that routes log records to the in-memory tasks
-    dictionary in app.py if `current_task_id` context variable is set.
-    """
-    def emit(self, record):
-        task_id = current_task_id.get(None)
-        if task_id:
-            try:
-                from app import tasks
-                if task_id in tasks:
-                    # Strip exception info to prevent raw traceback leaks
-                    record.exc_info = None
-                    record.exc_text = None
-                    
-                    msg = self.format(record)
-                    
-                    # Sanitize technical terms to protect privacy
-                    replacements = {
-                        "google": "provider",
-                        "gemini": "model",
-                        "groq": "fallback provider",
-                        "firebase": "database",
-                        "firestore": "database cache",
-                        "oembed": "video API",
-                        "youtubetranscriptapi": "transcript source",
-                        "transcriptapi.com": "transcript service",
-                        "langgraph": "pipeline",
-                        "tavily": "search service",
-                    }
-                    
-                    for tech_word, generic_word in replacements.items():
-                        msg = re.sub(re.escape(tech_word), generic_word, msg, flags=re.IGNORECASE)
-                        
-                    if "logs" not in tasks[task_id]:
-                        tasks[task_id]["logs"] = []
-                    tasks[task_id]["logs"].append(msg)
-            except Exception:
-                self.handleError(record)
 
 # -----------------------------------------------------------------------------
 # Logger Configuration
@@ -102,12 +57,6 @@ if not logger.handlers:
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-
-    # Task Handler
-    task_handler = TaskLogHandler()
-    task_handler.setLevel(logging.INFO)
-    task_handler.setFormatter(formatter)
-    logger.addHandler(task_handler)
 
     logger.propagate = False
 

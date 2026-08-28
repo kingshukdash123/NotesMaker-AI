@@ -11,8 +11,6 @@ const CONCISE_STEPS = [
 
 export default function LoadingModal({ 
   isOpen,
-  isTerminalOpen = false,
-  onToggleTerminal,
   inline = false
 }) {
   if (!isOpen) return null;

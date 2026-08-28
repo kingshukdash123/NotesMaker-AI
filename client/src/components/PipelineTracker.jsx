@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Loader2, Cpu, FileText, Layers, GitMerge, AlertTriangle, X } from 'lucide-react';
 
 const STAGES = [
@@ -34,29 +34,30 @@ const STAGES = [
   },
 ];
 
-export default function PipelineTracker({ status, logs = [], error, onClose }) {
-  // Infer active stage based on logs in exact sequential order
+export default function PipelineTracker({ status, error, onClose }) {
+  const [simulatedStage, setSimulatedStage] = useState(0);
+
+  useEffect(() => {
+    if (status === 'PROCESSING') {
+      setSimulatedStage(0);
+      const interval = setInterval(() => {
+        setSimulatedStage((prev) => {
+          if (prev < STAGES.length - 1) {
+            return prev + 1;
+          }
+          return prev;
+        });
+      }, 5000); // Progresses nicely through the stages
+      return () => clearInterval(interval);
+    }
+  }, [status]);
+
+  // Infer active stage
   const getActiveStageIndex = () => {
     if (status === 'COMPLETED') return 5; // All done
     if (status === 'FAILED') return -1;
-    if (status !== 'PROCESSING' || logs.length === 0) return 0;
-
-    let stage = 0;
-    for (const log of logs) {
-      const l = log.toLowerCase();
-      if (l.includes('reducer')) {
-        stage = Math.max(stage, 4);
-      } else if (l.includes('section writer') || l.includes('section_writer') || l.includes('research')) {
-        stage = Math.max(stage, 3);
-      } else if (l.includes('orchestrator')) {
-        stage = Math.max(stage, 2);
-      } else if (l.includes('transcript merger')) {
-        stage = Math.max(stage, 1);
-      } else if (l.includes('transcript & metadata') || l.includes('metadata generator') || l.includes('starting notes generation')) {
-        stage = Math.max(stage, 0);
-      }
-    }
-    return stage;
+    if (status !== 'PROCESSING') return 0;
+    return simulatedStage;
   };
 
   const activeIndex = getActiveStageIndex();

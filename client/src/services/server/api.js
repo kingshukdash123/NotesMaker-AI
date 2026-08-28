@@ -183,40 +183,4 @@ export async function askVideoQuestionStream(
 }
 
 
-/**
- * Subscribes to SSE real-time log streaming for a task.
- * @param {string} taskId - Background task ID
- * @param {Function} onMessage - Callback for each log message string
- * @param {Function} onError - Callback for stream error
- * @returns {EventSource} The EventSource instance
- */
-export function streamTaskLogs(taskId, onMessage, onError, onFinished) {
-  const eventSource = new EventSource(`${API_BASE_URL}/notes/logs/${taskId}/stream`);
 
-  const closeStream = () => {
-    eventSource.close();
-    if (onFinished) onFinished();
-  };
-
-  eventSource.addEventListener('close', () => {
-    closeStream();
-  });
-
-  eventSource.onmessage = (event) => {
-    if (event.data === '[STREAM_FINISHED]') {
-      closeStream();
-      return;
-    }
-    if (event.data && onMessage) {
-      onMessage(event.data);
-    }
-  };
-
-  eventSource.onerror = (err) => {
-    if (onError) {
-      onError(err);
-    }
-  };
-
-  return eventSource;
-}

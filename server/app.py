@@ -150,7 +150,6 @@ async def generate_notes(
         "metadata": None,
         "result": None,
         "error": None,
-        "logs": [],
         "created_at": now
     }
     
@@ -222,54 +221,6 @@ async def get_task_status(task_id: str):
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return task
-
-
-@app.get("/api/notes/logs/{task_id}/stream")
-async def stream_logs(task_id: str):
-    """
-    Server-Sent Events (SSE) endpoint to stream execution logs in real-time
-    directly from the in-memory tasks dictionary.
-    """
-    # Verify task exists
-    if task_id not in tasks:
-        raise HTTPException(status_code=404, detail="Task not found")
-        
-    async def log_generator():
-        last_sent_index = 0
-        try:
-            while True:
-                task_state = tasks.get(task_id)
-                if not task_state:
-                    break
-                    
-                current_logs = task_state.get("logs", [])
-                total_logs = len(current_logs)
-                
-                # Yield new logs
-                if total_logs > last_sent_index:
-                    for i in range(last_sent_index, total_logs):
-                        yield f"data: {current_logs[i]}\n\n"
-                    last_sent_index = total_logs
-                    
-                # Close stream if the task is finished
-                if task_state["status"] in ("COMPLETED", "FAILED"):
-                    # Check for any last-second logs
-                    current_logs = task_state.get("logs", [])
-                    total_logs = len(current_logs)
-                    if total_logs > last_sent_index:
-                        for i in range(last_sent_index, total_logs):
-                            yield f"data: {current_logs[i]}\n\n"
-                    yield "event: close\ndata: [STREAM_FINISHED]\n\n"
-                    break
-                    
-                await asyncio.sleep(0.1)
-        except GeneratorExit:
-            logger.info(f"Log stream disconnected for task {task_id}")
-        except Exception as e:
-            logger.error(f"Error streaming logs for task {task_id}: {str(e)}")
-            yield f"data: [SYSTEM ERROR] {str(e)}\n\n"
-            
-    return StreamingResponse(log_generator(), media_type="text/event-stream")
 
 
 if __name__ == "__main__":

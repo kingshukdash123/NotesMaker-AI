@@ -3,7 +3,6 @@ import Header from './components/Header';
 import UrlInput from './components/UrlInput';
 import VideoCard from './components/VideoCard';
 import PipelineTracker from './components/PipelineTracker';
-import LogTerminal from './components/LogTerminal';
 import NotesViewer from './components/NotesViewer';
 import AuthModal from './components/AuthModal';
 import ApiDisconnectModal from './components/ApiDisconnectModal';
@@ -14,9 +13,9 @@ import SummaryOverview from './components/SummaryOverview';
 import LoadingModal from './components/LoadingModal';
 import VideoPlayer from './components/VideoPlayer';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, streamTaskLogs, API_BASE_URL } from './services/server/api';
+import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, API_BASE_URL } from './services/server/api';
 import { saveNotes, getUserNotes, deleteNotes, saveUserApiKeys, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId, getNoteById } from './services/firebase/notesService';
-import { Video, Terminal, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Video, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const mapErrorMessage = (errorMsg) => {
   if (!errorMsg) return 'Notes generation failed.';
@@ -360,10 +359,7 @@ function MainApp() {
     return '';
   };
 
-  // 10. Terminal & Logs State
-  const [logs, setLogs] = useState([]);
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const eventSourceRef = useRef(null);
+
 
   // 11. Refs
   const pollIntervalRef = useRef(null);
@@ -670,7 +666,6 @@ function MainApp() {
     setTaskStatus('PROCESSING');
     setTaskResult(null);
     setTaskError(null);
-    setLogs([]);
     setShowPipeline(true);
     setShowMetadata(true);
     setShowNotes(false);
@@ -689,24 +684,6 @@ function MainApp() {
       const newTaskId = response.task_id;
       setTaskId(newTaskId);
 
-      // Start SSE Log Streaming
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-      const es = streamTaskLogs(
-        newTaskId,
-        (logLine) => {
-          setLogs((prev) => [...prev, logLine]);
-        },
-        (err) => {
-          console.warn('SSE log stream error or disconnected:', err);
-        },
-        () => {
-          console.log('SSE log stream completed.');
-        }
-      );
-      eventSourceRef.current = es;
-
       // Start Polling Status every 2 seconds
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
       pollIntervalRef.current = setInterval(async () => {
@@ -724,11 +701,7 @@ function MainApp() {
               setMetadata(statusData.metadata);
               setShowMetadata(true);
             }
-            if (eventSourceRef.current) {
-              eventSourceRef.current.close();
-            }
             clearInterval(pollIntervalRef.current);
-
 
             // Save notes to Firestore
             if (currentUser) {
@@ -751,9 +724,6 @@ function MainApp() {
           } else if (statusData.status === 'FAILED') {
             setTaskStatus('FAILED');
             setTaskError(mapErrorMessage(statusData.error || 'Notes generation failed.'));
-            if (eventSourceRef.current) {
-              eventSourceRef.current.close();
-            }
             clearInterval(pollIntervalRef.current);
           }
         } catch (pollErr) {
@@ -792,12 +762,7 @@ function MainApp() {
       ]
     });
 
-    // 2. Set logs to initial metadata stage and show processing loader
-    setLogs([
-      'Task 777-mock-data: Starting mock study notes generation...',
-      '[stage: metadata] Transcript & Metadata Generator node started.',
-      '[stage: metadata] Fetching video metadata and transcript...'
-    ]);
+    // 2. Show processing loader
     setTaskStatus('PROCESSING');
     setTaskResult(null);
     setLoadedUrl('https://www.youtube.com/watch?v=transformer-mock');
@@ -805,37 +770,8 @@ function MainApp() {
     setShowPipeline(true);
     setShowNotes(false);
 
-    // 3. Simulating logs stream intervals
+    // 3. Simulating completion time
     const timer1 = setTimeout(() => {
-      setLogs(prev => [
-        ...prev,
-        '[stage: metadata] Transcript & Metadata Generator node completed.',
-        '[stage: transcript] Transcript Merger node started.',
-        '[stage: transcript] Paragraph segmentation successfully finished.',
-        '[stage: transcript] Transcript Merger node completed.'
-      ]);
-    }, 3500);
-
-    const timer2 = setTimeout(() => {
-      setLogs(prev => [
-        ...prev,
-        '[stage: orchestrator] Starting Orchestrator node.',
-        '[stage: orchestrator] Generating curriculum outline and planning...',
-        '[stage: orchestrator] Orchestrator node completed successfully.',
-        '[stage: section_writer] Starting parallel Section Workers...',
-        '[stage: section_writer] [Section 1] Generating introduction & self-attention overview...',
-        '[stage: section_writer] [Section 2] Synthesizing multi-head attention math details...'
-      ]);
-    }, 7000);
-
-    const timer3 = setTimeout(() => {
-      setLogs(prev => [
-        ...prev,
-        '[stage: section_writer] Section Worker completed for all sections.',
-        '[stage: reducer] Starting Reducer node.',
-        '[stage: reducer] Synthesis & Final Assembly completed successfully. Total sections merged: 2.',
-        '[STREAM_FINISHED]'
-      ]);
       setTaskStatus('COMPLETED');
       setTaskResult({
         draft_notes: {
@@ -850,7 +786,7 @@ Key advantages include:
 ### 2. Self-Attention Mechanics
 Self-attention maps a query vector ($Q$) and a set of key ($K$) and value ($V$) vectors to an output. The matrix representation is defined mathematically as:
 
-$$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$$
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
 
 Where:
 - $Q, K, V$ are projection matrices.
@@ -893,9 +829,9 @@ Where:
         }
       });
       setShowNotes(true);
-    }, 11000);
+    }, 3500);
 
-    mockTimersRef.current.push(timer1, timer2, timer3);
+    mockTimersRef.current.push(timer1);
   };
 
   // Clear metadata, pipeline, and notes sections when URL changes or is removed
@@ -907,7 +843,6 @@ Where:
       setTaskStatus('IDLE');
       setTaskResult(null);
       setTaskError(null);
-      setLogs([]);
       setShowNotes(false);
       setShowPipeline(false);
       setShowMetadata(false);
@@ -918,7 +853,6 @@ Where:
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (eventSourceRef.current) eventSourceRef.current.close();
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
       mockTimersRef.current.forEach(timer => clearTimeout(timer));
     };
@@ -1008,7 +942,6 @@ Where:
     setShowMetadata(true);
     setShowNotes(true);
     setShowPipeline(false);
-    setLogs([]);
     setIsViewingHistory(true);
     setGlobalTab('workspace');
     setWorkspaceTab('notes');
@@ -1059,11 +992,7 @@ Where:
     }
   };
 
-  const handleToggleTerminal = () => {
-    setIsTerminalOpen(prev => !prev);
-  };
 
-  const isRightPanelOpen = isTerminalOpen;
   const filteredHistory = notesHistory.filter(item => {
     const title = item.metadata?.title?.toLowerCase() || '';
     const channel = item.metadata?.channel?.toLowerCase() || '';
@@ -1274,27 +1203,6 @@ Where:
 
               {/* Live API Health Status in Footer */}
               <div className="pt-4 border-t border-zinc-900 space-y-3">
-                {/* Console Toggle Button */}
-                <button
-                  type="button"
-                  onClick={handleToggleTerminal}
-                  className={`w-full flex items-center ${isNavSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'justify-between px-3 py-2.5'} rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer border ${isTerminalOpen
-                    ? 'bg-orange-950/20 text-orange-400 border-orange-900/30 font-bold'
-                    : 'bg-zinc-950/30 border-zinc-900 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-                    }`}
-                  title="Real-time Console"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Terminal className="w-4 h-4" />
-                    <span className={isNavSidebarCollapsed ? 'lg:hidden' : ''}>Real-time Console</span>
-                  </div>
-                  {!isNavSidebarCollapsed && taskStatus === 'PROCESSING' && (
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                    </span>
-                  )}
-                </button>
 
                 <div
                   onClick={() => {
@@ -1334,10 +1242,7 @@ Where:
 
             {/* Right Side main scrollable Workspace Content Workspace Pane */}
             <div className={`flex-1 min-w-0 ${isAnyFullscreen ? '' : (isNavSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64')} flex flex-col h-screen overflow-hidden ${isAnyFullscreen ? '' : 'pt-[53px]'}`}>
-              <div className={`flex-1 w-full transition-all duration-300 relative z-10 ${isRightPanelOpen && !isAnyFullscreen
-                ? 'lg:pr-[370px] xl:pr-[410px]'
-                : ''
-                } overflow-hidden flex flex-col h-full min-h-0`}>
+              <div className="flex-1 w-full transition-all duration-300 relative z-10 overflow-hidden flex flex-col h-full min-h-0">
 
                 <div className="bg-zinc-950/10 w-full flex-1 min-h-0 flex flex-col overflow-hidden">
                   {/* 1. API Configuration Settings view */}
@@ -2009,8 +1914,6 @@ Where:
                               <LoadingModal
                                 isOpen={true}
                                 inline={true}
-                                isTerminalOpen={isTerminalOpen}
-                                onToggleTerminal={handleToggleTerminal}
                               />
                             )}
 
@@ -2070,7 +1973,6 @@ Where:
                                       <SummaryOverview 
                                         result={taskResult} 
                                         metadata={metadata} 
-                                        consoleOpen={isTerminalOpen} 
                                         isFullscreen={isFullscreen}
                                       />
                                     )}
@@ -2095,13 +1997,6 @@ Where:
               </div>
             </div>
 
-            {/* Part 2: Real-time Streaming Terminal */}
-            <LogTerminal
-              logs={logs}
-              isOpen={isTerminalOpen}
-              onClose={() => setIsTerminalOpen(false)}
-              onClear={() => setLogs([])}
-            />
           </div>
         )
       )}

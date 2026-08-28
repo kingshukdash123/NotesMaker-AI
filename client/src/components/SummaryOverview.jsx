@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, User, Award, BookOpen, CheckSquare, Tag, LayoutDashboard, AlertCircle, FileText, List } from 'lucide-react';
 
-export default function SummaryOverview({ result, metadata, consoleOpen = false }) {
+export default function SummaryOverview({ result, metadata }) {
   if (!result || !result.lecture_outline) {
     return (
       <div className="max-w-3xl mx-auto text-center py-16 px-6 rounded-xl bg-black border border-zinc-800 my-8 space-y-4 shadow-md">
@@ -36,16 +36,12 @@ export default function SummaryOverview({ result, metadata, consoleOpen = false 
     <div className="max-w-6xl mx-auto my-6 space-y-6 px-2 sm:px-0">
       
       {/* 1. Header Overview Card */}
-      <div className={`relative overflow-hidden rounded-2xl border border-zinc-800 bg-black p-6 flex flex-col gap-6 shadow-xl ${
-        consoleOpen ? 'lg:flex-col' : 'lg:flex-row'
-      }`}>
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-black p-6 flex flex-col lg:flex-row gap-6 shadow-xl">
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-white/[0.03] to-transparent rounded-full blur-[40px] pointer-events-none"></div>
         
         {/* Left: Thumbnail Preview */}
         {metadata?.thumbnail && (
-          <div className={`w-full shrink-0 aspect-video rounded-xl overflow-hidden border border-zinc-900 shadow-md ${
-            consoleOpen ? 'lg:w-full lg:aspect-video lg:h-auto' : 'lg:w-56 lg:aspect-auto lg:h-32'
-          }`}>
+          <div className="w-full shrink-0 aspect-video rounded-xl overflow-hidden border border-zinc-900 shadow-md lg:w-56 lg:aspect-auto lg:h-32">
             <img 
               src={metadata.thumbnail} 
               alt={metadata.title} 
@@ -77,9 +73,7 @@ export default function SummaryOverview({ result, metadata, consoleOpen = false 
             </h2>
           </div>
 
-          <div className={`grid gap-4 pt-4 border-t border-zinc-950 text-zinc-400 ${
-            consoleOpen ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'
-          }`}>
+          <div className="grid gap-4 pt-4 border-t border-zinc-950 text-zinc-400 grid-cols-1 sm:grid-cols-3">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-zinc-500 shrink-0" />
               <div className="min-w-0">
@@ -106,14 +100,10 @@ export default function SummaryOverview({ result, metadata, consoleOpen = false 
       </div>
 
       {/* 2. Content Grid */}
-      <div className={`grid grid-cols-1 gap-6 ${
-        consoleOpen ? 'xl:grid-cols-1' : 'xl:grid-cols-3'
-      }`}>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         
         {/* Left Side: Overview and Topic Hierarchy (Takes 2 columns) */}
-        <div className={`space-y-6 ${
-          consoleOpen ? 'xl:col-span-1' : 'xl:col-span-2'
-        }`}>
+        <div className="space-y-6 xl:col-span-2">
           
           {/* Lecture Abstract / Executive Summary */}
           <div className="border border-zinc-800 bg-black rounded-2xl p-6 shadow-xl space-y-4">
