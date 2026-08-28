@@ -63,12 +63,12 @@ const preprocessMarkdown = (content) => {
     if (processed.startsWith('$$', i)) {
       let endIdx = -1;
       let nextSearchIdx = i + 2;
-      
+
       // Look for the next $$ that forms a valid block (does not cross paragraphs or headings)
       while (true) {
         const foundIdx = processed.indexOf('$$', nextSearchIdx);
         if (foundIdx === -1) break;
-        
+
         const innerText = processed.substring(i + 2, foundIdx);
         if (!innerText.includes('\n\n') && !innerText.includes('\r\n\r\n') && !innerText.includes('\n#') && !innerText.includes('\r\n#')) {
           endIdx = foundIdx;
@@ -127,36 +127,21 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
 
   const draftNotes = result.draft_notes;
 
-  return (
-    <div className={`bg-black border border-zinc-800 shadow-xl overflow-hidden transition-all duration-300 ${
-      isFullscreen 
-        ? 'w-full h-full rounded-xl overflow-y-auto flex-1 min-h-0' 
-        : 'w-full rounded-xl mb-12'
-    }`}>
+  const cardContent = (
+    <div className={`bg-black border border-zinc-800 shadow-xl overflow-hidden transition-all duration-300 ${isFullscreen
+      ? 'w-full h-full rounded-xl overflow-y-auto flex-1 min-h-0'
+      : 'w-full rounded-xl'
+      }`}>
       {/* Notes Content Body */}
-      <div className="p-3 sm:p-8 space-y-6">
-        {/* Title Header */}
-        <div className="flex justify-between items-center border-b border-zinc-800 pb-5">
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-100 mb-2 leading-tight flex flex-wrap items-center gap-2.5">
-            <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
-              {draftNotes.title || 'Comprehensive Lecture Notes'}
-            </span>
-            {versionSuffix && (
-              <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-md bg-orange-950/40 border border-orange-900/30 text-orange-400 select-none">
-                {versionSuffix.replace(/^\s*\|\s*/, '')}
-              </span>
-            )}
-          </h1>
-        </div>
-
+      <div className="p-3 sm:p-2 space-y-4">
         {/* Markdown Notes Text */}
         {draftNotes.content && (
-          <div className="markdown-content text-sm sm:text-base text-zinc-300 leading-relaxed bg-black p-3 sm:p-6 rounded-lg border border-zinc-800">
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm]} 
+          <div className="markdown-content text-sm sm:text-base text-zinc-300 leading-relaxed bg-black p-2 sm:p-4 rounded-lg overflow-x-auto">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeHighlight]}
               components={{
-                code({node, className, children, ...props}) {
+                code({ node, className, children, ...props }) {
                   const getRawText = (n) => {
                     if (typeof n === 'string') return n;
                     if (typeof n === 'number') return String(n);
@@ -171,7 +156,7 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
                   if (codeText.startsWith('__BLOCK_MATH__')) {
                     const formula = codeText.replace('__BLOCK_MATH__', '').replace(/§NL§/g, '\n');
                     try {
-                      const html = katex.renderToString(formula, { 
+                      const html = katex.renderToString(formula, {
                         displayMode: true,
                         throwOnError: false
                       });
@@ -184,7 +169,7 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
                   if (codeText.startsWith('__INLINE_MATH__')) {
                     const formula = codeText.replace('__INLINE_MATH__', '');
                     try {
-                      const html = katex.renderToString(formula, { 
+                      const html = katex.renderToString(formula, {
                         displayMode: false,
                         throwOnError: false
                       });
@@ -226,6 +211,16 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
           </div>
         )}
       </div>
+    </div>
+  );
+
+  if (isFullscreen) {
+    return cardContent;
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto my-3 px-2 sm:px-0 w-full min-w-0 overflow-hidden">
+      {cardContent}
     </div>
   );
 }

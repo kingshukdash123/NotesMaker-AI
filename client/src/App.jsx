@@ -1107,7 +1107,7 @@ Where:
           </>
         ) : (
           /* Authenticated Sidebar Dashboard Workspace Layout (Header rendered separately at top) */
-          <div className="flex-1 w-full flex relative h-[calc(100vh-53px)] overflow-hidden">
+          <div className={`flex-1 w-full flex relative overflow-hidden ${isAnyFullscreen ? 'h-screen' : 'h-[calc(100vh-53px)] mt-[53px]'}`}>
 
             {/* Mobile Sidebar Backdrop Overlay */}
             {isSidebarMobileOpen && (
@@ -1241,10 +1241,10 @@ Where:
             </aside>
 
             {/* Right Side main scrollable Workspace Content Workspace Pane */}
-            <div className={`flex-1 min-w-0 ${isAnyFullscreen ? '' : (isNavSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64')} flex flex-col h-screen overflow-hidden ${isAnyFullscreen ? '' : 'pt-[53px]'}`}>
+            <div className={`flex-1 min-w-0 ${isAnyFullscreen ? '' : (isNavSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64')} flex flex-col h-full overflow-hidden`}>
               <div className="flex-1 w-full transition-all duration-300 relative z-10 overflow-hidden flex flex-col h-full min-h-0">
 
-                <div className="bg-zinc-950/10 w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+                <div className="bg-zinc-950/10 w-full flex-1 min-h-0 flex flex-col overflow-hidden h-full">
                   {/* 1. API Configuration Settings view */}
                   {activeWorkspaceView === 'configure' && (
                     <div className="max-w-xl mx-auto space-y-6 py-4 flex-1 min-h-0 overflow-y-auto w-full pr-2 custom-scrollbar">
@@ -1376,7 +1376,7 @@ Where:
 
                   {/* 3. Notes Generator View (Has embedded History & Active generator panel) */}
                   {activeWorkspaceView === 'generator' && (
-                    <div className="w-full flex flex-col xl:flex-row gap-6 items-stretch flex-1 min-h-0">
+                    <div className="w-full flex flex-col xl:flex-row gap-6 items-stretch flex-1 min-h-0 h-full">
 
                       {/* Notes History Pane (Left side inside Notes Generator view) */}
                       <div className={`w-full shrink-0 flex flex-col border-b xl:border-b-0 xl:border-r border-zinc-900 p-4 xl:h-full gap-2 transition-all duration-300 ${isSidebarSqueezed ? 'xl:w-14 xl:px-2.5' : 'xl:w-72'
@@ -1867,7 +1867,7 @@ Where:
                       </div>
 
                       {/* Active Ingestion & Viewer Panel (Right side inside Notes Generator view) */}
-                      <div className="flex-1 min-w-0 flex flex-col min-h-0 h-full overflow-hidden p-4 sm:p-5">
+                      <div className="flex-1 min-w-0 flex flex-col min-h-0 h-full overflow-hidden p-3">
                          {metaError && (
                           <div className="mb-4 p-3 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
@@ -1941,7 +1941,7 @@ Where:
                           (() => {
                             const videoId = extractYoutubeVideoId(loadedUrl) || (metadata && metadata.video_id);
                             return (
-                              <div className={`flex flex-col lg:flex-row gap-6 h-full min-h-0 ${
+                              <div className={`flex flex-col lg:flex-row gap-6 flex-1 min-h-0 min-w-0 overflow-hidden ${
                                 isFullscreen
                                   ? 'fixed inset-0 z-[120] w-screen h-screen bg-black p-4 sm:p-6'
                                   : ''
@@ -1951,7 +1951,7 @@ Where:
                                     <VideoPlayer videoId={videoId} metadata={metadata} />
                                   </div>
                                 )}
-                                <div className="flex-1 flex flex-col min-h-0">
+                                <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden">
                                   <div className="shrink-0">
                                     <Tabs 
                                       activeTab={workspaceTab} 
@@ -1960,7 +1960,7 @@ Where:
                                       onToggleFullscreen={setIsFullscreen}
                                     />
                                   </div>
-                                  <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar xl:pr-2">
+                                  <div className="flex-1 min-h-0 min-w-0 overflow-y-auto custom-scrollbar xl:pr-2">
                                     {workspaceTab === 'notes' && (
                                       <NotesViewer 
                                         result={taskResult} 
