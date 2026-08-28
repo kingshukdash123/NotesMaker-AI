@@ -15,7 +15,9 @@ import VideoPlayer from './components/VideoPlayer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { fetchYoutubeMetadata, startNoteGeneration, getTaskStatus, API_BASE_URL } from './services/server/api';
 import { saveNotes, getUserNotes, deleteNotes, saveUserApiKeys, getUserApiKeys, getNoteByVideoId, extractYoutubeVideoId, getNoteById } from './services/firebase/notesService';
-import { Video, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Video, Layers, AlertCircle, RefreshCw, Lock, ArrowRight, ArrowLeft, BookOpen, MessageSquare, BarChart2, History, Settings, Plus, Search, Trash2, Copy, Check, Key, Cpu, Clock, ExternalLink, Save, Eye, EyeOff, CheckCircle2, User, LogOut, Loader2, Menu, ChevronDown, MoreVertical, ChevronLeft, ChevronRight, Bot } from 'lucide-react';
+import RightAssistantSidebar from './components/chat/RightAssistantSidebar';
+import AssistantFullScreen from './components/chat/AssistantFullScreen';
 
 const mapErrorMessage = (errorMsg) => {
   if (!errorMsg) return 'Notes generation failed.';
@@ -234,6 +236,68 @@ function MainApp() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [assistantMode, setAssistantMode] = useState(() => localStorage.getItem('assistant_mode') || 'sidebar');
+
+  // Synchronize with native browser fullscreen changes (F11 / Esc / native UI)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isNativeFull = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      setIsFullscreen(isNativeFull);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  const handleToggleFullscreen = async (shouldBeFullscreen) => {
+    try {
+      if (shouldBeFullscreen) {
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            await document.documentElement.webkitRequestFullscreen();
+          } else if (document.documentElement.msRequestFullscreen) {
+            await document.documentElement.msRequestFullscreen();
+          }
+        }
+      } else {
+        if (document.fullscreenElement) {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            await document.msExitFullscreen();
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Fullscreen toggle error:', err);
+    }
+    setIsFullscreen(shouldBeFullscreen);
+  };
+
+  const handleToggleAssistantMode = () => {
+    const newMode = assistantMode === 'sidebar' ? 'float' : 'sidebar';
+    setAssistantMode(newMode);
+    localStorage.setItem('assistant_mode', newMode);
+  };
 
   // 2. Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -389,6 +453,8 @@ function MainApp() {
           setActiveWorkspaceView('configure');
         } else if (view === 'profile') {
           setActiveWorkspaceView('profile');
+        } else if (view === 'assistant') {
+          setActiveWorkspaceView('assistant');
         } else {
           setActiveWorkspaceView('generator');
           const validSubTabs = ['notes', 'summary', 'qa'];
@@ -527,6 +593,8 @@ function MainApp() {
         targetPath = '/workspace/configure';
       } else if (activeWorkspaceView === 'profile') {
         targetPath = '/workspace/profile';
+      } else if (activeWorkspaceView === 'assistant') {
+        targetPath = '/workspace/assistant';
       } else {
         // activeWorkspaceView === 'generator'
         const videoId = extractYoutubeVideoId(loadedUrl);
@@ -1041,6 +1109,9 @@ Where:
           setGlobalTab={setGlobalTab}
           isSidebarMobileOpen={isSidebarMobileOpen}
           setIsSidebarMobileOpen={setIsSidebarMobileOpen}
+          isAssistantOpen={isAssistantOpen}
+          setIsAssistantOpen={setIsAssistantOpen}
+          activeWorkspaceView={activeWorkspaceView}
         />
       )}
 
@@ -1169,6 +1240,20 @@ Where:
                   >
                     <Cpu className="w-4 h-4 shrink-0" />
                     <span className={isNavSidebarCollapsed ? 'lg:hidden' : ''}>Notes Generator</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveWorkspaceView('assistant');
+                      setIsSidebarMobileOpen(false);
+                    }}
+                    className={`w-full flex items-center ${isNavSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-2.5 px-3 py-2.5'} rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${activeWorkspaceView === 'assistant'
+                      ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
+                      : 'text-zinc-450 hover:text-zinc-200 hover:bg-zinc-900/40'
+                      }`}
+                    title="AI Assistant"
+                  >
+                    <Bot className="w-4 h-4 shrink-0" />
+                    <span className={isNavSidebarCollapsed ? 'lg:hidden' : ''}>AI Assistant</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1371,6 +1456,15 @@ Where:
                           <span>Sign Out Account</span>
                         </button>
                       </div>
+                    </div>
+                  )}
+
+
+
+                  {/* AI Assistant Fullscreen View */}
+                  {activeWorkspaceView === 'assistant' && (
+                    <div className="flex-1 min-h-0 min-w-0 flex flex-col p-3 sm:p-4 h-full overflow-hidden">
+                      <AssistantFullScreen currentUser={currentUser} />
                     </div>
                   )}
 
@@ -1957,7 +2051,7 @@ Where:
                                       activeTab={workspaceTab} 
                                       setActiveTab={setWorkspaceTab} 
                                       isFullscreen={isFullscreen}
-                                      onToggleFullscreen={setIsFullscreen}
+                                      onToggleFullscreen={handleToggleFullscreen}
                                     />
                                   </div>
                                   <div className="flex-1 min-h-0 min-w-0 overflow-y-auto custom-scrollbar xl:pr-2">
@@ -1965,7 +2059,7 @@ Where:
                                       <NotesViewer 
                                         result={taskResult} 
                                         isFullscreen={isFullscreen} 
-                                        onToggleFullscreen={setIsFullscreen} 
+                                        onToggleFullscreen={handleToggleFullscreen} 
                                         versionSuffix={getActiveVersionLabel()} 
                                       />
                                     )}
@@ -1997,6 +2091,35 @@ Where:
               </div>
             </div>
 
+            {/* Collapsible Right Sidebar Assistant */}
+            {activeWorkspaceView !== 'assistant' && (
+              <RightAssistantSidebar 
+                currentUser={currentUser} 
+                isOpen={isAssistantOpen} 
+                onClose={() => setIsAssistantOpen(false)} 
+                mode={assistantMode}
+                onToggleMode={handleToggleAssistantMode}
+                onZoom={() => {
+                  setActiveWorkspaceView('assistant');
+                  setIsAssistantOpen(false);
+                }}
+              />
+            )}
+
+            {/* Floating launcher widget button when sidebar is closed */}
+            {!isAssistantOpen && activeWorkspaceView !== 'assistant' && (
+              <button
+                onClick={() => setIsAssistantOpen(true)}
+                className="fixed bottom-10 right-10 w-13 h-13 rounded-full flex items-center justify-center shadow-2xl z-[100] cursor-pointer bg-black hover:scale-105 active:scale-95 transition-all hover:shadow-orange-500/20 hover:shadow-2xl animate-in fade-in duration-300 overflow-hidden"
+                // title="Open Assistant"
+              >
+                <img
+                  src="/nova.png"
+                  // alt="Nova Assistant"
+                  className="w-full h-full object-cover select-none pointer-events-none"
+                />
+              </button>
+            )}
           </div>
         )
       )}

@@ -16,6 +16,7 @@ from pydantic import BaseModel, HttpUrl
 from utils.logger import get_logger, current_task_id
 from services.firebase.firestore import get_user_api_keys
 from services.rag.service import RAGService
+from services.assistant.service import AssistantService
 from services.youtube.metadata import get_video_metadata
 from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
@@ -210,6 +211,53 @@ async def ask_question(
             yield json.dumps({"type": "error", "data": str(e)}) + "\n"
 
     return StreamingResponse(stream_generator(), media_type="text/event-stream")
+
+
+class AssistantChatRequest(BaseModel):
+    messages: List[Dict[str, Any]]
+    summary: Optional[str] = None
+
+
+@app.post("/api/assistant/chat")
+async def assistant_chat(
+    request: AssistantChatRequest,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+):
+    """
+    Endpoint for general personal assistant chat.
+    Streams back JSON lines with chunk updates and short term memory summary updates.
+    """
+    logger.info(f"Personal Assistant chat request received for user: {x_user_id}")
+
+    # Parse Firebase Authorization ID Token if present
+    id_token = None
+    if authorization and authorization.startswith("Bearer "):
+        id_token = authorization.split("Bearer ")[1]
+
+    # Fetch user API keys from Firestore if authenticated
+    groq_api_key = None
+    if x_user_id:
+        try:
+            keys = await get_user_api_keys(x_user_id, id_token)
+            groq_api_key = keys.get("groq_api_key")
+        except Exception as e:
+            logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
+
+    async def stream_generator():
+        try:
+            assistant_service = AssistantService(groq_api_key=groq_api_key)
+            async for chunk in assistant_service.chat_stream(
+                messages=request.messages,
+                summary=request.summary
+            ):
+                yield chunk + "\n"
+        except Exception as e:
+            logger.exception("Assistant streaming process failed.")
+            yield json.dumps({"type": "error", "data": str(e)}) + "\n"
+
+    return StreamingResponse(stream_generator(), media_type="text/event-stream")
+
 
 
 @app.get("/api/notes/status/{task_id}")

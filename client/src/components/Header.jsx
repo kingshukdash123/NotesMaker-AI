@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, LogOut, User, Bot } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header({ 
   globalTab = 'home',
   setGlobalTab,
   isSidebarMobileOpen = false,
-  setIsSidebarMobileOpen
+  setIsSidebarMobileOpen,
+  isAssistantOpen,
+  setIsAssistantOpen,
+  activeWorkspaceView
 }) {
   const { currentUser, logout, getUserDisplayName } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -136,6 +139,21 @@ export default function Header({
             )}
           </div>
         )}
+
+        {/* Workspace AI Assistant Toggler */}
+        {/* {globalTab === 'workspace' && currentUser && activeWorkspaceView !== 'assistant' && (
+          <button
+            onClick={() => setIsAssistantOpen(!isAssistantOpen)}
+            className={`p-1.5 rounded-lg transition duration-150 shrink-0 cursor-pointer ${
+              isAssistantOpen 
+                ? 'text-orange-500 bg-orange-950/20 border border-orange-900/30' 
+                : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent'
+            }`}
+            title="Toggle AI Assistant"
+          >
+            <Bot className="w-4 h-4" />
+          </button>
+        )} */}
       </div>
     </header>
   );
