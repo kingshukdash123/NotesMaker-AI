@@ -1,8 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, User, Subtitles, Loader2, PlayCircle } from 'lucide-react';
 
 export default function VideoPlayer({ videoId, metadata }) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const iframeRef = useRef(null);
+
+  useEffect(() => {
+    const handleSeek = (event) => {
+      const seconds = event.detail?.seconds;
+      if (typeof seconds === 'number' && iframeRef.current?.contentWindow) {
+        // Send postMessage to YouTube IFrame Player API
+        try {
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'seekTo', args: [seconds, true] }),
+            '*'
+          );
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+            '*'
+          );
+        } catch (err) {
+          console.warn('Failed to postMessage to YouTube iframe:', err);
+        }
+      }
+    };
+
+    window.addEventListener('seek-video', handleSeek);
+    return () => {
+      window.removeEventListener('seek-video', handleSeek);
+    };
+  }, []);
 
   if (!videoId) {
     return (
@@ -13,7 +40,7 @@ export default function VideoPlayer({ videoId, metadata }) {
     );
   }
 
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`;
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=0&rel=0`;
   const youtubeWatchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   return (
@@ -36,6 +63,7 @@ export default function VideoPlayer({ videoId, metadata }) {
           </div>
         )}
         <iframe
+          ref={iframeRef}
           src={embedUrl}
           title={metadata?.title || 'YouTube video player'}
           frameBorder="0"

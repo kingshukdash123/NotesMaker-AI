@@ -154,7 +154,7 @@ export default function ChatMessage({ message, isStreaming = false }) {
             
             // Block math
             if (codeText.startsWith('__BLOCK_MATH__')) {
-              const formula = codeText.replace('__BLOCK_MATH__', '').replace(/§NL§/g, '\n');
+              let formula = codeText.replace('__BLOCK_MATH__', '').replace(/§NL§/g, '\n');
               try {
                 const html = katex.renderToString(formula, { 
                   displayMode: true, 
@@ -162,21 +162,21 @@ export default function ChatMessage({ message, isStreaming = false }) {
                 });
                 return <span dangerouslySetInnerHTML={{ __html: html }} className="block my-3 overflow-x-auto custom-scrollbar" />;
               } catch (err) {
-                return <span className="text-red-400 font-semibold block my-3">{formula}</span>;
+                return <div className="p-2 my-2 rounded bg-zinc-900/80 border border-zinc-800 text-zinc-300 font-mono text-xs overflow-x-auto">{formula}</div>;
               }
             }
             
             // Inline math
             if (codeText.startsWith('__INLINE_MATH__')) {
-              const formula = codeText.replace('__INLINE_MATH__', '');
+              let formula = codeText.replace('__INLINE_MATH__', '');
               try {
                 const html = katex.renderToString(formula, { 
                   displayMode: false, 
                   throwOnError: false 
                 });
-                return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block" />;
+                return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block px-0.5" />;
               } catch (err) {
-                return <span className="text-red-400 font-semibold">{formula}</span>;
+                return <code className="px-1 py-0.5 rounded bg-zinc-900 text-zinc-300 font-mono text-xs">{formula}</code>;
               }
             }
 

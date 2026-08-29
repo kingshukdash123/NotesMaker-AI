@@ -37,24 +37,118 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
       .replace(/\x08/g, '\\b') // Backspace -> \b (e.g. \beta, \begin)
       .replace(/\x0b/g, '\\v'); // Vertical Tab -> \v (e.g. \vec)
 
-    // Convert standard LaTeX delimiters \( \) and \[ \] to $ and $$
+    // 1. Convert standard LaTeX delimiters \[ \] and \( \) to $$ and $
     processed = processed
       .replace(/\\\[([\s\S]*?)\\\]/g, '$$$$$1$$$$') // \[ ... \] -> $$ ... $$
       .replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');     // \( ... \) -> $ ... $
 
-    // 1. Unescape any escaped dollar signs (e.g. \$ -> $)
+    // 2. Unescape any escaped dollar signs (e.g. \$ -> $)
     processed = processed.replace(/\\(\$)/g, '$1');
 
+    // 3. Extract timestamps/citations trapped inside $$...$$ or $...$ math blocks before tokenizing
+    // e.g. "$$ W = \mathbf{F} \cdot \mathbf{d} \quad [00:00] $$" -> "$$ W = \mathbf{F} \cdot \mathbf{d} $$ [00:00]"
+    const timestampPattern = /\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g;
+    
+    // Extract trailing citations inside $$ ... $$
+    processed = processed.replace(
+      /\$\$([\s\S]*?)\$\$/g,
+      (match, mathBody) => {
+        let extractedTimestamps = [];
+        let cleanedMath = mathBody.replace(
+          /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
+          (tsMatch) => {
+            const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
+            if (tsOnlyMatch) {
+              extractedTimestamps.push(tsOnlyMatch[0]);
+            }
+            return '';
+          }
+        ).trim();
+        const suffix = extractedTimestamps.length > 0 ? ' ' + extractedTimestamps.join(' ') : '';
+        return `$$${cleanedMath}$$${suffix}`;
+      }
+    );
 
+    // Extract trailing citations inside $ ... $ (inline math)
+    processed = processed.replace(
+      /(?<!\$)\$([^$\n]+?)\$(?!\$)/g,
+      (match, mathBody) => {
+        let extractedTimestamps = [];
+        let cleanedMath = mathBody.replace(
+          /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
+          (tsMatch) => {
+            const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
+            if (tsOnlyMatch) {
+              extractedTimestamps.push(tsOnlyMatch[0]);
+            }
+            return '';
+          }
+        ).trim();
+        const suffix = extractedTimestamps.length > 0 ? ' ' + extractedTimestamps.join(' ') : '';
+        return `$${cleanedMath}$${suffix}`;
+      }
+    );
 
-    // Robust state machine to tokenize and replace inline math $...$
+    // 4. Handle lines with raw LaTeX math commands that were not wrapped in $ or $$
+    // e.g. "W = \mathbf{F}\!\cdot\!\mathbf{d} \quad [00:00]"
+    const lines = processed.split('\n');
+    const latexCommandRegex = /\\(mathbf|frac|tfrac|dfrac|text|Delta|nabla|partial|cdot|times|approx|sqrt|alpha|beta|gamma|theta|lambda|mu|pi|sigma|omega|sum|int|infty|vec|hat|bar|quad|qquad)\b/;
+    
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      const trimmed = line.trim();
+      if (
+        !trimmed.includes('$') &&
+        !trimmed.includes('`') &&
+        !trimmed.startsWith('#') &&
+        latexCommandRegex.test(trimmed)
+      ) {
+        let lineWithoutTs = trimmed;
+        let lineTs = [];
+        lineWithoutTs = lineWithoutTs.replace(
+          /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
+          (tsMatch) => {
+            const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
+            if (tsOnlyMatch) {
+              lineTs.push(tsOnlyMatch[0]);
+            }
+            return '';
+          }
+        ).trim();
+
+        const suffix = lineTs.length > 0 ? ' ' + lineTs.join(' ') : '';
+        lines[idx] = line.replace(trimmed, () => `$$${lineWithoutTs}$$${suffix}`);
+      }
+    }
+    processed = lines.join('\n');
+
+    // 5. Robust state machine to tokenize math and convert timestamps ONLY in normal text
     let result = '';
     let i = 0;
     const len = processed.length;
 
+    const replaceTimestamps = (plainText) => {
+      return plainText.replace(timestampPattern, (match, p1, p2, p3) => {
+        const hrs = p3 !== undefined ? parseInt(p1, 10) : 0;
+        const mins = p3 !== undefined ? parseInt(p2, 10) : parseInt(p1, 10);
+        const secs = p3 !== undefined ? parseInt(p3, 10) : parseInt(p2, 10);
+        const totalSeconds = hrs * 3600 + mins * 60 + secs;
+        return `${match}(https://www.youtube.com/watch?v=${videoId}&t=${totalSeconds})`;
+      });
+    };
+
+    let textBuffer = '';
+    const flushText = () => {
+      if (textBuffer.length > 0) {
+        result += replaceTimestamps(textBuffer);
+        textBuffer = '';
+      }
+    };
+
     while (i < len) {
-      // 1. Skip code blocks (``` ... ```)
+      // 5a. Skip multi-line code blocks (``` ... ```)
       if (processed.startsWith('```', i)) {
+        flushText();
         const endIdx = processed.indexOf('```', i + 3);
         if (endIdx !== -1) {
           result += processed.substring(i, endIdx + 3);
@@ -66,8 +160,9 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
         continue;
       }
 
-      // 2. Skip inline code (` ... `)
+      // 5b. Skip inline code (` ... `)
       if (processed[i] === '`') {
+        flushText();
         const endIdx = processed.indexOf('`', i + 1);
         if (endIdx !== -1) {
           result += processed.substring(i, endIdx + 1);
@@ -79,30 +174,28 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
         continue;
       }
 
-      // 3. Handle block math ($$ ... $$) — convert to __BLOCK_MATH__ token
+      // 5c. Handle block math ($$ ... $$) — convert to __BLOCK_MATH__ token
       if (processed.startsWith('$$', i)) {
+        flushText();
         let endIdx = -1;
         let nextSearchIdx = i + 2;
-        
-        // Look for the next $$ that forms a valid block (does not cross paragraphs or headings)
+
         while (true) {
           const foundIdx = processed.indexOf('$$', nextSearchIdx);
           if (foundIdx === -1) break;
-          
+
           const innerText = processed.substring(i + 2, foundIdx);
           if (!innerText.includes('\n\n') && !innerText.includes('\r\n\r\n') && !innerText.includes('\n#') && !innerText.includes('\r\n#')) {
             endIdx = foundIdx;
             break;
           }
-          // If it was invalid, keep searching from the next character
           nextSearchIdx = foundIdx + 1;
         }
 
         if (endIdx !== -1) {
           let mathContent = processed.substring(i + 2, endIdx).trim();
-          // Fix single-backslash+newline to double-backslash+newline for LaTeX line breaks
           mathContent = mathContent.replace(/(?<!\\)\\\n/g, '\\\\\n');
-          // Encode newlines so inline code block stays single-line
+          mathContent = mathContent.replace(/(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g, '').trim();
           const encoded = mathContent.replace(/\n/g, '§NL§');
           result += '`__BLOCK_MATH__' + encoded + '`';
           i = endIdx + 2;
@@ -110,14 +203,12 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
         }
       }
 
-      // 4. Handle inline math ($ ... $)
+      // 5d. Handle inline math ($ ... $)
       if (processed[i] === '$') {
-        // Find closing $ on the same line
+        flushText();
         let endIdx = -1;
         for (let j = i + 1; j < len; j++) {
-          if (processed[j] === '\n') {
-            break; // Must be on the same line
-          }
+          if (processed[j] === '\n') break;
           if (processed[j] === '$') {
             endIdx = j;
             break;
@@ -125,9 +216,9 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
         }
 
         if (endIdx !== -1 && endIdx > i + 1) {
-          const formula = processed.substring(i + 1, endIdx);
-          // Ensure it's not just spaces or empty
-          if (formula.trim().length > 0) {
+          let formula = processed.substring(i + 1, endIdx).trim();
+          if (formula.length > 0) {
+            formula = formula.replace(/(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g, '').trim();
             result += '`__INLINE_MATH__' + formula + '`';
             i = endIdx + 1;
             continue;
@@ -135,24 +226,14 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
         }
       }
 
-      result += processed[i];
+      textBuffer += processed[i];
       i++;
     }
 
-    // 5. Pre-process [hh:mm:ss] or [mm:ss] timestamps into custom markdown link tokens
-    const regex = /\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g;
-    result = result.replace(regex, (match, p1, p2, p3) => {
-      const hrs = p3 !== undefined ? parseInt(p1, 10) : 0;
-      const mins = p3 !== undefined ? parseInt(p2, 10) : parseInt(p1, 10);
-      const secs = p3 !== undefined ? parseInt(p3, 10) : parseInt(p2, 10);
-      const totalSeconds = hrs * 3600 + mins * 60 + secs;
-      
-      return `${match}(https://www.youtube.com/watch?v=${videoId}&t=${totalSeconds})`;
-    });
- 
+    flushText();
     return result;
   };
- 
+
   const renderMessageMarkdown = (text) => {
     if (!text) return null;
     return (
@@ -163,14 +244,32 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
           a({ href, children }) {
             const isSeekLink = href && href.includes('youtube.com/watch') && href.includes('&t=');
             if (isSeekLink) {
+              const handleSeekClick = (e) => {
+                e.preventDefault();
+                try {
+                  const url = new URL(href);
+                  const t = url.searchParams.get('t');
+                  if (t !== null) {
+                    const seconds = parseInt(t, 10);
+                    if (!isNaN(seconds)) {
+                      window.dispatchEvent(new CustomEvent('seek-video', { detail: { seconds } }));
+                      return;
+                    }
+                  }
+                } catch (err) {
+                  // Fallback
+                }
+                window.open(href, '_blank');
+              };
+
               return (
                 <button
                   type="button"
-                  onClick={() => window.open(href, '_blank')}
-                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 mx-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-bold text-orange-300 hover:text-orange-200 hover:bg-zinc-800 transition cursor-pointer align-baseline font-mono"
-                  title="Click to seek video"
+                  onClick={handleSeekClick}
+                  className="inline-flex items-center gap-0.5 px-1.5 py-[1px] mx-0.5 rounded bg-orange-950/30 border border-orange-800/40 text-[9px] font-semibold text-orange-400 hover:text-orange-200 hover:bg-orange-900/40 hover:border-orange-600/50 transition cursor-pointer align-baseline font-mono shadow-xs"
+                  title="Click to seek and play video at this timestamp"
                 >
-                  <Play className="w-2.5 h-2.5 fill-current shrink-0 text-orange-300" />
+                  <Play className="w-2 h-2 fill-current shrink-0 text-orange-400" />
                   <span>{children}</span>
                 </button>
               );
@@ -194,28 +293,28 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
             const codeText = getRawText(children);
             // Block math (from $$ blocks)
             if (codeText.startsWith('__BLOCK_MATH__')) {
-              const formula = codeText.replace('__BLOCK_MATH__', '').replace(/§NL§/g, '\n');
+              let formula = codeText.replace('__BLOCK_MATH__', '').replace(/§NL§/g, '\n');
               try {
                 const html = katex.renderToString(formula, { 
                   displayMode: true, 
                   throwOnError: false 
                 });
-                return <span dangerouslySetInnerHTML={{ __html: html }} className="block my-4 overflow-x-auto" />;
+                return <span dangerouslySetInnerHTML={{ __html: html }} className="block my-3 overflow-x-auto custom-scrollbar" />;
               } catch (err) {
-                return <span className="text-red-400 font-semibold block my-4">{formula}</span>;
+                return <div className="p-2 my-2 rounded bg-zinc-900/80 border border-zinc-800 text-zinc-300 font-mono text-xs overflow-x-auto">{formula}</div>;
               }
             }
             // Inline math (from $ blocks)
             if (codeText.startsWith('__INLINE_MATH__')) {
-              const formula = codeText.replace('__INLINE_MATH__', '');
+              let formula = codeText.replace('__INLINE_MATH__', '');
               try {
                 const html = katex.renderToString(formula, { 
                   displayMode: false, 
                   throwOnError: false 
                 });
-                return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block" />;
+                return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block px-0.5" />;
               } catch (err) {
-                return <span className="text-red-400 font-semibold">{formula}</span>;
+                return <code className="px-1 py-0.5 rounded bg-zinc-900 text-zinc-300 font-mono text-xs">{formula}</code>;
               }
             }
             return <code className={className} {...props}>{children}</code>;

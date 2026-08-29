@@ -25,7 +25,44 @@ const preprocessMarkdown = (content) => {
   // 1. Unescape any escaped dollar signs (e.g. \$ -> $)
   processed = processed.replace(/\\(\$)/g, '$1');
 
+  // 2. Extract timestamps/citations trapped inside $$...$$ or $...$ math blocks before tokenizing
+  processed = processed.replace(
+    /\$\$([\s\S]*?)\$\$/g,
+    (match, mathBody) => {
+      let extractedTimestamps = [];
+      let cleanedMath = mathBody.replace(
+        /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
+        (tsMatch) => {
+          const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
+          if (tsOnlyMatch) {
+            extractedTimestamps.push(tsOnlyMatch[0]);
+          }
+          return '';
+        }
+      ).trim();
+      const suffix = extractedTimestamps.length > 0 ? ' ' + extractedTimestamps.join(' ') : '';
+      return `$$${cleanedMath}$$${suffix}`;
+    }
+  );
 
+  processed = processed.replace(
+    /(?<!\$)\$([^$\n]+?)\$(?!\$)/g,
+    (match, mathBody) => {
+      let extractedTimestamps = [];
+      let cleanedMath = mathBody.replace(
+        /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
+        (tsMatch) => {
+          const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
+          if (tsOnlyMatch) {
+            extractedTimestamps.push(tsOnlyMatch[0]);
+          }
+          return '';
+        }
+      ).trim();
+      const suffix = extractedTimestamps.length > 0 ? ' ' + extractedTimestamps.join(' ') : '';
+      return `$${cleanedMath}$${suffix}`;
+    }
+  );
 
   // 3. Robust state machine to tokenize and replace inline math $...$
   let result = '';
@@ -82,6 +119,7 @@ const preprocessMarkdown = (content) => {
         let mathContent = processed.substring(i + 2, endIdx).trim();
         // Fix single-backslash+newline to double-backslash+newline for LaTeX line breaks
         mathContent = mathContent.replace(/(?<!\\)\\\n/g, '\\\\\n');
+        mathContent = mathContent.replace(/(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g, '').trim();
         // Encode newlines so inline code block stays single-line
         const encoded = mathContent.replace(/\n/g, '§NL§');
         result += '`__BLOCK_MATH__' + encoded + '`';
@@ -105,9 +143,9 @@ const preprocessMarkdown = (content) => {
       }
 
       if (endIdx !== -1 && endIdx > i + 1) {
-        const formula = processed.substring(i + 1, endIdx);
-        // Ensure it's not just spaces or empty
-        if (formula.trim().length > 0) {
+        let formula = processed.substring(i + 1, endIdx).trim();
+        if (formula.length > 0) {
+          formula = formula.replace(/(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g, '').trim();
           result += '`__INLINE_MATH__' + formula + '`';
           i = endIdx + 1;
           continue;
@@ -162,7 +200,7 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
                       });
                       return <span dangerouslySetInnerHTML={{ __html: html }} className="block my-4 overflow-x-auto" />;
                     } catch (err) {
-                      return <span className="text-red-400 font-semibold block my-4">{formula}</span>;
+                      return <div className="p-2 my-2 rounded bg-zinc-900/80 border border-zinc-800 text-zinc-300 font-mono text-xs overflow-x-auto">{formula}</div>;
                     }
                   }
                   // Inline math (from $ blocks)
@@ -173,9 +211,9 @@ export default function NotesViewer({ result, isFullscreen = false, onToggleFull
                         displayMode: false,
                         throwOnError: false
                       });
-                      return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block" />;
+                      return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block px-0.5" />;
                     } catch (err) {
-                      return <span className="text-red-400 font-semibold">{formula}</span>;
+                      return <code className="px-1 py-0.5 rounded bg-zinc-900 text-zinc-300 font-mono text-xs">{formula}</code>;
                     }
                   }
                   return <code className={className} {...props}>{children}</code>;
