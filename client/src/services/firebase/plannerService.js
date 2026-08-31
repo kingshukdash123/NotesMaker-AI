@@ -12,29 +12,29 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { PlannerTaskModel } from '../../models';
 
 /**
  * Creates a new task in Firestore.
  */
 export async function createTask(userId, title, date, priority = 'medium') {
-  if (!userId || !title.trim() || !date) throw new Error('Task title and date are required.');
+  const model = new PlannerTaskModel({
+    userId,
+    title,
+    date,
+    priority,
+    completed: false,
+  });
 
   const tasksRef = collection(db, 'planner_tasks');
-  const docRef = await addDoc(tasksRef, {
-    userId,
-    title: title.trim(),
-    date, // YYYY-MM-DD local format
-    priority, // 'high' | 'medium' | 'low'
-    completed: false,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  });
+  const docRef = await addDoc(tasksRef, model.toFirestore({ isNew: true }));
 
   return docRef.id;
 }
 
 /**
  * Retrieves tasks for a specific date.
+ * @returns {Promise<Array<PlannerTaskModel>>}
  */
 export async function getTasksByDate(userId, date) {
   if (!userId || !date) return [];
@@ -51,10 +51,10 @@ export async function getTasksByDate(userId, date) {
   const tasks = [];
 
   querySnapshot.forEach((docSnap) => {
-    tasks.push({
-      id: docSnap.id,
-      ...docSnap.data()
-    });
+    const task = PlannerTaskModel.fromFirestore(docSnap);
+    if (task) {
+      tasks.push(task);
+    }
   });
 
   return tasks;
@@ -62,6 +62,7 @@ export async function getTasksByDate(userId, date) {
 
 /**
  * Retrieves tasks in a date range (for monthly calendar view).
+ * @returns {Promise<Array<PlannerTaskModel>>}
  */
 export async function getTasksByMonth(userId, startDateStr, endDateStr) {
   if (!userId || !startDateStr || !endDateStr) return [];
@@ -78,10 +79,10 @@ export async function getTasksByMonth(userId, startDateStr, endDateStr) {
   const tasks = [];
 
   querySnapshot.forEach((docSnap) => {
-    tasks.push({
-      id: docSnap.id,
-      ...docSnap.data()
-    });
+    const task = PlannerTaskModel.fromFirestore(docSnap);
+    if (task) {
+      tasks.push(task);
+    }
   });
 
   return tasks;
@@ -110,8 +111,10 @@ export async function deleteTask(userId, taskId) {
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
 
+  const task = PlannerTaskModel.fromFirestore(docSnap);
+
   // Security check: ensure task belongs to requesting user
-  if (docSnap.data().userId !== userId) {
+  if (task?.userId !== userId) {
     throw new Error('Unauthorized: You do not have permission to delete this task.');
   }
 
@@ -125,7 +128,7 @@ export async function updateTaskDetails(taskId, title, priority) {
   if (!taskId) return;
   const docRef = doc(db, 'planner_tasks', taskId);
   await updateDoc(docRef, {
-    title: title.trim(),
+    title: (title || '').trim(),
     priority,
     updatedAt: serverTimestamp()
   });

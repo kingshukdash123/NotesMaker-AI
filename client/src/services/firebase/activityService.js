@@ -4,10 +4,10 @@ import {
   setDoc, 
   getDocs, 
   query, 
-  where, 
-  serverTimestamp 
+  where 
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { UserActivityModel } from '../../models';
 
 /**
  * Logs user login/activity for the current day.
@@ -22,14 +22,15 @@ export async function logUserActivity(userId) {
   const day = String(today.getDate()).padStart(2, '0');
   const dateStr = `${year}-${month}-${day}`;
 
+  const model = new UserActivityModel({
+    userId,
+    date: dateStr,
+  });
+
   const docRef = doc(db, 'user_activity', `${userId}_${dateStr}`);
   
   try {
-    await setDoc(docRef, {
-      userId,
-      date: dateStr,
-      timestamp: serverTimestamp()
-    }, { merge: true });
+    await setDoc(docRef, model.toFirestore(), { merge: true });
   } catch (err) {
     console.error('Failed to log daily user activity:', err);
   }
@@ -37,6 +38,7 @@ export async function logUserActivity(userId) {
 
 /**
  * Retrieves all activity days for the user.
+ * @returns {Promise<Array<UserActivityModel>>}
  */
 export async function getUserActivity(userId) {
   if (!userId) return [];
@@ -48,10 +50,10 @@ export async function getUserActivity(userId) {
     const querySnapshot = await getDocs(q);
     const activityList = [];
     querySnapshot.forEach((docSnap) => {
-      activityList.push({
-        id: docSnap.id,
-        ...docSnap.data()
-      });
+      const model = UserActivityModel.fromFirestore(docSnap);
+      if (model) {
+        activityList.push(model);
+      }
     });
     return activityList;
   } catch (err) {

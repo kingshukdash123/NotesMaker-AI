@@ -122,62 +122,38 @@ export default function DiscoverPage() {
     try {
       const isCurrentlySaved = savedVideos.some(v => v.videoId === videoId);
 
-      if (!isCurrentlySaved) {
-        // First save the video to library
-        const metadata = {
+      const videoEntry = {
+        videoId,
+        videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        metadata: {
           title: video.title || 'YouTube Video',
           channel: video.channel || 'Unknown Creator',
           thumbnail: video.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-        };
-        await saveVideoToLibrary(
-          currentUser.uid,
-          videoId,
-          `https://www.youtube.com/watch?v=${videoId}`,
-          metadata
-        );
-        // Add to local state
-        setSavedVideos(prev => [
-          ...prev,
-          {
-            videoId,
-            videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
-            metadata,
-            playlistIds: [playlistId]
-          }
-        ]);
-      }
+        },
+        notesReady: false,
+        addedAt: new Date().toISOString(),
+      };
 
       if (alreadyAssociated) {
         await removeVideoFromPlaylist(currentUser.uid, videoId, playlistId);
-        setSavedVideos(prev => prev.map(v => {
-          if (v.videoId === videoId) {
-            return {
-              ...v,
-              playlistIds: v.playlistIds?.filter(id => id !== playlistId) || []
-            };
+        setPlaylists(prev => prev.map(pl => {
+          if (pl.id === playlistId) {
+            const updatedVideos = (pl.videos || []).filter(v => v.videoId !== videoId);
+            return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
-          return v;
+          return pl;
         }));
       } else {
-        await addVideoToPlaylist(currentUser.uid, videoId, playlistId);
-        setSavedVideos(prev => prev.map(v => {
-          if (v.videoId === videoId) {
-            return {
-              ...v,
-              playlistIds: [...(v.playlistIds || []), playlistId]
-            };
+        await addVideoToPlaylist(currentUser.uid, videoId, playlistId, videoEntry);
+        setPlaylists(prev => prev.map(pl => {
+          if (pl.id === playlistId) {
+            const existing = pl.videos || [];
+            const updatedVideos = existing.some(v => v.videoId === videoId) ? existing : [...existing, videoEntry];
+            return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
-          return v;
+          return pl;
         }));
       }
-
-      // Update playlists count locally
-      setPlaylists(prev => prev.map(pl => {
-        if (pl.id === playlistId) {
-          return { ...pl, videoCount: alreadyAssociated ? Math.max(pl.videoCount - 1, 0) : (pl.videoCount || 0) + 1 };
-        }
-        return pl;
-      }));
     } catch (err) {
       console.error('Error toggling playlist association:', err);
     }

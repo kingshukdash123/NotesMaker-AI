@@ -10,7 +10,6 @@ export default function PlaylistsTab({
   onCreatePlaylistOpen,
   onDeletePlaylist,
   onOpenVideo,
-  onRemoveVideo,
   onTogglePlaylistAssociation,
   onCreatePlaylist,
   onToggleSave
@@ -26,14 +25,12 @@ export default function PlaylistsTab({
 
   const activePlaylist = playlists.find(pl => pl.id === activePlaylistId);
 
-  // Filter videos belonging to the active playlist
-  const filteredVideos = savedVideos.filter(video => 
-    video.playlistIds?.includes(activePlaylistId)
-  );
+  // Directly use the videos array belonging to the active playlist
+  const playlistVideos = activePlaylist?.videos || [];
 
   const handleDeletePlaylist = async (id, e) => {
     e.stopPropagation();
-    const confirmed = await showConfirm('Are you sure you want to delete this playlist? Videos inside will not be deleted.');
+    const confirmed = await showConfirm('Are you sure you want to delete this playlist?');
     if (confirmed) {
       await onDeletePlaylist(id);
       if (activePlaylistId === id) {
@@ -67,6 +64,7 @@ export default function PlaylistsTab({
           <div className="flex md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 select-none custom-scrollbar">
             {playlists.map((pl) => {
               const isActive = activePlaylistId === pl.id;
+              const count = pl.videos?.length ?? pl.videoCount ?? 0;
               return (
                 <div
                   key={pl.id}
@@ -84,6 +82,7 @@ export default function PlaylistsTab({
                   <div className="flex items-center gap-2 truncate">
                     {isActive ? <FolderOpen className="w-4 h-4 text-orange-500" /> : <Folder className={`w-4 h-4 ${isDark ? 'text-zinc-600' : 'text-orange-400'}`} />}
                     <span className="truncate pr-1">{pl.name}</span>
+                    <span className="text-[10px] opacity-60">({count})</span>
                   </div>
                   
                   {isActive && (
@@ -109,27 +108,27 @@ export default function PlaylistsTab({
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-900/50 pb-2">
               <h3 className="text-xs font-mono font-bold tracking-wider uppercase text-zinc-400">
-                {activePlaylist.name} ({filteredVideos.length})
+                {activePlaylist.name} ({playlistVideos.length})
               </h3>
             </div>
 
-            {filteredVideos.length === 0 ? (
+            {playlistVideos.length === 0 ? (
               <div className="text-center py-16 border border-zinc-900 rounded-2xl bg-zinc-950/20 text-zinc-550 flex flex-col items-center justify-center gap-2">
                 <BookOpen className="w-8 h-8 text-zinc-800" />
                 <p className="text-[11px] font-bold text-zinc-400">This playlist is empty</p>
                 <p className="text-[10px] max-w-xs mx-auto leading-relaxed">
-                  Go to Saved tab and use card options to add books or videos here.
+                  Use the playlist icon on any video to add it directly to this playlist.
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                {filteredVideos.map((video) => (
+                {playlistVideos.map((video) => (
                   <LibraryVideoCard
                     key={video.videoId}
                     video={video}
                     playlists={playlists}
                     onOpen={() => onOpenVideo(video)}
-                    onDelete={() => onRemoveVideo(video.videoId)}
+                    onDelete={() => onTogglePlaylistAssociation(video.videoId, activePlaylist.id, true, video)}
                     onAddToPlaylist={onTogglePlaylistAssociation}
                     onCreatePlaylist={onCreatePlaylist}
                     onSave={() => onToggleSave(video)}

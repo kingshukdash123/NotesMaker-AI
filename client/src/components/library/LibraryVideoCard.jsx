@@ -142,7 +142,7 @@ export default function LibraryVideoCard({
                   {playlists.length > 0 ? (
                     <div className="space-y-0.5 max-h-24 overflow-y-auto custom-scrollbar mb-1 pb-1 border-b border-inherit">
                       {playlists.map((pl) => {
-                        const isInPlaylist = video.playlistIds?.includes(pl.id);
+                        const isInPlaylist = pl.videos?.some(v => v.videoId === video.videoId) || video.playlistIds?.includes(pl.id);
                         return (
                           <button
                             key={pl.id}

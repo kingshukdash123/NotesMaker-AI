@@ -83,10 +83,6 @@ export default function LibraryPage() {
     try {
       await deletePlaylist(currentUser.uid, playlistId);
       setPlaylists(prev => prev.filter(p => p.id !== playlistId));
-      setSavedVideos(prev => prev.map(v => ({
-        ...v,
-        playlistIds: v.playlistIds?.filter(id => id !== playlistId) || []
-      })));
     } catch (err) {
       console.error('Error deleting playlist:', err);
     }
@@ -130,7 +126,6 @@ export default function LibraryPage() {
             videoId: video.videoId,
             videoUrl: video.videoUrl || `https://www.youtube.com/watch?v=${video.videoId}`,
             metadata,
-            playlistIds: []
           }
         ]);
       }
@@ -142,61 +137,38 @@ export default function LibraryPage() {
   const handleTogglePlaylistAssociation = async (videoId, playlistId, alreadyAssociated, videoData = null) => {
     if (!currentUser) return;
     try {
-      const isCurrentlySaved = savedVideos.some(v => v.videoId === videoId);
-      
-      if (!isCurrentlySaved && videoData) {
-        const metadata = videoData.metadata || {
-          title: videoData.title || 'YouTube Video',
-          channel: videoData.channel || 'Unknown Creator',
-          thumbnail: videoData.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-        };
-        await saveVideoToLibrary(
-          currentUser.uid,
-          videoId,
-          videoData.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
-          metadata
-        );
-        setSavedVideos(prev => [
-          ...prev,
-          {
-            videoId,
-            videoUrl: videoData.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
-            metadata,
-            playlistIds: [playlistId]
-          }
-        ]);
-      }
+      const videoEntry = {
+        videoId,
+        videoUrl: videoData?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
+        metadata: videoData?.metadata || {
+          title: videoData?.title || 'YouTube Video',
+          channel: videoData?.channel || 'Unknown Creator',
+          thumbnail: videoData?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+        },
+        notesReady: Boolean(videoData?.notesReady),
+        addedAt: new Date().toISOString(),
+      };
 
       if (alreadyAssociated) {
         await removeVideoFromPlaylist(currentUser.uid, videoId, playlistId);
-        setSavedVideos(prev => prev.map(v => {
-          if (v.videoId === videoId) {
-            return {
-              ...v,
-              playlistIds: v.playlistIds?.filter(id => id !== playlistId) || []
-            };
+        setPlaylists(prev => prev.map(pl => {
+          if (pl.id === playlistId) {
+            const updatedVideos = (pl.videos || []).filter(v => v.videoId !== videoId);
+            return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
-          return v;
+          return pl;
         }));
       } else {
         await addVideoToPlaylist(currentUser.uid, videoId, playlistId, videoData);
-        setSavedVideos(prev => prev.map(v => {
-          if (v.videoId === videoId) {
-            return {
-              ...v,
-              playlistIds: [...(v.playlistIds || []), playlistId]
-            };
+        setPlaylists(prev => prev.map(pl => {
+          if (pl.id === playlistId) {
+            const existing = pl.videos || [];
+            const updatedVideos = existing.some(v => v.videoId === videoId) ? existing : [...existing, videoEntry];
+            return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
-          return v;
+          return pl;
         }));
       }
-
-      setPlaylists(prev => prev.map(pl => {
-        if (pl.id === playlistId) {
-          return { ...pl, videoCount: alreadyAssociated ? Math.max(pl.videoCount - 1, 0) : (pl.videoCount || 0) + 1 };
-        }
-        return pl;
-      }));
     } catch (err) {
       console.error('Error toggling playlist association:', err);
     }

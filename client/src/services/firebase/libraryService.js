@@ -11,30 +11,29 @@ import {
   setDoc,
   updateDoc,
   serverTimestamp,
-  arrayUnion,
-  arrayRemove
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { PlaylistModel, SavedVideoModel } from '../../models';
 
 /**
  * Creates a new playlist.
  */
 export async function createPlaylist(userId, name) {
-  if (!userId || !name.trim()) throw new Error('Playlist name cannot be empty.');
+  const model = new PlaylistModel({
+    userId,
+    name,
+    videos: [],
+  });
 
   const playlistRef = collection(db, 'playlists');
-  const docRef = await addDoc(playlistRef, {
-    userId,
-    name: name.trim(),
-    videoCount: 0,
-    createdAt: serverTimestamp()
-  });
+  const docRef = await addDoc(playlistRef, model.toFirestore({ isNew: true }));
 
   return docRef.id;
 }
 
 /**
  * Retrieves all playlists created by a user.
+ * @returns {Promise<Array<PlaylistModel>>}
  */
 export async function getUserPlaylists(userId) {
   if (!userId) return [];
@@ -50,10 +49,10 @@ export async function getUserPlaylists(userId) {
   const playlists = [];
 
   querySnapshot.forEach((docSnap) => {
-    playlists.push({
-      id: docSnap.id,
-      ...docSnap.data()
-    });
+    const playlist = PlaylistModel.fromFirestore(docSnap);
+    if (playlist) {
+      playlists.push(playlist);
+    }
   });
 
   return playlists;
@@ -71,8 +70,10 @@ export async function deletePlaylist(userId, playlistId) {
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
 
+  const playlist = PlaylistModel.fromFirestore(docSnap);
+
   // Security check: ensure playlist belongs to requesting user
-  if (docSnap.data().userId !== userId) {
+  if (playlist?.userId !== userId) {
     throw new Error('Unauthorized: You do not have permission to delete this playlist.');
   }
 
@@ -80,29 +81,108 @@ export async function deletePlaylist(userId, playlistId) {
 }
 
 /**
- * Saves a video to the user's library.
+ * Adds a video directly into a playlist's videos array.
+ * Does NOT touch saved_videos.
+ */
+export async function addVideoToPlaylist(userId, videoId, playlistId, videoData = null) {
+  if (!userId || !videoId || !playlistId) return;
+
+  const playlistDocRef = doc(db, 'playlists', playlistId);
+  const playlistSnap = await getDoc(playlistDocRef);
+  if (!playlistSnap.exists()) {
+    throw new Error('Playlist not found');
+  }
+
+  const playlist = PlaylistModel.fromFirestore(playlistSnap);
+  if (playlist.userId !== userId) {
+    throw new Error('Unauthorized: You do not own this playlist.');
+  }
+
+  // Build the video entry
+  const newVideo = {
+    videoId,
+    videoUrl: videoData?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
+    metadata: {
+      title: videoData?.metadata?.title || videoData?.title || 'YouTube Video',
+      channel: videoData?.metadata?.channel || videoData?.channel || 'Unknown Creator',
+      thumbnail: videoData?.metadata?.thumbnail || videoData?.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : ''),
+    },
+    notesReady: Boolean(videoData?.notesReady),
+    addedAt: new Date().toISOString(),
+  };
+
+  // Avoid duplicates in playlist
+  const existingVideos = playlist.videos || [];
+  const updatedVideos = existingVideos.some(v => v.videoId === videoId)
+    ? existingVideos
+    : [...existingVideos, newVideo];
+
+  await updateDoc(playlistDocRef, {
+    videos: updatedVideos,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Removes a video from a playlist's videos array.
+ * Does NOT touch saved_videos.
+ */
+export async function removeVideoFromPlaylist(userId, videoId, playlistId) {
+  if (!userId || !videoId || !playlistId) return;
+
+  const playlistDocRef = doc(db, 'playlists', playlistId);
+  const playlistSnap = await getDoc(playlistDocRef);
+  if (!playlistSnap.exists()) return;
+
+  const playlist = PlaylistModel.fromFirestore(playlistSnap);
+  if (playlist.userId !== userId) {
+    throw new Error('Unauthorized: You do not own this playlist.');
+  }
+
+  const updatedVideos = (playlist.videos || []).filter(v => v.videoId !== videoId);
+
+  await updateDoc(playlistDocRef, {
+    videos: updatedVideos,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Retrieves the list of playlist IDs a video has been added to.
+ */
+export async function getVideoPlaylistIds(userId, videoId) {
+  if (!userId || !videoId) return [];
+  try {
+    const playlists = await getUserPlaylists(userId);
+    return playlists
+      .filter(pl => (pl.videos || []).some(v => v.videoId === videoId))
+      .map(pl => pl.id);
+  } catch (err) {
+    console.error('Error fetching video playlist IDs:', err);
+    return [];
+  }
+}
+
+/**
+ * Saves a video to the user's library (Bookmarks / Saved Videos).
  */
 export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata, notesReady = false) {
   if (!userId || !videoId) return;
 
-  const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
-  await setDoc(docRef, {
+  const model = new SavedVideoModel({
     userId,
     videoId,
     videoUrl,
-    metadata: {
-      title: metadata?.title || 'YouTube Video',
-      channel: metadata?.channel || 'Unknown Creator',
-      thumbnail: metadata?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-    },
-    playlistIds: [], // Empty by default
+    metadata,
     notesReady,
-    savedAt: serverTimestamp()
-  }, { merge: true });
+  });
+
+  const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
+  await setDoc(docRef, model.toFirestore({ isNew: true }), { merge: true });
 }
 
 /**
- * Removes a video from the user's library.
+ * Removes a video from the user's library (Bookmarks / Saved Videos).
  */
 export async function removeVideoFromLibrary(userId, videoId) {
   if (!userId || !videoId) return;
@@ -121,25 +201,8 @@ export async function isVideoSaved(userId, videoId) {
 }
 
 /**
- * Retrieves the list of playlist IDs a video has been added to.
- */
-export async function getVideoPlaylistIds(userId, videoId) {
-  if (!userId || !videoId) return [];
-  try {
-    const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return docSnap.data().playlistIds || [];
-    }
-    return [];
-  } catch (err) {
-    console.error('Error fetching video playlist IDs:', err);
-    return [];
-  }
-}
-
-/**
  * Retrieves all saved videos in the user's library.
+ * @returns {Promise<Array<SavedVideoModel>>}
  */
 export async function getUserSavedVideos(userId) {
   if (!userId) return [];
@@ -155,73 +218,11 @@ export async function getUserSavedVideos(userId) {
   const savedVideos = [];
 
   querySnapshot.forEach((docSnap) => {
-    savedVideos.push({
-      id: docSnap.id,
-      ...docSnap.data()
-    });
+    const video = SavedVideoModel.fromFirestore(docSnap);
+    if (video) {
+      savedVideos.push(video);
+    }
   });
 
   return savedVideos;
-}
-
-export async function addVideoToPlaylist(userId, videoId, playlistId, videoData = null) {
-  if (!userId || !videoId || !playlistId) return;
-
-  const videoDocRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
-  const docSnap = await getDoc(videoDocRef);
-
-  if (!docSnap.exists()) {
-    // Document does not exist, create it first
-    await setDoc(videoDocRef, {
-      userId,
-      videoId,
-      videoUrl: videoData?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
-      metadata: {
-        title: videoData?.metadata?.title || 'YouTube Video',
-        channel: videoData?.metadata?.channel || 'Unknown Creator',
-        thumbnail: videoData?.metadata?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-      },
-      playlistIds: [playlistId],
-      notesReady: videoData?.notesReady || false,
-      savedAt: serverTimestamp()
-    });
-  } else {
-    // Document exists, update it
-    await updateDoc(videoDocRef, {
-      playlistIds: arrayUnion(playlistId)
-    });
-  }
-
-  // 2. Increment videoCount in playlists doc
-  const playlistDocRef = doc(db, 'playlists', playlistId);
-  const playlistSnap = await getDoc(playlistDocRef);
-  if (playlistSnap.exists()) {
-    const currentCount = playlistSnap.data().videoCount || 0;
-    await updateDoc(playlistDocRef, {
-      videoCount: currentCount + 1
-    });
-  }
-}
-
-/**
- * Removes a saved video from a playlist.
- */
-export async function removeVideoFromPlaylist(userId, videoId, playlistId) {
-  if (!userId || !videoId || !playlistId) return;
-
-  // 1. Update array remove in saved_videos doc
-  const videoDocRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
-  await updateDoc(videoDocRef, {
-    playlistIds: arrayRemove(playlistId)
-  });
-
-  // 2. Decrement videoCount in playlists doc
-  const playlistDocRef = doc(db, 'playlists', playlistId);
-  const playlistSnap = await getDoc(playlistDocRef);
-  if (playlistSnap.exists()) {
-    const currentCount = playlistSnap.data().videoCount || 0;
-    await updateDoc(playlistDocRef, {
-      videoCount: Math.max(currentCount - 1, 0)
-    });
-  }
 }
