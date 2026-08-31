@@ -10,7 +10,7 @@ export default function NotesViewer({ result }) {
   const draftNotes = result.draft_notes;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 pb-10">
+    <div className="w-full space-y-4 pb-10">
       <div className={`border shadow-lg rounded-xl transition-all duration-300 ${
         isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-white border-orange-200/90'
       }`}>

@@ -71,9 +71,13 @@ export default function VideoPlayer({
     }`}>
       {/* Player Header with Back Button and Title */}
       <div className={`shrink-0 flex items-center justify-between px-3 py-2 border-b w-full ${
-        isVideoCollapsed ? 'lg:px-0 lg:py-0 lg:border-b-0 lg:justify-center lg:mb-2' : ''
-      } ${
-        isDark ? 'bg-zinc-900/50 border-zinc-900' : 'bg-orange-50/50 border-orange-100'
+        isVideoCollapsed 
+          ? isDark 
+            ? 'border-zinc-900 bg-zinc-900/50 lg:bg-transparent lg:border-b-0 lg:px-0 lg:py-0 lg:justify-center lg:mb-2'
+            : 'border-orange-100 bg-orange-50/50 lg:bg-transparent lg:border-b-0 lg:px-0 lg:py-0 lg:justify-center lg:mb-2'
+          : isDark 
+            ? 'bg-zinc-900/50 border-zinc-900' 
+            : 'bg-orange-50/50 border-orange-100'
       }`}>
         <div className={`flex items-center ${isVideoCollapsed ? 'lg:justify-center' : 'gap-2.5'}`}>
           {onBack && (

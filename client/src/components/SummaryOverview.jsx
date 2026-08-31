@@ -28,7 +28,7 @@ export default function SummaryOverview({ result }) {
   const outline = result.lecture_outline;
 
   return (
-    <div className="max-w-6xl mx-auto my-2 sm:my-6 space-y-4 sm:space-y-6 px-1 sm:px-0">
+    <div className="w-full my-2 sm:my-6 space-y-4 sm:space-y-6 px-1 sm:px-0">
       {/* Content Grid */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         

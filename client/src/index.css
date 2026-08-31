@@ -484,6 +484,44 @@
   color: #9a3412;
 }
 
+/* Chat Message Specific Markdown Overrides (No indentation margins) */
+.chat-markdown.markdown-content,
+.chat-markdown .markdown-content,
+.chat-markdown {
+  --tab-space: 0rem !important;
+}
+
+.chat-markdown p,
+.chat-markdown ul,
+.chat-markdown ol,
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4,
+.chat-markdown blockquote,
+.chat-markdown pre,
+.chat-markdown table,
+.chat-markdown .katex-display {
+  margin-left: 0 !important;
+}
+
+.chat-markdown p:first-child,
+.chat-markdown ul:first-child,
+.chat-markdown ol:first-child,
+.chat-markdown h1:first-child,
+.chat-markdown h2:first-child,
+.chat-markdown h3:first-child,
+.chat-markdown h4:first-child {
+  margin-top: 0 !important;
+}
+
+.chat-markdown p:last-child,
+.chat-markdown ul:last-child,
+.chat-markdown ol:last-child,
+.chat-markdown blockquote:last-child {
+  margin-bottom: 0 !important;
+}
+
 /* Smooth Premium Animations */
 @keyframes fadeIn {
   from {

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, Loader2, AlertCircle, Trash2 } from 'lucide-react';
+import { MessageSquare, Send, Loader2, AlertCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { askVideoQuestionStream } from '../services/server/api';
-import { saveVideoQnAChat, getVideoQnAChat, deleteVideoQnAChat } from '../services/firebase/notesService';
+import { saveVideoQnAChat, getVideoQnAChat } from '../services/firebase/notesService';
 import MarkdownRenderer from './common/MarkdownRenderer';
 
 export default function VideoQa({ videoId, currentUser }) {
@@ -11,8 +11,6 @@ export default function VideoQa({ videoId, currentUser }) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
@@ -69,23 +67,6 @@ export default function VideoQa({ videoId, currentUser }) {
       }
     }
     return clean;
-  };
-
-  const handleDeleteChat = async () => {
-    if (!currentUser || !videoId) return;
-
-    try {
-      setIsDeleting(true);
-      await deleteVideoQnAChat(currentUser.uid, videoId);
-      setMessages([]);
-      setShowConfirmDelete(false);
-    } catch (err) {
-      console.error('Failed to delete chat:', err);
-      setError('Failed to clear chat history.');
-      setShowConfirmDelete(false);
-    } finally {
-      setIsDeleting(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -199,31 +180,6 @@ export default function VideoQa({ videoId, currentUser }) {
 
   return (
     <div className="w-full flex-1 flex flex-col h-full min-h-0 relative overflow-hidden">
-      {/* Subheader Toolbar with Clear Chat (only if messages exist) */}
-      {messages.length > 0 && (
-        <div className={`px-4 py-2 border-b flex items-center justify-between gap-2 shrink-0 ${
-          isDark ? 'border-zinc-900 bg-zinc-950/40' : 'border-orange-100 bg-orange-50/20'
-        }`}>
-          <span className={`text-[10px] font-mono tracking-wide ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
-            {messages.filter(m => m.sender === 'user').length} Question{messages.filter(m => m.sender === 'user').length === 1 ? '' : 's'} asked
-          </span>
-          <button
-            type="button"
-            onClick={() => setShowConfirmDelete(true)}
-            disabled={isDeleting || isLoading}
-            className="btn-danger-subtle flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold !rounded-lg"
-            title="Delete conversation history"
-          >
-            {isDeleting ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <Trash2 className="w-3 h-3" />
-            )}
-            <span>Clear Chat</span>
-          </button>
-        </div>
-      )}
-
       {/* Messages Scroll Area */}
       <div className={`flex-1 overflow-y-auto p-3 sm:p-5 space-y-4 sm:space-y-5 custom-scrollbar min-h-0 ${
         isDark ? 'bg-transparent' : 'bg-[#fffcf8]'
@@ -258,58 +214,63 @@ export default function VideoQa({ videoId, currentUser }) {
             </p>
           </div>
         ) : (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex items-start gap-2.5 sm:gap-3 max-w-[94%] sm:max-w-[85%] ${
-                msg.sender === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
-              }`}
-            >
-              {/* Avatar */}
+          messages.map((msg, index) => {
+            const isUser = msg.sender === 'user';
+            return (
               <div
-                className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center border text-xs font-black font-mono tracking-tight ${
-                  msg.sender === 'user'
-                    ? isDark 
-                      ? 'bg-zinc-900 border-zinc-800 text-zinc-300' 
-                      : 'bg-orange-500 border-orange-400 text-white shadow-xs'
-                    : msg.isError
-                      ? 'bg-red-950/20 border-red-500/30 text-red-400'
-                      : isDark
-                        ? 'bg-orange-950/30 border-orange-500/30 text-orange-400'
-                        : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
+                key={index}
+                className={`flex items-start gap-2.5 sm:gap-3 max-w-[92%] sm:max-w-[85%] ${
+                  isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'
                 }`}
               >
-                {msg.sender === 'user' ? 'ME' : 'AI'}
-              </div>
-
-              {/* Message Content */}
-              <div className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                {/* Avatar */}
                 <div
-                  className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed ${
-                    msg.sender === 'user'
-                      ? isDark
-                        ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-tr-none'
-                        : 'bg-orange-500 text-white font-medium rounded-tr-none shadow-xs'
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center border text-[11px] sm:text-xs font-black font-mono tracking-tight select-none mt-0.5 ${
+                    isUser
+                      ? isDark 
+                        ? 'bg-zinc-900 border-zinc-800 text-zinc-300' 
+                        : 'bg-orange-100 border-orange-200 text-orange-700 shadow-xs'
                       : msg.isError
-                        ? 'bg-red-955/20 border-red-900/40 text-red-200 rounded-tl-none'
+                        ? 'bg-red-950/20 border-red-500/30 text-red-400'
                         : isDark
-                          ? 'bg-transparent border border-zinc-800 text-zinc-100 rounded-tl-none prose prose-invert max-w-none font-normal selection:bg-zinc-800'
-                          : 'bg-white border border-orange-200/90 text-orange-950 rounded-tl-none shadow-xs font-normal selection:bg-orange-100'
+                          ? 'bg-orange-950/30 border-orange-500/30 text-orange-400'
+                          : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
                   }`}
                 >
-                  {msg.sender === 'assistant' && !msg.text && isLoading && index === messages.length - 1 ? (
-                    <div className="flex items-center gap-1 py-1">
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"></span>
-                    </div>
-                  ) : (
-                    <MarkdownRenderer content={msg.text} isDark={isDark} />
-                  )}
+                  {isUser ? 'ME' : 'AI'}
+                </div>
+
+                {/* Message Content */}
+                <div className={`flex flex-col min-w-0 ${isUser ? 'items-end' : 'items-start'}`}>
+                  <div
+                    className={`px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl text-xs leading-relaxed break-words shadow-xs ${
+                      isUser
+                        ? isDark
+                          ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-tr-xs'
+                          : 'bg-orange-100/80 border border-orange-200/90 text-orange-950 font-medium rounded-tr-xs'
+                        : msg.isError
+                          ? 'bg-red-950/20 border border-red-900/40 text-red-200 rounded-tl-xs'
+                          : isDark
+                            ? 'bg-zinc-950/40 border border-zinc-850 text-zinc-100 selection:bg-zinc-800 rounded-tl-xs'
+                            : 'bg-white border border-orange-200/90 text-orange-950 selection:bg-orange-100 rounded-tl-xs'
+                    }`}
+                  >
+                    {isUser ? (
+                      <p className="whitespace-pre-wrap leading-relaxed m-0 text-xs">{msg.text}</p>
+                    ) : !msg.text && isLoading && index === messages.length - 1 ? (
+                      <div className="flex items-center gap-1 py-1">
+                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"></span>
+                      </div>
+                    ) : (
+                      <MarkdownRenderer content={msg.text} className="chat-markdown" />
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
 
         {/* Error banner */}
@@ -347,48 +308,6 @@ export default function VideoQa({ videoId, currentUser }) {
           <span>Ask</span>
         </button>
       </form>
-
-      {/* Custom Confirm Delete Modal Overlay */}
-      {showConfirmDelete && (
-        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-6 max-w-[calc(100vw-2rem)] sm:max-w-sm w-full shadow-2xl relative overflow-hidden transition-all duration-300">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[1px] bg-gradient-to-r from-transparent via-red-500/35 to-transparent"></div>
-            
-            <div className="w-12 h-12 rounded-xl bg-red-950/20 border border-red-900/30 flex items-center justify-center text-red-400 mb-4 mx-auto">
-              <Trash2 className="w-5 h-5" />
-            </div>
-
-            <h4 className="text-sm font-bold text-zinc-100 text-center mb-1">Clear Q&A History?</h4>
-            <p className="text-xs text-zinc-400 text-center mb-6 leading-relaxed">
-              This will permanently delete your entire conversation history for this video. This action cannot be undone.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowConfirmDelete(false)}
-                disabled={isDeleting}
-                className="btn-secondary flex-1 py-2 px-4 text-xs font-bold"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteChat}
-                disabled={isDeleting}
-                className="btn-danger flex-1 py-2 px-4 text-xs font-bold"
-              >
-                {isDeleting ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="w-3.5 h-3.5" />
-                )}
-                <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

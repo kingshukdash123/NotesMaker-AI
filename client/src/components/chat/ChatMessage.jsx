@@ -60,7 +60,7 @@ export default function ChatMessage({ message, isStreaming = false }) {
             ? 'text-zinc-200 selection:bg-zinc-800' 
             : 'text-orange-950 selection:bg-orange-100'
         }`}>
-          <MarkdownRenderer content={text} isDark={isDark} />
+          <MarkdownRenderer content={text} className="chat-markdown" />
           
           {isStreaming && !text && (
             <div className="flex items-center gap-1 py-1">

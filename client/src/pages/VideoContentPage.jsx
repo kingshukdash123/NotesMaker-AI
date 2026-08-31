@@ -137,11 +137,17 @@ export default function VideoContentPage() {
   const hasNotes = processStatus === 'COMPLETED';
 
   return (
-    <div className={`flex-1 flex flex-col overflow-y-auto lg:overflow-hidden h-full w-full custom-scrollbar pt-0 px-0 pb-3 sm:pb-5 ${
+    <div className={`flex-1 flex flex-col ${
+      activeTab === 'qa' 
+        ? 'overflow-hidden h-full pb-2 sm:pb-3 lg:pb-6' 
+        : 'overflow-y-auto lg:overflow-hidden h-full pb-3 sm:pb-5'
+    } w-full custom-scrollbar pt-0 px-0 ${
       isVideoFullscreen ? 'lg:p-4' : 'lg:p-6'
     }`}>
       {/* Main Grid: Player on left, Workspace tools on right */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 min-w-0 lg:min-h-0 lg:overflow-hidden">
+      <div className={`flex-1 flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 min-w-0 min-h-0 ${
+        activeTab === 'qa' ? 'h-full overflow-hidden' : 'lg:min-h-0 lg:overflow-hidden'
+      }`}>
         {/* Left Side: Video Player with Tools (Adaptive Desktop Width & Mobile Sticky Header) */}
         <div className={`flex flex-col shrink-0 min-h-0 sticky top-0 z-30 lg:static transition-all duration-300 ${
           isVideoCollapsed 
@@ -216,7 +222,7 @@ export default function VideoContentPage() {
             /* Tools Dashboard Workspace */
             <div className={`flex-1 min-w-0 min-h-0 ${
               activeTab === 'qa' 
-                ? 'flex flex-col h-full overflow-hidden' 
+                ? 'flex flex-col h-full overflow-hidden p-0' 
                 : 'overflow-y-auto custom-scrollbar p-3 sm:p-5'
             }`}>
               {activeTab === 'notes' && (
