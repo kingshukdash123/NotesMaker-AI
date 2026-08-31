@@ -59,22 +59,11 @@ export async function checkServerHealth(isManualRetry = false) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 6000);
-      let res;
-      try {
-        res = await fetch(`${API_BASE_URL}/health`, {
-          cache: 'no-store',
-          signal: controller.signal
-        });
-      } catch (fetchErr) {
-        try {
-          res = await fetch('http://127.0.0.1:8000/api/health', {
-            cache: 'no-store',
-            signal: controller.signal
-          });
-        } catch {
-          throw fetchErr;
-        }
-      }
+
+      const res = await fetch(`${API_BASE_URL}/health`, {
+        cache: 'no-store',
+        signal: controller.signal
+      });
       clearTimeout(timeoutId);
 
       if (res && res.ok) {
