@@ -9,7 +9,7 @@ export class WatchHistoryModel {
     metadata = {},
     openedAt = null,
   } = {}) {
-    this.id = id;
+    this.id = id || `${userId}_${videoId}`;
     this.userId = userId;
     this.videoId = videoId;
     this.videoUrl = videoUrl;
@@ -53,11 +53,8 @@ export class WatchHistoryModel {
       videoId: this.videoId,
       videoUrl: this.videoUrl,
       metadata: this.metadata,
+      openedAt: serverTimestamp(),
     };
-
-    if (isNew || !this.openedAt) {
-      payload.openedAt = serverTimestamp();
-    }
 
     return payload;
   }

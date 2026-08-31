@@ -1,6 +1,5 @@
 import {
   collection,
-  addDoc,
   getDocs,
   getDoc,
   query,
@@ -9,64 +8,35 @@ import {
   limit,
   deleteDoc,
   doc,
-  updateDoc,
-  serverTimestamp,
+  setDoc,
   writeBatch
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import { WatchHistoryModel } from '../../models';
 
 /**
- * Logs a video visit into Firestore watch_history.
- * Deduplicates back-to-back openings of the same video so it only shows as one entry.
+ * Logs a video visit into Firestore watch_history (YouTube style).
+ * Uses a deterministic document ID `${userId}_${videoId}` so re-watching a video
+ * updates its timestamp and bumps it to the top of the history without creating duplicates.
  */
 export async function logVideoOpen(userId, videoId, videoUrl, metadata) {
   if (!userId || !videoId) return null;
 
-  const historyRef = collection(db, 'watch_history');
-
   try {
-    // Check for the most recent entry of this user to dedup back-to-back views
-    const q = query(
-      historyRef,
-      where('userId', '==', userId),
-      orderBy('openedAt', 'desc'),
-      limit(1)
-    );
+    const docId = `${userId}_${videoId}`;
+    const docRef = doc(db, 'watch_history', docId);
 
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      const latestDoc = querySnapshot.docs[0];
-      const latestData = latestDoc.data();
-
-      // If the most recent entry was for the SAME video, update it instead of adding a new one
-      if (latestData.videoId === videoId) {
-        await updateDoc(latestDoc.ref, {
-          openedAt: serverTimestamp(),
-          ...(metadata ? {
-            metadata: {
-              title: metadata.title || latestData.metadata?.title || 'YouTube Video',
-              channel: metadata.channel || latestData.metadata?.channel || 'Unknown Creator',
-              thumbnail: metadata.thumbnail || latestData.metadata?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-            }
-          } : {})
-        });
-        return latestDoc.id;
-      }
-    }
-
-    // Create a new entry using WatchHistoryModel
     const model = new WatchHistoryModel({
+      id: docId,
       userId,
       videoId,
       videoUrl,
       metadata,
     });
 
-    const docRef = await addDoc(historyRef, model.toFirestore({ isNew: true }));
+    await setDoc(docRef, model.toFirestore({ isNew: true }), { merge: true });
 
-    return docRef.id;
+    return docId;
   } catch (err) {
     console.error('Error logging watch history:', err);
     return null;
@@ -74,7 +44,8 @@ export async function logVideoOpen(userId, videoId, videoUrl, metadata) {
 }
 
 /**
- * Retrieves the user's watch history, deduplicating any back-to-back entries.
+ * Retrieves the user's watch history (YouTube style).
+ * Shows each unique video exactly once at its most recent watch time.
  * @returns {Promise<Array<WatchHistoryModel>>}
  */
 export async function getUserWatchHistory(userId) {
@@ -85,19 +56,19 @@ export async function getUserWatchHistory(userId) {
     historyRef,
     where('userId', '==', userId),
     orderBy('openedAt', 'desc'),
-    limit(50)
+    limit(100)
   );
 
   try {
     const querySnapshot = await getDocs(q);
     const history = [];
-    let lastVideoId = null;
+    const seenVideoIds = new Set();
 
     querySnapshot.forEach((docSnap) => {
       const model = WatchHistoryModel.fromFirestore(docSnap);
-      if (model && model.videoId !== lastVideoId) {
+      if (model && !seenVideoIds.has(model.videoId)) {
+        seenVideoIds.add(model.videoId);
         history.push(model);
-        lastVideoId = model.videoId;
       }
     });
 
@@ -117,13 +88,12 @@ export async function deleteHistoryItem(userId, historyId) {
   if (!userId || !historyId) return;
   const docRef = doc(db, 'watch_history', historyId);
   const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) return;
-
-  const model = WatchHistoryModel.fromFirestore(docSnap);
-
-  // Security check: ensure entry belongs to requesting user
-  if (model?.userId !== userId) {
-    throw new Error('Unauthorized: You do not have permission to delete this history item.');
+  
+  if (docSnap.exists()) {
+    const model = WatchHistoryModel.fromFirestore(docSnap);
+    if (model?.userId !== userId) {
+      throw new Error('Unauthorized: You do not have permission to delete this history item.');
+    }
   }
 
   await deleteDoc(docRef);
