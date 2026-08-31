@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Search, FileText, CheckSquare, Mail, Calculator, Code, Trash2, X } from 'lucide-react';
 
 const COMMANDS = [
@@ -15,14 +15,14 @@ export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClo
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef(null);
 
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [searchQuery]);
+
   // Filter commands based on search query
   const filtered = COMMANDS.filter(cmd => 
     cmd.name.toLowerCase().startsWith(searchQuery.toLowerCase())
   );
-
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [searchQuery]);
 
   useEffect(() => {
     if (!visible || filtered.length === 0) return;
@@ -63,14 +63,14 @@ export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClo
 
   return (
     <div 
-      className="absolute bottom-[calc(100%+8px)] left-0 w-full max-w-sm bg-zinc-950 border border-zinc-800/80 shadow-2xl rounded-xl p-1.5 z-[150] animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md"
+      className="absolute bottom-[calc(100%+8px)] left-0 w-full max-w-sm max-w-[calc(100vw-2.5rem)] bg-zinc-950 border border-zinc-800/80 shadow-2xl rounded-xl p-1.5 z-[150] animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md"
     >
       <div className="px-2.5 py-1.5 flex items-center justify-between border-b border-zinc-900/60 mb-1">
         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Slash Commands</span>
         <button
           type="button"
           onClick={onClose}
-          className="p-0.5 rounded text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition cursor-pointer"
+          className="btn-icon !p-0.5"
           title="Close (Esc)"
         >
           <X className="w-3.5 h-3.5" />

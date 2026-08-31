@@ -2,11 +2,11 @@ import json
 from typing import List, Dict, Any, Optional, AsyncIterator
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
-from config.constants import CHAT_MODEL
+from config.constants import CHAT_MODEL, ASSISTANT_MEMORY_WINDOW
 from services.llm.service import LLMService
 from prompts.assistant_prompt import ASSISTANT_SYSTEM_PROMPT, SUMMARY_PROMPT
 from utils.logger import get_logger
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 
 logger = get_logger(__name__)
 
@@ -33,17 +33,21 @@ class AssistantService:
 
         langchain_messages = [SystemMessage(content=system_content)]
 
-        # 2. Append only the last 4 messages to the assistant prompt
-        recent_messages = messages[-4:] if len(messages) > 4 else messages
-        for msg in recent_messages:
-            role = msg.get("role") or msg.get("sender")
-            content = msg.get("content") or msg.get("text")
-            if not content:
-                continue
-            if role == "user":
-                langchain_messages.append(HumanMessage(content=content))
-            elif role in ("assistant", "ai"):
-                langchain_messages.append(AIMessage(content=content))
+        # 2. Append only the last N messages to the assistant prompt
+        if messages and isinstance(messages, list):
+            recent_messages = messages[-ASSISTANT_MEMORY_WINDOW:] if len(messages) > ASSISTANT_MEMORY_WINDOW else messages
+            for msg in recent_messages:
+                if not isinstance(msg, dict):
+                    continue
+                role = msg.get("role") or msg.get("sender")
+                content = msg.get("content") or msg.get("text")
+                if not content or not isinstance(content, str) or not content.strip():
+                    continue
+                clean_content = content.strip()
+                if role in ("user", "human"):
+                    langchain_messages.append(HumanMessage(content=clean_content))
+                elif role in ("assistant", "ai", "bot"):
+                    langchain_messages.append(AIMessage(content=clean_content))
 
         # 3. Stream response from LLM
         full_response = ""
@@ -60,7 +64,7 @@ class AssistantService:
                     yield json.dumps({"type": "content", "data": content})
         except Exception as e:
             logger.exception("Failed to stream response from assistant LLM.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to generate response due to an LLM service error.",
                 code="LLM_STREAMING_FAILED",
                 status_code=500,

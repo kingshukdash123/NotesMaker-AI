@@ -5,7 +5,7 @@ from pinecone import Pinecone, ServerlessSpec
 
 from config.settings import settings
 from utils.logger import get_logger
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 from services.llm.service import LLMService
 from config.constants import PINECONE_INDEX_DIMENSION, PINECONE_BATCH_SIZE, PINECONE_UPSERT_DELAY
 
@@ -128,7 +128,7 @@ class PineconeIndexer:
                 embeddings_list = self.embeddings.embed_documents(texts)
             except Exception as e:
                 logger.exception("Failed to generate embeddings via Gemini API.")
-                raise NotesMakerError(
+                raise PathshalaError(
                     message="Failed to generate document embeddings during Pinecone indexing.",
                     code="EMBEDDING_GENERATION_FAILED",
                     status_code=500,
@@ -156,7 +156,7 @@ class PineconeIndexer:
                 self.index.upsert(vectors=vectors, namespace=video_id)
             except Exception as e:
                 logger.exception("Pinecone upsert failed.")
-                raise NotesMakerError(
+                raise PathshalaError(
                     message="Failed to index vectors in Pinecone.",
                     code="PINECONE_UPSERT_FAILED",
                     status_code=500,

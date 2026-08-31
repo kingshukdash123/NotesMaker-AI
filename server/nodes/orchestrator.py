@@ -1,7 +1,7 @@
 from state.state import NotesState
 from services.orchestrator.orchestrator import OrchestratorService
 from utils.logger import get_logger
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 
 logger = get_logger(__name__)
 
@@ -56,7 +56,7 @@ def orchestrator(state: NotesState) -> NotesState:
     except Exception as e:
         logger.exception("Curriculum planning failed.")
 
-        raise NotesMakerError(
+        raise PathshalaError(
             message="Failed to generate lecture outline and execution plan.",
             code="ORCHESTRATOR_NODE_ERROR",
             status_code=500,

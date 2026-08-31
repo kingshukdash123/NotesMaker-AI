@@ -1,7 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 from services.llm.service import LLMService
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 from utils.logger import get_logger
 
 from model.execution import ChapterPlan
@@ -79,7 +79,7 @@ class ChapterWriterService:
                 "Chapter generation failed."
             )
 
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to generate chapter notes.",
                 code="CHAPTER_WRITER_SERVICE_ERROR",
                 status_code=500,

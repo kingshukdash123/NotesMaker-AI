@@ -1,4 +1,4 @@
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 from utils.logger import get_logger, current_task_id
 from state.state import NotesState
 from model.notes import DraftNotes
@@ -51,7 +51,7 @@ def reducer(state: NotesState) -> NotesState:
 
         logger.exception("Synthesis failed.")
 
-        raise NotesMakerError(
+        raise PathshalaError(
             message="Failed to merge generated sections.",
             code="REDUCER_NODE_ERROR",
             status_code=500,

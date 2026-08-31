@@ -1,5 +1,5 @@
 /**
- * API service for NotesMaker AI backend communication.
+ * API service for Pathshala AI backend communication.
  */
 
 
@@ -181,6 +181,27 @@ export async function askVideoQuestionStream(
     }
   }
 }
+
+/**
+ * Searches YouTube for educational content.
+ * @param {string} query - The search term
+ * @param {string} category - Category filter (e.g. 'all', 'science')
+ * @param {string} pageToken - Optional pagination token
+ * @returns {Promise<Object>} Search results and nextPageToken
+ */
+export async function searchYouTube(query, category = 'all', pageToken = '') {
+  let url = `${API_BASE_URL}/youtube/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
+  if (pageToken) {
+    url += `&pageToken=${encodeURIComponent(pageToken)}`;
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to search YouTube videos (${response.status})`);
+  }
+  return response.json();
+}
+
 
 
 

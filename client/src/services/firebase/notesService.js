@@ -70,13 +70,22 @@ export async function getUserNotes(userId) {
 }
 
 /**
- * Deletes a saved note document.
+ * Deletes a saved note document if it belongs to the authenticated user.
+ * @param {string} userId - Auth user ID (UID)
  * @param {string} noteId - Firestore document ID
  * @returns {Promise<void>}
  */
-export async function deleteNotes(noteId) {
-  if (!noteId) return;
+export async function deleteNotes(userId, noteId) {
+  if (!userId || !noteId) return;
   const docRef = doc(db, 'notes', noteId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) return;
+
+  // Security check: ensure note belongs to requesting user
+  if (docSnap.data().userId !== userId) {
+    throw new Error('Unauthorized: You do not have permission to delete this note.');
+  }
+
   await deleteDoc(docRef);
 }
 
@@ -127,7 +136,7 @@ export async function getUserApiKeys(userId) {
  */
 export function extractYoutubeVideoId(url) {
   if (!url) return '';
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : '';
 }

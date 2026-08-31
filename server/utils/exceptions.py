@@ -1,4 +1,4 @@
-class NotesMakerError(Exception):
+class PathshalaError(Exception):
     def __init__(
         self,
         message: str,

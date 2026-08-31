@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Cpu } from 'lucide-react';
 
 const CONCISE_STEPS = [
@@ -13,12 +13,10 @@ export default function LoadingModal({
   isOpen,
   inline = false
 }) {
-  if (!isOpen) return null;
-
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   useEffect(() => {
-    setCurrentStepIndex(0);
+    if (!isOpen) return;
     const interval = setInterval(() => {
       setCurrentStepIndex((prev) => {
         if (prev < CONCISE_STEPS.length - 1) {
@@ -26,13 +24,14 @@ export default function LoadingModal({
         }
         return prev;
       });
-    }, 4500); // Transitions nicely over the generation span
+    }, 4500);
     return () => clearInterval(interval);
-  }, []);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const renderCard = (bgClass = "bg-zinc-950/40", shadowClass = "shadow-xl", borderClass = "border-zinc-800", paddingClass = "p-6") => (
     <div className={`w-full border ${borderClass} ${bgClass} rounded-2xl ${paddingClass} ${shadowClass} relative overflow-hidden flex flex-col items-center justify-center`}>
-      
       {/* Premium Circular Spinner Area */}
       <div className="flex flex-col items-center justify-center py-4 text-center space-y-6 w-full">
         <div className="relative flex items-center justify-center">

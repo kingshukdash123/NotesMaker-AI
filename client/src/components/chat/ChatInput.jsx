@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Loader2, Sliders, Plus, ChevronUp } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Loader2, Plus, ChevronUp } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import SlashCommandMenu from './SlashCommandMenu';
 
 export default function ChatInput({ value, onChange, onSubmit, isLoading, isStreaming }) {
+  const { isDark } = useTheme();
   const [showMenu, setShowMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const textareaRef = useRef(null);
@@ -27,7 +29,7 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
 
     if (lastWordMatch) {
       setShowMenu(true);
-      setSearchQuery(lastWordMatch[0]); // include the slash e.g. "/exp"
+      setSearchQuery(lastWordMatch[0]);
     } else {
       setShowMenu(false);
     }
@@ -40,7 +42,6 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
       const textBeforeCursor = text.substring(0, cursor);
       const textAfterCursor = text.substring(cursor);
       
-      // Replace the active slash search (e.g. "/exp") with the command placeholder
       const slashIndex = textBeforeCursor.lastIndexOf('/');
       const newTextBefore = textBeforeCursor.substring(0, slashIndex) + cmd.placeholder;
       
@@ -48,7 +49,6 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
       onChange(newText);
       setShowMenu(false);
 
-      // Focus and place cursor at correct index after placeholder
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.focus();
@@ -62,7 +62,6 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       if (showMenu) {
-        // Let the SlashCommandMenu handle Enter selection
         return;
       }
       e.preventDefault();
@@ -116,44 +115,43 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder="Do anything with AI..."
-        className="w-full max-h-36 resize-none bg-transparent outline-none border-none py-1 text-xs text-zinc-100 placeholder-zinc-550 custom-scrollbar font-sans leading-relaxed"
+        className={`w-full max-h-36 resize-none bg-transparent outline-none border-none py-1 text-xs custom-scrollbar font-sans leading-relaxed ${
+          isDark ? 'text-zinc-100 placeholder-zinc-550' : 'text-orange-950 placeholder-orange-400'
+        }`}
         disabled={isLoading}
       />
 
       {/* Bottom control row */}
-      <div className="flex items-center justify-between border-t border-zinc-900/60 pt-2 shrink-0">
+      <div className={`flex items-center justify-between border-t pt-2 shrink-0 ${
+        isDark ? 'border-zinc-900/60' : 'border-orange-100'
+      }`}>
         {/* Left tools icons */}
-        <div className="flex items-center gap-2 text-zinc-500">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handlePlusClick}
-            className="p-1 rounded hover:bg-zinc-800 hover:text-zinc-350 transition cursor-pointer"
+            className="btn-icon !w-7 !h-7 !p-1 text-zinc-400 hover:text-orange-500"
             title="Add command"
+            aria-label="Add command"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
-          <button
-            type="button"
-            className="p-1 rounded hover:bg-zinc-800 hover:text-zinc-350 transition cursor-pointer"
-            title="AI settings"
-          >
-            {/* <Sliders className="w-3.5 h-3.5" /> */}
-          </button>
         </div>
 
-        {/* Right send button with Auto text */}
+        {/* Right send button */}
         <div className="flex items-center gap-2">
-          {/* <span className="text-[10px] text-zinc-550 select-none font-medium">Auto</span> */}
           <button
             type="button"
             disabled={isLoading || isStreaming || !value.trim()}
             onClick={onSubmit}
-            className="shrink-0 w-6 h-6 rounded-full bg-zinc-100 hover:bg-white text-zinc-950 transition disabled:opacity-30 disabled:bg-zinc-800 disabled:text-zinc-650 cursor-pointer flex items-center justify-center"
+            className="btn-primary !w-7 !h-7 !p-0 !rounded-full shrink-0 shadow-xs flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+            title="Send message"
+            aria-label="Send message"
           >
             {isStreaming ? (
-              <Loader2 className="w-3 h-3 animate-spin text-zinc-950" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <ChevronUp className="w-3.5 h-3.5 stroke-[2.5]" />
+              <ChevronUp className="w-4 h-4 stroke-[2.5]" />
             )}
           </button>
         </div>

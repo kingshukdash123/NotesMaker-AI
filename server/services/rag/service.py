@@ -6,8 +6,8 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 from config.settings import settings
 from utils.logger import get_logger
-from utils.exceptions import NotesMakerError
-from config.constants import CHAT_MODEL, RAG_TOP_K
+from utils.exceptions import PathshalaError
+from config.constants import CHAT_MODEL, RAG_TOP_K, RAG_MEMORY_WINDOW
 
 from services.llm.service import LLMService
 from prompts.video_qna_prompt import VIDEO_QNA_PROMPT
@@ -41,7 +41,7 @@ class RAGService:
         # Connect to Pinecone
         pinecone_api_key = settings.PINECONE_API_KEY
         if not pinecone_api_key:
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Pinecone configurations are missing in the server settings.",
                 code="MISSING_PINECONE_CONFIG",
                 status_code=500,
@@ -55,7 +55,7 @@ class RAGService:
             self.index = self.pc.Index(self.index_name)
         except Exception as e:
             logger.exception("Failed to connect to Pinecone index.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Could not establish connection to the vector store index.",
                 code="PINECONE_CONNECTION_ERROR",
                 status_code=500,
@@ -77,7 +77,7 @@ class RAGService:
             query_vector = self.embeddings.embed_query(question)
         except Exception as e:
             logger.exception("Failed to embed question.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to generate embeddings for your question.",
                 code="EMBEDDING_GENERATION_FAILED",
                 status_code=500,
@@ -93,7 +93,7 @@ class RAGService:
             )
         except Exception as e:
             logger.exception("Pinecone query execution failed.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to execute search on vector database.",
                 code="PINECONE_QUERY_FAILED",
                 status_code=500,
@@ -141,19 +141,25 @@ class RAGService:
 
         messages = [SystemMessage(content=system_content)]
 
-        if history:
-            # Send last 5 messages from history to keep short term memory
-            last_5 = history[-5:]
-            for msg in last_5:
+        if history and isinstance(history, list):
+            # Send last N messages from history to keep short term memory
+            recent_history = history[-RAG_MEMORY_WINDOW:]
+            for msg in recent_history:
+                if not isinstance(msg, dict):
+                    continue
                 role = msg.get("sender") or msg.get("role")
                 text = msg.get("text") or msg.get("content")
-                if role == "user":
-                    messages.append(HumanMessage(content=text))
-                elif role in ("assistant", "ai"):
-                    messages.append(AIMessage(content=text))
+                if not text or not isinstance(text, str) or not text.strip():
+                    continue
+                clean_text = text.strip()
+                if role in ("user", "human"):
+                    messages.append(HumanMessage(content=clean_text))
+                elif role in ("assistant", "ai", "bot"):
+                    messages.append(AIMessage(content=clean_text))
 
         # Add current question
-        messages.append(HumanMessage(content=question))
+        if question and str(question).strip():
+            messages.append(HumanMessage(content=str(question).strip()))
 
         # 5. Stream LLM response
         try:
@@ -169,7 +175,7 @@ class RAGService:
                     yield json.dumps({"type": "content", "data": content})
         except Exception as e:
             logger.exception("Failed to stream response via LLM.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to generate a streamed answer due to an AI service error.",
                 code="LLM_STREAMING_FAILED",
                 status_code=500,

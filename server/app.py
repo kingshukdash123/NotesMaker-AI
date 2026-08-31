@@ -1,6 +1,6 @@
 import os
 
-os.environ["NOTESMAKER_MODE"] = "API"
+os.environ["PATHSHALA_MODE"] = "API"
 
 import asyncio
 import uuid
@@ -13,29 +13,37 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, HttpUrl
 
+import hashlib
 from utils.logger import get_logger, current_task_id
-from services.firebase.firestore import get_user_api_keys
+from services.firebase.firestore import get_user_api_keys, get_cached_search, save_cached_search
 from services.rag.service import RAGService
 from services.assistant.service import AssistantService
 from services.youtube.metadata import get_video_metadata
+from services.youtube.search import search_youtube_videos
 from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
 import time
 from config.settings import settings
-
+from config.constants import (
+    API_TITLE,
+    API_DESCRIPTION,
+    API_VERSION,
+    ALLOWED_ORIGINS,
+    TASK_EXPIRATION_SECONDS,
+)
 
 logger = get_logger(__name__)
 
 app = FastAPI(
-    title="NotesMaker AI API",
-    description="Backend REST API for NotesMaker AI including real-time pipeline log streaming.",
-    version="1.0.0"
+    title=API_TITLE,
+    description=API_DESCRIPTION,
+    version=API_VERSION,
 )
 
 # CORS Setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.CLIENT_ORIGIN],
+    allow_origins=list(set([settings.CLIENT_ORIGIN] + ALLOWED_ORIGINS)),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,10 +96,11 @@ async def run_pipeline_task(
 
 
 @app.get("/")
+@app.get("/health")
 @app.get("/api")
 @app.get("/api/health")
 async def root():
-    return {"status": "ok", "message": "Welcome to NotesMaker AI API. Use /docs for documentation."}
+    return {"status": "ok", "message": "Welcome to Pathshala AI API. Use /docs for documentation."}
 
 
 @app.get("/api/youtube/metadata")
@@ -107,6 +116,51 @@ async def fetch_metadata(url: str = Query(..., description="The YouTube URL to f
         return metadata
     except Exception as e:
         logger.error(f"Metadata extraction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/youtube/search")
+async def search_youtube(
+    q: str = Query(..., description="The search query"),
+    category: str = Query("all", description="Category filter"),
+    pageToken: Optional[str] = Query(None, description="YouTube API page token for pagination")
+):
+    """
+    Searches YouTube for educational videos using official YouTube search API.
+    Utilizes Firestore caching to protect YouTube API quota.
+    """
+    if not q.strip():
+        return {"items": [], "nextPageToken": None}
+
+    # 1. Compute query hash
+    normalized_q = q.lower().strip()
+    hash_input = f"{normalized_q}|{category.lower()}"
+    if pageToken:
+        hash_input += f"|{pageToken}"
+    query_hash = hashlib.md5(hash_input.encode("utf-8")).hexdigest()
+
+    # 2. Check cache
+    cached_result = await get_cached_search(query_hash)
+    if cached_result:
+        return cached_result
+
+    # 3. Cache miss: Call YouTube API
+    try:
+        result = await search_youtube_videos(q, category, pageToken)
+        
+        # 4. Save to cache
+        await save_cached_search(
+            query_hash=query_hash,
+            query=q,
+            category=category,
+            results=result["items"],
+            next_page_token=result["nextPageToken"]
+        )
+        
+        result["cached"] = False
+        return result
+    except Exception as e:
+        logger.exception("Error in search_youtube endpoint")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -139,9 +193,9 @@ async def generate_notes(
 
     
     
-    # Prune tasks older than 1 hour to keep memory usage low
+    # Prune tasks older than expiration duration to keep memory usage low
     now = time.time()
-    for expired_id in [tid for tid, t in list(tasks.items()) if now - t.get("created_at", now) > 3600]:
+    for expired_id in [tid for tid, t in list(tasks.items()) if now - t.get("created_at", now) > TASK_EXPIRATION_SECONDS]:
         tasks.pop(expired_id, None)
         
     tasks[task_id] = {

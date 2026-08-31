@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
     if (!trimmed) return '';
     const replaced = trimmed.replace(/\s+/g, '_');
     if (replaced.includes('@')) return replaced;
-    return `${replaced.toLowerCase()}@notesmaker.ai`;
+    return `${replaced.toLowerCase()}@pathshala.ai`;
   };
 
   const signup = async (identifier, password) => {
@@ -50,11 +50,11 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  // Format user display name (e.g. "alex" from "alex@notesmaker.ai" or full email)
+  // Format user display name (e.g. "alex" from "alex@pathshala.ai" or full email)
   const getUserDisplayName = (user) => {
     if (!user || !user.email) return 'User';
-    if (user.email.endsWith('@notesmaker.ai')) {
-      return user.email.replace('@notesmaker.ai', '');
+    if (user.email.endsWith('@pathshala.ai')) {
+      return user.email.replace('@pathshala.ai', '');
     }
     return user.email;
   };

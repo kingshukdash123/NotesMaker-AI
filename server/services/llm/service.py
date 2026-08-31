@@ -3,7 +3,7 @@ from typing import Optional
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_groq import ChatGroq
 
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 from utils.logger import get_logger
 from config.settings import settings
 from config.constants import EMBEDDING_MODEL, MAX_RETRIES
@@ -27,7 +27,7 @@ class LLMService:
 
             if not google_api_key:
                 logger.error("Gemini API key is missing for embeddings.")
-                raise NotesMakerError(
+                raise PathshalaError(
                     message="Gemini API key is missing. Please set it in Settings.",
                     code="MISSING_API_KEY",
                     status_code=400,
@@ -41,10 +41,10 @@ class LLMService:
             )
 
         except Exception as e:
-            if isinstance(e, NotesMakerError):
+            if isinstance(e, PathshalaError):
                 raise e
             logger.exception("Failed to initialize Gemini Embeddings.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to initialize embedding models due to a configuration or credential issue.",
                 code="EMBEDDING_INITIALIZATION_ERROR",
                 status_code=500,
@@ -72,7 +72,7 @@ class LLMService:
 
             if not google_api_key:
                 logger.error("Gemini API key is missing.")
-                raise NotesMakerError(
+                raise PathshalaError(
                     message="Gemini API key is missing. Please set it in Settings.",
                     code="MISSING_API_KEY",
                     status_code=400,
@@ -89,10 +89,10 @@ class LLMService:
 
 
         except Exception as e:
-            if isinstance(e, NotesMakerError):
+            if isinstance(e, PathshalaError):
                 raise e
             logger.exception("Failed to initialize Gemini LLM.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to initialize language models due to a configuration or credential issue.",
                 code="LLM_INITIALIZATION_ERROR",
                 status_code=500,
@@ -117,7 +117,7 @@ class LLMService:
 
             if not groq_api_key:
                 logger.error("Groq API key is missing.")
-                raise NotesMakerError(
+                raise PathshalaError(
                     message="Groq API key is missing. Please set it in Settings.",
                     code="MISSING_GROQ_API_KEY",
                     status_code=400,
@@ -133,10 +133,10 @@ class LLMService:
             )
 
         except Exception as e:
-            if isinstance(e, NotesMakerError):
+            if isinstance(e, PathshalaError):
                 raise e
             logger.exception("Failed to initialize Groq LLM.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to initialize Groq language model due to a configuration or credential issue.",
                 code="GROQ_INITIALIZATION_ERROR",
                 status_code=500,

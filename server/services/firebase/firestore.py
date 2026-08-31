@@ -131,3 +131,93 @@ def save_cached_transcript(video_id: str, transcript: list) -> None:
                 logger.error("Failed to save transcript to cache.")
     except Exception as e:
         logger.exception("Error saving transcript to cache.")
+
+
+import datetime
+
+async def get_cached_search(query_hash: str) -> dict | None:
+    """
+    Checks Firestore for a cached search result matching the query hash.
+    Validates that the cache is under 1 hour old.
+    """
+    project_id = getattr(settings, "FIREBASE_PROJECT_ID", None)
+    if not project_id:
+        logger.warning("Database configuration missing. Skipping search cache check.")
+        return None
+
+    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/search_cache/{query_hash}"
+    try:
+        logger.info(f"Checking search cache for query_hash: {query_hash}")
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=10.0)
+            if response.status_code == 200:
+                doc_data = response.json()
+                fields = doc_data.get("fields", {})
+                
+                # Check expiration (1 hour)
+                cached_at_str = fields.get("cachedAt", {}).get("timestampValue")
+                if not cached_at_str:
+                    return None
+                    
+                cached_at = datetime.datetime.fromisoformat(cached_at_str.replace("Z", "+00:00"))
+                now = datetime.datetime.now(datetime.timezone.utc)
+                age = (now - cached_at).total_seconds()
+                
+                if age > 3600:
+                    logger.info(f"Search cache for hash {query_hash} is expired (age={age}s).")
+                    return None
+                
+                results_json = fields.get("results_json", {}).get("stringValue")
+                results = json.loads(results_json) if results_json else []
+                next_page_token = fields.get("nextPageToken", {}).get("stringValue") or None
+                
+                logger.info(f"Search cache hit for hash {query_hash} (age={age}s).")
+                return {
+                    "items": results,
+                    "nextPageToken": next_page_token,
+                    "cached": True
+                }
+            elif response.status_code == 404:
+                logger.info(f"Search cache miss for hash {query_hash}")
+            else:
+                logger.error(f"Search cache check failed with status {response.status_code}")
+    except Exception as e:
+        logger.exception("Error checking search cache.")
+    return None
+
+
+async def save_cached_search(query_hash: str, query: str, category: str, results: list, next_page_token: str = None) -> None:
+    """
+    Caches search results in Firestore under search_cache collection.
+    Saves results serialized as a JSON string to avoid schema limits.
+    """
+    project_id = getattr(settings, "FIREBASE_PROJECT_ID", None)
+    if not project_id:
+        logger.warning("Database configuration missing. Cannot save search cache.")
+        return
+
+    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/search_cache/{query_hash}"
+    
+    try:
+        logger.info(f"Caching search results for query_hash: {query_hash}")
+        now_str = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+        
+        payload = {
+            "fields": {
+                "query": {"stringValue": query},
+                "category": {"stringValue": category},
+                "results_json": {"stringValue": json.dumps(results)},
+                "nextPageToken": {"stringValue": next_page_token or ""},
+                "cachedAt": {"timestampValue": now_str}
+            }
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(url, json=payload, timeout=10.0)
+            if response.status_code == 200:
+                logger.info(f"Successfully cached search results for hash {query_hash}")
+            else:
+                logger.error(f"Failed to cache search results: {response.text}")
+    except Exception as e:
+        logger.exception("Error saving search results to cache.")
+

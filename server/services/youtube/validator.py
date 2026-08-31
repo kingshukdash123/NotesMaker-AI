@@ -1,7 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 
 from utils.logger import get_logger
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 
 logger = get_logger(__name__)
 
@@ -25,7 +25,7 @@ def extract_video_id(url: str) -> str:
 
     else:
         logger.error("Invalid video source URL.")
-        raise NotesMakerError(
+        raise PathshalaError(
             message="Invalid YouTube URL.",
             code="INVALID_URL",
             status_code=400,
@@ -33,7 +33,7 @@ def extract_video_id(url: str) -> str:
 
     if not video_id:
         logger.error("Video ID not found.")
-        raise NotesMakerError(
+        raise PathshalaError(
             message="Video ID not found.",
             code="INVALID_VIDEO_ID",
             status_code=400,

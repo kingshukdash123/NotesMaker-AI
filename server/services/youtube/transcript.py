@@ -4,7 +4,7 @@ import re
 
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 from utils.logger import get_logger
 from model.transcript import TranscriptSegment
 from services.firebase.firestore import get_cached_transcript, save_cached_transcript
@@ -84,7 +84,7 @@ def _fetch_via_transcriptapi(video_id: str, api_key: str) -> list[TranscriptSegm
             return segments
         else:
             logger.warning("Metadata service failed to fetch transcript.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="No transcript found.",
                 code="TRANSCRIPT_NOT_FOUND",
                 status_code=response.status_code,
@@ -99,7 +99,7 @@ def _fetch_via_local_scraper(video_id: str) -> list[TranscriptSegment]:
     # Pick the first available transcript (any language is acceptable)
     available = list(transcript_list)
     if not available:
-        raise NotesMakerError(
+        raise PathshalaError(
             message="No transcripts (subtitles) are available for this video.",
             code="TRANSCRIPT_NOT_FOUND",
             status_code=404,
@@ -153,7 +153,7 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
             video_duration_sec = last_segment.get("end", 0.0)
             if video_duration_sec > MAX_VIDEO_DURATION_SECONDS:
                 logger.error("Cached video duration of %s seconds exceeds limit.", video_duration_sec)
-                raise NotesMakerError(
+                raise PathshalaError(
                     message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
                     code="VIDEO_TOO_LONG",
                     status_code=400,
@@ -172,10 +172,10 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
         try:
             transcript = _fetch_via_transcriptapi(video_id, api_key)
         except Exception as e:
-            if isinstance(e, NotesMakerError):
+            if isinstance(e, PathshalaError):
                 raise e
             logger.exception("Metadata service extraction failed.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to fetch transcript from metadata service.",
                 code="TRANSCRIPT_ERROR",
                 status_code=500,
@@ -185,19 +185,19 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
         try:
             transcript = _fetch_via_local_scraper(video_id)
         except Exception as e:
-            if isinstance(e, NotesMakerError):
+            if isinstance(e, PathshalaError):
                 raise e
                 
             if isinstance(e, (TranscriptsDisabled, NoTranscriptFound)):
                 logger.warning("Subtitles are disabled or unavailable for this video.")
-                raise NotesMakerError(
+                raise PathshalaError(
                     message="No transcripts (subtitles) are available for this video.",
                     code="TRANSCRIPT_NOT_FOUND",
                     status_code=404,
                 )
                 
             logger.exception("Local extraction failed.")
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to fetch transcript. Subtitles might be disabled or unavailable.",
                 code="TRANSCRIPT_ERROR",
                 status_code=500,
@@ -216,7 +216,7 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
         video_duration_sec = last_segment.get("end", 0.0)
         if video_duration_sec > MAX_VIDEO_DURATION_SECONDS:
             logger.error("Video duration of %s seconds exceeds limit.", video_duration_sec)
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
                 code="VIDEO_TOO_LONG",
                 status_code=400,

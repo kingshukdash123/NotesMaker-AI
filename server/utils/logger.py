@@ -8,12 +8,12 @@ import contextvars
 # Log Directory & Mode Check
 # -----------------------------------------------------------------------------
 
-is_api_mode = os.environ.get("NOTESMAKER_MODE") == "API"
+is_api_mode = os.environ.get("PATHSHALA_MODE") == "API"
 
 if not is_api_mode:
     LOG_DIR = Path("logs")
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    LOG_FILE = LOG_DIR / "notesmaker.log"
+    LOG_FILE = LOG_DIR / "pathshala.log"
 
 # -----------------------------------------------------------------------------
 # Context Variables for Task Tracking
@@ -28,7 +28,7 @@ current_task_id: contextvars.ContextVar[str | None] = contextvars.ContextVar(
 # Logger Configuration
 # -----------------------------------------------------------------------------
 
-LOGGER_NAME = "NotesMakerAI"
+LOGGER_NAME = "PathshalaAI"
 
 logger = logging.getLogger(LOGGER_NAME)
 

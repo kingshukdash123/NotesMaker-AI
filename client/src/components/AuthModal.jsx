@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { X, LogIn, UserPlus, Lock, User, AlertCircle, CheckCircle2 } from 'lucide-react';
 
@@ -11,13 +11,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, signup } = useAuth();
-
   useEffect(() => {
-    setIsSignUp(initialMode === 'signup');
-    setError('');
-    setSuccessMsg('');
-  }, [initialMode, isOpen]);
+    if (isOpen) {
+      setIsSignUp(initialMode === 'signup');
+      setError('');
+      setSuccessMsg('');
+    }
+  }, [isOpen, initialMode]);
+
+  const { login, signup } = useAuth();
 
   if (!isOpen) return null;
 
@@ -84,14 +86,16 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
       {/* Modal Card Container */}
-      <div className="relative w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-8 shadow-2xl overflow-x-hidden overflow-y-auto custom-scrollbar max-h-[90vh]">
         {/* Glow ambient background */}
-        <div className="absolute -top-20 -right-20 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Close Button */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 p-1.5 rounded-lg hover:bg-zinc-900 transition"
+          className="btn-icon absolute top-4 right-4 text-zinc-400 hover:text-zinc-100"
+          title="Close"
         >
           <X className="w-5 h-5" />
         </button>
@@ -196,19 +200,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-sm rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full py-2.5 px-4 text-sm font-bold"
           >
             {loading ? (
-              <span className="inline-block w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></span>
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             ) : isSignUp ? (
               <>
                 <UserPlus className="w-4 h-4" />
-                Create Account
+                <span>Create Account</span>
               </>
             ) : (
               <>
                 <LogIn className="w-4 h-4" />
-                Sign In
+                <span>Sign In</span>
               </>
             )}
           </button>

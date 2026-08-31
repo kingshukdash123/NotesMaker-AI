@@ -1,7 +1,7 @@
 from state.sectionState import ChapterState
 from services.writer.writerService import ChapterWriterService
 from utils.logger import get_logger
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 
 logger = get_logger(__name__)
 
@@ -70,7 +70,7 @@ def chapter_writer(state: ChapterState) -> dict:
 
         logger.exception("Generation of study notes failed.")
 
-        raise NotesMakerError(
+        raise PathshalaError(
             message="Failed to generate chapter notes.",
             code="CHAPTER_WRITER_NODE_ERROR",
             status_code=500,

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str | None = None
     GEMINI_API_KEY: str | None = None
     TRANSCRIPT_API_KEY: str | None = None
+    YOUTUBE_API_KEY: str | None = None
     CLIENT_ORIGIN: str = "http://localhost:3000"
 
 

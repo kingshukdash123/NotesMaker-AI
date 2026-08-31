@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from services.llm.service import LLMService
 from model.orchestration import OrchestrationResultModel
 from prompts.orchestrator_prompt import ORCHESTRATOR_PROMPT
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 from utils.logger import get_logger
 
 from config.constants import ORCHESTRATOR_MODEL
@@ -48,7 +48,7 @@ class OrchestratorService:
         except Exception as e:
             logger.exception("Failed to structure lecture curriculum.")
 
-            raise NotesMakerError(
+            raise PathshalaError(
                 message="Failed to generate lecture outline and execution plan.",
                 code="ORCHESTRATION_SERVICE_ERROR",
                 status_code=500,

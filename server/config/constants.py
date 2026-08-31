@@ -1,3 +1,23 @@
+# API Configuration
+API_TITLE = "Pathshala AI API"
+API_DESCRIPTION = "Backend REST API for Pathshala AI including real-time pipeline log streaming."
+API_VERSION = "1.0.0"
+
+# CORS Configuration
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://127.0.0.1:5173",
+    "https://pathshala-ai.web.app",
+    "https://notesmaker-ai-56407.web.app",
+    "https://notesmaker-ai-56407.firebaseapp.com",
+]
+
+# Task Execution and Cache
+TASK_EXPIRATION_SECONDS = 3600
 MAX_RETRIES = 3
 RETRY_DELAY = 2
 
@@ -14,12 +34,13 @@ PINECONE_UPSERT_DELAY = 18.0
 
 # Q&A / RAG Configs
 RAG_TOP_K = 5
+RAG_MEMORY_WINDOW = 5
+
+# Assistant Configs
+ASSISTANT_MEMORY_WINDOW = 4
 
 # YouTube Configs
 MAX_VIDEO_DURATION_SECONDS = 7200
 
 # Concurrency Configs
 CONCURRENT_CHAPTER_LIMIT = 5
-
-
-

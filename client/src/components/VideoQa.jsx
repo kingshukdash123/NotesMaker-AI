@@ -1,15 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, Loader2, Play, AlertCircle, User, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MessageSquare, Send, Loader2, AlertCircle, Trash2 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 import { askVideoQuestionStream } from '../services/server/api';
 import { saveVideoQnAChat, getVideoQnAChat, deleteVideoQnAChat } from '../services/firebase/notesService';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/atom-one-dark.css';
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
+import MarkdownRenderer from './common/MarkdownRenderer';
 
-export default function VideoQa({ videoId, currentUser, isFullscreen = false }) {
+export default function VideoQa({ videoId, currentUser }) {
+  const { isDark } = useTheme();
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,312 +16,6 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
   const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
-
-  const formatTime = (seconds) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const preprocessMessageMarkdown = (content) => {
-    if (!content) return '';
-
-    // 0. Restore LaTeX backslashes that were parsed as escape control characters (e.g. \t, \f, \b, \v)
-    let processed = content
-      .replace(/\x0c/g, '\\f') // Form Feed -> \f (e.g. \frac)
-      .replace(/\x09/g, '\\t') // Horizontal Tab -> \t (e.g. \text, \theta)
-      .replace(/\x08/g, '\\b') // Backspace -> \b (e.g. \beta, \begin)
-      .replace(/\x0b/g, '\\v'); // Vertical Tab -> \v (e.g. \vec)
-
-    // 1. Convert standard LaTeX delimiters \[ \] and \( \) to $$ and $
-    processed = processed
-      .replace(/\\\[([\s\S]*?)\\\]/g, '$$$$$1$$$$') // \[ ... \] -> $$ ... $$
-      .replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');     // \( ... \) -> $ ... $
-
-    // 2. Unescape any escaped dollar signs (e.g. \$ -> $)
-    processed = processed.replace(/\\(\$)/g, '$1');
-
-    // 3. Extract timestamps/citations trapped inside $$...$$ or $...$ math blocks before tokenizing
-    // e.g. "$$ W = \mathbf{F} \cdot \mathbf{d} \quad [00:00] $$" -> "$$ W = \mathbf{F} \cdot \mathbf{d} $$ [00:00]"
-    const timestampPattern = /\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g;
-    
-    // Extract trailing citations inside $$ ... $$
-    processed = processed.replace(
-      /\$\$([\s\S]*?)\$\$/g,
-      (match, mathBody) => {
-        let extractedTimestamps = [];
-        let cleanedMath = mathBody.replace(
-          /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
-          (tsMatch) => {
-            const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
-            if (tsOnlyMatch) {
-              extractedTimestamps.push(tsOnlyMatch[0]);
-            }
-            return '';
-          }
-        ).trim();
-        const suffix = extractedTimestamps.length > 0 ? ' ' + extractedTimestamps.join(' ') : '';
-        return `$$${cleanedMath}$$${suffix}`;
-      }
-    );
-
-    // Extract trailing citations inside $ ... $ (inline math)
-    processed = processed.replace(
-      /(?<!\$)\$([^$\n]+?)\$(?!\$)/g,
-      (match, mathBody) => {
-        let extractedTimestamps = [];
-        let cleanedMath = mathBody.replace(
-          /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
-          (tsMatch) => {
-            const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
-            if (tsOnlyMatch) {
-              extractedTimestamps.push(tsOnlyMatch[0]);
-            }
-            return '';
-          }
-        ).trim();
-        const suffix = extractedTimestamps.length > 0 ? ' ' + extractedTimestamps.join(' ') : '';
-        return `$${cleanedMath}$${suffix}`;
-      }
-    );
-
-    // 4. Handle lines with raw LaTeX math commands that were not wrapped in $ or $$
-    // e.g. "W = \mathbf{F}\!\cdot\!\mathbf{d} \quad [00:00]"
-    const lines = processed.split('\n');
-    const latexCommandRegex = /\\(mathbf|frac|tfrac|dfrac|text|Delta|nabla|partial|cdot|times|approx|sqrt|alpha|beta|gamma|theta|lambda|mu|pi|sigma|omega|sum|int|infty|vec|hat|bar|quad|qquad)\b/;
-    
-    for (let idx = 0; idx < lines.length; idx++) {
-      const line = lines[idx];
-      const trimmed = line.trim();
-      if (
-        !trimmed.includes('$') &&
-        !trimmed.includes('`') &&
-        !trimmed.startsWith('#') &&
-        latexCommandRegex.test(trimmed)
-      ) {
-        let lineWithoutTs = trimmed;
-        let lineTs = [];
-        lineWithoutTs = lineWithoutTs.replace(
-          /(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g,
-          (tsMatch) => {
-            const tsOnlyMatch = tsMatch.match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
-            if (tsOnlyMatch) {
-              lineTs.push(tsOnlyMatch[0]);
-            }
-            return '';
-          }
-        ).trim();
-
-        const suffix = lineTs.length > 0 ? ' ' + lineTs.join(' ') : '';
-        lines[idx] = line.replace(trimmed, () => `$$${lineWithoutTs}$$${suffix}`);
-      }
-    }
-    processed = lines.join('\n');
-
-    // 5. Robust state machine to tokenize math and convert timestamps ONLY in normal text
-    let result = '';
-    let i = 0;
-    const len = processed.length;
-
-    const replaceTimestamps = (plainText) => {
-      return plainText.replace(timestampPattern, (match, p1, p2, p3) => {
-        const hrs = p3 !== undefined ? parseInt(p1, 10) : 0;
-        const mins = p3 !== undefined ? parseInt(p2, 10) : parseInt(p1, 10);
-        const secs = p3 !== undefined ? parseInt(p3, 10) : parseInt(p2, 10);
-        const totalSeconds = hrs * 3600 + mins * 60 + secs;
-        return `${match}(https://www.youtube.com/watch?v=${videoId}&t=${totalSeconds})`;
-      });
-    };
-
-    let textBuffer = '';
-    const flushText = () => {
-      if (textBuffer.length > 0) {
-        result += replaceTimestamps(textBuffer);
-        textBuffer = '';
-      }
-    };
-
-    while (i < len) {
-      // 5a. Skip multi-line code blocks (``` ... ```)
-      if (processed.startsWith('```', i)) {
-        flushText();
-        const endIdx = processed.indexOf('```', i + 3);
-        if (endIdx !== -1) {
-          result += processed.substring(i, endIdx + 3);
-          i = endIdx + 3;
-        } else {
-          result += processed.substring(i);
-          break;
-        }
-        continue;
-      }
-
-      // 5b. Skip inline code (` ... `)
-      if (processed[i] === '`') {
-        flushText();
-        const endIdx = processed.indexOf('`', i + 1);
-        if (endIdx !== -1) {
-          result += processed.substring(i, endIdx + 1);
-          i = endIdx + 1;
-        } else {
-          result += processed[i];
-          i++;
-        }
-        continue;
-      }
-
-      // 5c. Handle block math ($$ ... $$) — convert to __BLOCK_MATH__ token
-      if (processed.startsWith('$$', i)) {
-        flushText();
-        let endIdx = -1;
-        let nextSearchIdx = i + 2;
-
-        while (true) {
-          const foundIdx = processed.indexOf('$$', nextSearchIdx);
-          if (foundIdx === -1) break;
-
-          const innerText = processed.substring(i + 2, foundIdx);
-          if (!innerText.includes('\n\n') && !innerText.includes('\r\n\r\n') && !innerText.includes('\n#') && !innerText.includes('\r\n#')) {
-            endIdx = foundIdx;
-            break;
-          }
-          nextSearchIdx = foundIdx + 1;
-        }
-
-        if (endIdx !== -1) {
-          let mathContent = processed.substring(i + 2, endIdx).trim();
-          mathContent = mathContent.replace(/(?<!\\)\\\n/g, '\\\\\n');
-          mathContent = mathContent.replace(/(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g, '').trim();
-          const encoded = mathContent.replace(/\n/g, '§NL§');
-          result += '`__BLOCK_MATH__' + encoded + '`';
-          i = endIdx + 2;
-          continue;
-        }
-      }
-
-      // 5d. Handle inline math ($ ... $)
-      if (processed[i] === '$') {
-        flushText();
-        let endIdx = -1;
-        for (let j = i + 1; j < len; j++) {
-          if (processed[j] === '\n') break;
-          if (processed[j] === '$') {
-            endIdx = j;
-            break;
-          }
-        }
-
-        if (endIdx !== -1 && endIdx > i + 1) {
-          let formula = processed.substring(i + 1, endIdx).trim();
-          if (formula.length > 0) {
-            formula = formula.replace(/(?:\s*(?:\\quad|\\qquad|\\hspace\{[^}]*\}|\\,|\\!|~|\s)+)?\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g, '').trim();
-            result += '`__INLINE_MATH__' + formula + '`';
-            i = endIdx + 1;
-            continue;
-          }
-        }
-      }
-
-      textBuffer += processed[i];
-      i++;
-    }
-
-    flushText();
-    return result;
-  };
-
-  const renderMessageMarkdown = (text) => {
-    if (!text) return null;
-    return (
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={{
-          a({ href, children }) {
-            const isSeekLink = href && href.includes('youtube.com/watch') && href.includes('&t=');
-            if (isSeekLink) {
-              const handleSeekClick = (e) => {
-                e.preventDefault();
-                try {
-                  const url = new URL(href);
-                  const t = url.searchParams.get('t');
-                  if (t !== null) {
-                    const seconds = parseInt(t, 10);
-                    if (!isNaN(seconds)) {
-                      window.dispatchEvent(new CustomEvent('seek-video', { detail: { seconds } }));
-                      return;
-                    }
-                  }
-                } catch (err) {
-                  // Fallback
-                }
-                window.open(href, '_blank');
-              };
-
-              return (
-                <button
-                  type="button"
-                  onClick={handleSeekClick}
-                  className="inline-flex items-center gap-0.5 px-1.5 py-[1px] mx-0.5 rounded bg-orange-950/30 border border-orange-800/40 text-[9px] font-semibold text-orange-400 hover:text-orange-200 hover:bg-orange-900/40 hover:border-orange-600/50 transition cursor-pointer align-baseline font-mono shadow-xs"
-                  title="Click to seek and play video at this timestamp"
-                >
-                  <Play className="w-2 h-2 fill-current shrink-0 text-orange-400" />
-                  <span>{children}</span>
-                </button>
-              );
-            }
-            return (
-              <a href={href} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">
-                {children}
-              </a>
-            );
-          },
-          code({node, className, children, ...props}) {
-            const getRawText = (n) => {
-              if (typeof n === 'string') return n;
-              if (typeof n === 'number') return String(n);
-              if (Array.isArray(n)) return n.map(getRawText).join('');
-              if (n && n.props && n.props.children) {
-                return getRawText(n.props.children);
-              }
-              return '';
-            };
-            const codeText = getRawText(children);
-            // Block math (from $$ blocks)
-            if (codeText.startsWith('__BLOCK_MATH__')) {
-              let formula = codeText.replace('__BLOCK_MATH__', '').replace(/§NL§/g, '\n');
-              try {
-                const html = katex.renderToString(formula, { 
-                  displayMode: true, 
-                  throwOnError: false 
-                });
-                return <span dangerouslySetInnerHTML={{ __html: html }} className="block my-3 overflow-x-auto custom-scrollbar" />;
-              } catch (err) {
-                return <div className="p-2 my-2 rounded bg-zinc-900/80 border border-zinc-800 text-zinc-300 font-mono text-xs overflow-x-auto">{formula}</div>;
-              }
-            }
-            // Inline math (from $ blocks)
-            if (codeText.startsWith('__INLINE_MATH__')) {
-              let formula = codeText.replace('__INLINE_MATH__', '');
-              try {
-                const html = katex.renderToString(formula, { 
-                  displayMode: false, 
-                  throwOnError: false 
-                });
-                return <span dangerouslySetInnerHTML={{ __html: html }} className="inline-block px-0.5" />;
-              } catch (err) {
-                return <code className="px-1 py-0.5 rounded bg-zinc-900 text-zinc-300 font-mono text-xs">{formula}</code>;
-              }
-            }
-            return <code className={className} {...props}>{children}</code>;
-          }
-        }}
-      >
-        {preprocessMessageMarkdown(text)}
-      </ReactMarkdown>
-    );
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -389,8 +80,8 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
       setMessages([]);
       setShowConfirmDelete(false);
     } catch (err) {
-      console.error("Failed to delete chat:", err);
-      setError("Failed to clear chat history.");
+      console.error('Failed to delete chat:', err);
+      setError('Failed to clear chat history.');
       setShowConfirmDelete(false);
     } finally {
       setIsDeleting(false);
@@ -415,10 +106,8 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
     ];
     setMessages(newMessages);
 
-    // Prepare assistant state variables
-    let assistantAnswer = '';
-
     // Append assistant placeholder
+    let assistantAnswer = '';
     setMessages((prev) => [
       ...prev,
       {
@@ -439,7 +128,6 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
         userId,
         idToken,
         (chunk) => {
-          console.log(chunk)
           assistantAnswer += chunk;
           setMessages((prev) => {
             const updated = [...prev];
@@ -467,7 +155,6 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
             timestamp: new Date().toISOString()
           }
         ];
-        // Clean finalMessages before saving to Firestore
         await saveVideoQnAChat(userId, videoId, getCleanChatHistory(finalMessages));
       }
     } catch (err) {
@@ -479,7 +166,7 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
           const lastMsg = updated[updated.length - 1];
           if (lastMsg.sender === 'assistant') {
             if (!lastMsg.text) {
-              lastMsg.text = 'Sorry, I couldn\'t generate an answer due to an API error. Please check your keys or verify that notes generation finished successfully.';
+              lastMsg.text = "Sorry, I couldn't generate an answer due to an API error. Please check your keys or verify that notes generation finished successfully.";
               lastMsg.isError = true;
             } else {
               lastMsg.isError = true;
@@ -511,96 +198,86 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col bg-zinc-950/40 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl relative transition-all duration-300 h-full min-h-0">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-[1px] bg-gradient-to-r from-transparent via-orange-500/25 to-transparent"></div>
-
-      {/* Header */}
-      <div className="px-5 py-4 border-b border-zinc-900 bg-zinc-950 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-orange-950/20 border border-orange-900/30 flex items-center justify-center text-orange-400">
-            <MessageSquare className="w-4.5 h-4.5" />
-          </div>
-          <div>
-            <h3 className="text-xs font-bold text-zinc-150 flex items-center gap-1.5">
-              Video Q&A Companion
-            </h3>
-            <p className="text-[10px] text-zinc-450">Ask anything about the lecture transcript</p>
-          </div>
-        </div>
-
-        {messages.length > 0 && (
+    <div className="w-full flex-1 flex flex-col h-full min-h-0 relative overflow-hidden">
+      {/* Subheader Toolbar with Clear Chat (only if messages exist) */}
+      {messages.length > 0 && (
+        <div className={`px-4 py-2 border-b flex items-center justify-between gap-2 shrink-0 ${
+          isDark ? 'border-zinc-900 bg-zinc-950/40' : 'border-orange-100 bg-orange-50/20'
+        }`}>
+          <span className={`text-[10px] font-mono tracking-wide ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
+            {messages.filter(m => m.sender === 'user').length} Question{messages.filter(m => m.sender === 'user').length === 1 ? '' : 's'} asked
+          </span>
           <button
             type="button"
             onClick={() => setShowConfirmDelete(true)}
             disabled={isDeleting || isLoading}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-red-950/30 bg-red-950/10 hover:bg-red-950/20 text-red-400 hover:text-red-300 transition disabled:opacity-50 cursor-pointer"
+            className="btn-danger-subtle flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold !rounded-lg"
             title="Delete conversation history"
           >
             {isDeleting ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3 h-3 animate-spin" />
             ) : (
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3 h-3" />
             )}
             <span>Clear Chat</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar bg-black/10">
+      <div className={`flex-1 overflow-y-auto p-3 sm:p-5 space-y-4 sm:space-y-5 custom-scrollbar min-h-0 ${
+        isDark ? 'bg-transparent' : 'bg-[#fffcf8]'
+      }`}>
         {isHistoryLoading ? (
           <div className="space-y-5 animate-pulse">
-            {/* User message skeleton */}
             <div className="flex items-start gap-3 max-w-[80%] ml-auto flex-row-reverse">
-              <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 shrink-0" />
+              <div className={`w-8 h-8 rounded-full border shrink-0 ${isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-orange-100 border-orange-200'}`} />
               <div className="flex flex-col items-end gap-1.5 w-full">
-                <div className="h-7 w-2/3 bg-zinc-900 border border-zinc-800/85 rounded-2xl rounded-tr-none" />
+                <div className={`h-7 w-2/3 border rounded-2xl rounded-tr-none ${isDark ? 'bg-zinc-900 border-zinc-800/85' : 'bg-orange-100 border-orange-200'}`} />
               </div>
             </div>
             
-            {/* AI message skeleton */}
             <div className="flex items-start gap-3 max-w-[85%] mr-auto">
-              <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 shrink-0" />
+              <div className={`w-8 h-8 rounded-full border shrink-0 ${isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-orange-100 border-orange-200'}`} />
               <div className="flex flex-col items-start gap-2 w-full">
-                <div className="h-6 w-11/12 bg-zinc-900 border border-zinc-800/60 rounded-2xl rounded-tl-none" />
-                <div className="h-4 w-3/4 bg-zinc-900 border border-zinc-800/40 rounded-xl" />
-                <div className="h-4 w-1/2 bg-zinc-900 border border-zinc-800/30 rounded-xl" />
-              </div>
-            </div>
-
-            {/* Another user message skeleton */}
-            <div className="flex items-start gap-3 max-w-[80%] ml-auto flex-row-reverse">
-              <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 shrink-0" />
-              <div className="flex flex-col items-end gap-1.5 w-full">
-                <div className="h-7 w-1/2 bg-zinc-900 border border-zinc-800/85 rounded-2xl rounded-tr-none" />
+                <div className={`h-6 w-11/12 border rounded-2xl rounded-tl-none ${isDark ? 'bg-zinc-900 border-zinc-800/60' : 'bg-white border-orange-200'}`} />
+                <div className={`h-4 w-3/4 border rounded-xl ${isDark ? 'bg-zinc-900 border-zinc-800/40' : 'bg-white border-orange-100'}`} />
               </div>
             </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center space-y-3 py-16">
-            <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-550 flex items-center justify-center">
+            <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${
+              isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-550' : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
+            }`}>
               <MessageSquare className="w-5 h-5 text-orange-500" />
             </div>
-            <h4 className="text-xs font-bold text-zinc-300">How can I help you today?</h4>
-            <p className="text-[10px] text-zinc-500 max-w-xs leading-relaxed">
-              Ask about definitions, request summaries, or locate specific timestamps in the transcript.
+            <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>How can I help you today?</h4>
+            <p className={`text-[10px] max-w-xs leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
+              Ask about definitions, request summaries, or clarify specific parts of the video lecture.
             </p>
           </div>
         ) : (
           messages.map((msg, index) => (
             <div
               key={index}
-              className={`flex items-start gap-3 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
-                }`}
+              className={`flex items-start gap-2.5 sm:gap-3 max-w-[94%] sm:max-w-[85%] ${
+                msg.sender === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
+              }`}
             >
               {/* Avatar */}
               <div
-                className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center border text-xs font-black font-mono tracking-tight ${msg.sender === 'user'
-                    ? 'bg-zinc-900 border-zinc-800 text-zinc-300'
+                className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center border text-xs font-black font-mono tracking-tight ${
+                  msg.sender === 'user'
+                    ? isDark 
+                      ? 'bg-zinc-900 border-zinc-800 text-zinc-300' 
+                      : 'bg-orange-500 border-orange-400 text-white shadow-xs'
                     : msg.isError
                       ? 'bg-red-950/20 border-red-500/30 text-red-400'
-                      : 'bg-orange-950/30 border-orange-500/30 text-orange-400'
-                  }`}
+                      : isDark
+                        ? 'bg-orange-950/30 border-orange-500/30 text-orange-400'
+                        : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
+                }`}
               >
                 {msg.sender === 'user' ? 'ME' : 'AI'}
               </div>
@@ -608,12 +285,17 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
               {/* Message Content */}
               <div className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                 <div
-                  className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed ${msg.sender === 'user'
-                      ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-tr-none'
+                  className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed ${
+                    msg.sender === 'user'
+                      ? isDark
+                        ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-tr-none'
+                        : 'bg-orange-500 text-white font-medium rounded-tr-none shadow-xs'
                       : msg.isError
                         ? 'bg-red-955/20 border-red-900/40 text-red-200 rounded-tl-none'
-                        : 'bg-transparent border border-zinc-800 text-zinc-100 rounded-tl-none prose prose-invert max-w-none prose-sm font-normal selection:bg-zinc-800'
-                    }`}
+                        : isDark
+                          ? 'bg-transparent border border-zinc-800 text-zinc-100 rounded-tl-none prose prose-invert max-w-none font-normal selection:bg-zinc-800'
+                          : 'bg-white border border-orange-200/90 text-orange-950 rounded-tl-none shadow-xs font-normal selection:bg-orange-100'
+                  }`}
                 >
                   {msg.sender === 'assistant' && !msg.text && isLoading && index === messages.length - 1 ? (
                     <div className="flex items-center gap-1 py-1">
@@ -622,14 +304,13 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
                       <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"></span>
                     </div>
                   ) : (
-                    renderMessageMarkdown(msg.text)
+                    <MarkdownRenderer content={msg.text} isDark={isDark} />
                   )}
                 </div>
               </div>
             </div>
           ))
         )}
-
 
         {/* Error banner */}
         {error && (
@@ -643,18 +324,24 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
       </div>
 
       {/* Input Bar */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-zinc-900 bg-zinc-950 flex gap-3">
+      <form onSubmit={handleSubmit} className={`p-3 sm:p-4 border-t flex gap-2 sm:gap-3 shrink-0 ${
+        isDark ? 'border-zinc-900 bg-zinc-950' : 'border-orange-200/80 bg-white'
+      }`}>
         <input
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask a question about this lecture..."
-          className="flex-1 bg-zinc-900 border border-zinc-800 hover:border-zinc-700/80 rounded-xl px-4 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition disabled:opacity-50"
+          className={`flex-1 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs transition disabled:opacity-50 border outline-none ${
+            isDark 
+              ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700/80 text-zinc-100 placeholder-zinc-500 focus:border-zinc-500' 
+              : 'bg-orange-50/50 border-orange-200/90 text-orange-950 placeholder-orange-400 focus:border-orange-500'
+          }`}
         />
         <button
           type="submit"
           disabled={isLoading || !question.trim()}
-          className="px-4 py-2.5 bg-zinc-100 hover:bg-white disabled:bg-zinc-800 disabled:text-zinc-650 text-zinc-950 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+          className="btn-primary px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs font-bold shrink-0"
         >
           <Send className="w-3.5 h-3.5" />
           <span>Ask</span>
@@ -664,7 +351,7 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
       {/* Custom Confirm Delete Modal Overlay */}
       {showConfirmDelete && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative overflow-hidden transition-all duration-300">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-6 max-w-[calc(100vw-2rem)] sm:max-w-sm w-full shadow-2xl relative overflow-hidden transition-all duration-300">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[1px] bg-gradient-to-r from-transparent via-red-500/35 to-transparent"></div>
             
             <div className="w-12 h-12 rounded-xl bg-red-950/20 border border-red-900/30 flex items-center justify-center text-red-400 mb-4 mx-auto">
@@ -681,7 +368,7 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
                 type="button"
                 onClick={() => setShowConfirmDelete(false)}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-300 font-bold text-xs rounded-xl transition cursor-pointer disabled:opacity-50"
+                className="btn-secondary flex-1 py-2 px-4 text-xs font-bold"
               >
                 Cancel
               </button>
@@ -689,7 +376,7 @@ export default function VideoQa({ videoId, currentUser, isFullscreen = false }) 
                 type="button"
                 onClick={handleDeleteChat}
                 disabled={isDeleting}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-lg shadow-red-950/25 disabled:bg-red-800 disabled:opacity-85"
+                className="btn-danger flex-1 py-2 px-4 text-xs font-bold"
               >
                 {isDeleting ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

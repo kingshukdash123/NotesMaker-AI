@@ -4,7 +4,7 @@ from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, No
 from config.settings import settings
 
 from utils.logger import get_logger
-from utils.exceptions import NotesMakerError
+from utils.exceptions import PathshalaError
 from model.metadata import VideoMetadata
 
 logger = get_logger(__name__)
@@ -45,7 +45,7 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
         except Exception as err:
             logger.exception("Metadata service info fetch failed.")
         
-        raise NotesMakerError(
+        raise PathshalaError(
             message="Failed to fetch video metadata from metadata service.",
             code="METADATA_ERROR",
             status_code=500,
