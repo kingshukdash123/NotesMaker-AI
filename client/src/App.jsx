@@ -20,7 +20,8 @@ import AssistantPage from './pages/AssistantPage';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { API_BASE_URL, fetchYoutubeMetadata } from './services/server/api';
+import { fetchYoutubeMetadata } from './services/server/api';
+import { checkServerHealth, subscribeToApiDisconnect } from './services/server/serverHealth';
 import { logUserActivity } from './services/firebase/activityService';
 import { parseLocation, buildUrl } from './utils/router';
 import { updatePageSEO } from './utils/seo';
@@ -189,43 +190,7 @@ function MainApp() {
   // Check backend server health
   const checkHealth = useCallback(async (isManualRetry = false) => {
     setApiStatus('checking');
-
-    const maxAttempts = isManualRetry ? 8 : 2;
-    let success = false;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
-        let res;
-        try {
-          res = await fetch(`${API_BASE_URL}/health`, {
-            cache: 'no-store',
-            signal: controller.signal
-          });
-        } catch (fetchErr) {
-          try {
-            res = await fetch('http://127.0.0.1:8000/api/health', {
-              cache: 'no-store',
-              signal: controller.signal
-            });
-          } catch {
-            throw fetchErr;
-          }
-        }
-        clearTimeout(timeoutId);
-
-        if (res && res.ok) {
-          success = true;
-          setApiStatus('healthy');
-          break;
-        }
-      } catch {
-        if (attempt < maxAttempts - 1) {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
-      }
-    }
+    const success = await checkServerHealth(isManualRetry);
 
     if (success) {
       setApiStatus('healthy');
@@ -249,13 +214,10 @@ function MainApp() {
 
   // Show modal if an API request fails while server is asleep/offline
   useEffect(() => {
-    const handleDisconnected = () => {
+    return subscribeToApiDisconnect(() => {
       setShowDisconnectModal(true);
       checkHealth(true);
-    };
-
-    window.addEventListener('api:disconnected', handleDisconnected);
-    return () => window.removeEventListener('api:disconnected', handleDisconnected);
+    });
   }, [checkHealth]);
 
   const isWorkspaceActive = Boolean(currentUser);

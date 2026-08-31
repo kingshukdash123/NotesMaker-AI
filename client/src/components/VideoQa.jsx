@@ -145,6 +145,7 @@ export default function VideoQa({ videoId, currentUser }) {
             return next;
           });
         },
+        currentUser?.uid,
         idToken
       );
     } catch (err) {

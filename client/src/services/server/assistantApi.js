@@ -1,4 +1,4 @@
-import { API_BASE_URL, triggerApiDisconnect } from './api';
+import { API_BASE_URL, triggerApiDisconnect } from './serverHealth';
 
 /**
  * Streams the personal assistant chat response chunk by chunk.

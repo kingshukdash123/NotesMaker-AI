@@ -1,35 +1,11 @@
-/**
- * API service for Pathshala AI backend communication.
- */
+import {
+  API_BASE_URL,
+  triggerApiDisconnect,
+  apiFetch
+} from './serverHealth';
 
-// Get the API base URL from environment variables in production
-// and use localhost:3000/api for development
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-
-/**
- * Notifies the application that a server request failed due to connection/sleeping issue.
- */
-export function triggerApiDisconnect() {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('api:disconnected'));
-  }
-}
-
-/**
- * Helper to handle fetch errors and notify disconnect on network failure.
- */
-async function apiFetch(url, options = {}) {
-  try {
-    const response = await fetch(url, options);
-    if (response.status >= 502 && response.status <= 504) {
-      triggerApiDisconnect();
-    }
-    return response;
-  } catch (err) {
-    triggerApiDisconnect();
-    throw err;
-  }
-}
+// Re-export for compatibility
+export { API_BASE_URL, triggerApiDisconnect, apiFetch };
 
 /**
  * Fetches YouTube video metadata.
@@ -121,23 +97,25 @@ export async function askVideoQuestion(videoId, question, userId, idToken) {
 }
 
 /**
- * Asks a video Q&A question and streams the response chunk by chunk.
- * @param {string} videoId - YouTube video ID
- * @param {string} question - Question to ask
- * @param {Array} history - Message history list
- * @param {string} userId - Auth user ID
- * @param {string} idToken - Auth ID token
+ * Sends a question regarding a video and streams the answer back.
+ * @param {string} videoId - The YouTube video ID
+ * @param {string} question - User question
+ * @param {Array} history - Previous conversation messages
  * @param {Function} onChunk - Callback for when a text chunk is received
+ * @param {Function} onDone - Callback for when stream completes
  * @param {Function} onError - Callback for handling errors during streaming
+ * @param {string} [userId] - Optional authenticated user ID
+ * @param {string} [idToken] - Optional auth token
  */
 export async function askVideoQuestionStream(
   videoId,
   question,
   history,
-  userId,
-  idToken,
   onChunk,
-  onError
+  onDone,
+  onError,
+  userId,
+  idToken
 ) {
   const headers = {
     'Content-Type': 'application/json',
@@ -150,7 +128,7 @@ export async function askVideoQuestionStream(
   }
 
   try {
-    const response = await apiFetch(`${API_BASE_URL}/notes/qa`, {
+    const response = await fetch(`${API_BASE_URL}/notes/qa`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -163,6 +141,10 @@ export async function askVideoQuestionStream(
       }),
     });
 
+    if (response.status >= 502 && response.status <= 504) {
+      triggerApiDisconnect();
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `Failed to get an answer (${response.status})`);
@@ -171,6 +153,7 @@ export async function askVideoQuestionStream(
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let accumulatedText = '';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -185,7 +168,10 @@ export async function askVideoQuestionStream(
         try {
           const parsed = JSON.parse(line);
           if (parsed.type === 'content') {
-            onChunk(parsed.data);
+            accumulatedText += parsed.data;
+            if (typeof onChunk === 'function') {
+              onChunk(parsed.data);
+            }
           } else if (parsed.type === 'error') {
             throw new Error(parsed.data);
           }
@@ -197,8 +183,12 @@ export async function askVideoQuestionStream(
         }
       }
     }
+
+    if (typeof onDone === 'function') {
+      onDone(accumulatedText);
+    }
   } catch (err) {
-    if (onError) {
+    if (typeof onError === 'function') {
       onError(err);
     } else {
       throw err;

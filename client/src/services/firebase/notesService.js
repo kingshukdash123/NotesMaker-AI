@@ -9,6 +9,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  arrayUnion,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
@@ -198,23 +199,23 @@ export async function getNoteById(noteId) {
 }
 
 /**
- * Saves the entire video QnA chat history for a specific user and video.
+ * Appends new video QnA chat messages to the conversation history for a specific user and video.
  * @param {string} userId - Auth user ID
  * @param {string} videoId - YouTube video ID
- * @param {Array} messages - List of chat messages
+ * @param {Array} messages - List of new chat messages to append
  */
 export async function saveVideoQnAChat(userId, videoId, messages) {
-  if (!userId || !videoId) return;
+  if (!userId || !videoId || !messages?.length) return;
   const docRef = doc(db, 'video_qnas', `${userId}_${videoId}`);
   await setDoc(docRef, {
     userId,
     videoId,
-    messages: messages.map(m => ({
+    messages: arrayUnion(...messages.map(m => ({
       sender: m.sender,
       text: m.text,
       isError: m.isError || false,
       timestamp: m.timestamp || new Date().toISOString()
-    })),
+    }))),
     updatedAt: serverTimestamp()
   }, { merge: true });
 }
