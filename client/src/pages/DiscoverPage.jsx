@@ -130,7 +130,6 @@ export default function DiscoverPage() {
           channel: video.channel || 'Unknown Creator',
           thumbnail: video.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
         },
-        notesReady: false,
         addedAt: new Date().toISOString(),
       };
 

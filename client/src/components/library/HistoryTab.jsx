@@ -40,7 +40,6 @@ export default function HistoryTab({
         videoId: item.videoId,
         videoUrl: item.videoUrl,
         metadata: item.metadata,
-        notesReady: item.notesGenerated
       });
     }
   };
@@ -88,7 +87,6 @@ export default function HistoryTab({
             videoId: item.videoId,
             videoUrl: item.videoUrl,
             metadata: item.metadata,
-            notesReady: item.notesGenerated
           };
 
           return (

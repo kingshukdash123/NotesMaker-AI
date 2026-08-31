@@ -95,7 +95,6 @@ export default function NotesTab({
             videoId: note.metadata?.video_id || '',
             videoUrl: note.videoUrl,
             metadata: note.metadata,
-            notesReady: true
           };
 
           return (

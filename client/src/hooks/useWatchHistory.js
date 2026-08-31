@@ -12,9 +12,9 @@ export function useWatchHistory() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const logWatchHistory = useCallback(async (videoId, videoUrl, metadata, notesGenerated = false) => {
+  const logWatchHistory = useCallback(async (videoId, videoUrl, metadata) => {
     if (!currentUser || !videoId) return;
-    await logVideoOpen(currentUser.uid, videoId, videoUrl, metadata, notesGenerated);
+    await logVideoOpen(currentUser.uid, videoId, videoUrl, metadata);
   }, [currentUser]);
 
   const fetchHistory = useCallback(async () => {

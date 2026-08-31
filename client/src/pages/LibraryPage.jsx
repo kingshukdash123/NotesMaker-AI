@@ -145,7 +145,6 @@ export default function LibraryPage() {
           channel: videoData?.channel || 'Unknown Creator',
           thumbnail: videoData?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
         },
-        notesReady: Boolean(videoData?.notesReady),
         addedAt: new Date().toISOString(),
       };
 

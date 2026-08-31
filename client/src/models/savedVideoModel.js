@@ -7,7 +7,6 @@ export class SavedVideoModel {
     videoId = '',
     videoUrl = '',
     metadata = {},
-    notesReady = false,
     savedAt = null,
   } = {}) {
     this.id = id || `${userId}_${videoId}`;
@@ -19,7 +18,6 @@ export class SavedVideoModel {
       channel: metadata?.channel || 'Unknown Creator',
       thumbnail: metadata?.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : ''),
     };
-    this.notesReady = Boolean(notesReady);
     this.savedAt = savedAt;
   }
 
@@ -33,7 +31,6 @@ export class SavedVideoModel {
       videoId: data.videoId || '',
       videoUrl: data.videoUrl || '',
       metadata: data.metadata || {},
-      notesReady: Boolean(data.notesReady),
       savedAt: data.savedAt?.toDate ? data.savedAt.toDate() : data.savedAt || null,
     });
   }
@@ -56,7 +53,6 @@ export class SavedVideoModel {
       videoId: this.videoId,
       videoUrl: this.videoUrl,
       metadata: this.metadata,
-      notesReady: this.notesReady,
     };
 
     if (isNew || !this.savedAt) {

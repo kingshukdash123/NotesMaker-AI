@@ -107,7 +107,6 @@ export async function addVideoToPlaylist(userId, videoId, playlistId, videoData 
       channel: videoData?.metadata?.channel || videoData?.channel || 'Unknown Creator',
       thumbnail: videoData?.metadata?.thumbnail || videoData?.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : ''),
     },
-    notesReady: Boolean(videoData?.notesReady),
     addedAt: new Date().toISOString(),
   };
 
@@ -166,7 +165,7 @@ export async function getVideoPlaylistIds(userId, videoId) {
 /**
  * Saves a video to the user's library (Bookmarks / Saved Videos).
  */
-export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata, notesReady = false) {
+export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata) {
   if (!userId || !videoId) return;
 
   const model = new SavedVideoModel({
@@ -174,7 +173,6 @@ export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata, no
     videoId,
     videoUrl,
     metadata,
-    notesReady,
   });
 
   const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);

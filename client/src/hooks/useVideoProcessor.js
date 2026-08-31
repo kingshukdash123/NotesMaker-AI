@@ -113,8 +113,8 @@ export function useVideoProcessor() {
                 return next;
               });
               
-              // Log/Update watch history to notesGenerated = true
-              logWatchHistory(activeVideoId, targetUrl, activeMetadata, true);
+              // Update watch history timestamp
+              logWatchHistory(activeVideoId, targetUrl, activeMetadata);
             } catch (saveErr) {
               console.error('Error saving generated notes:', saveErr);
             }

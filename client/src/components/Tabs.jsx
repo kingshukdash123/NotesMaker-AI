@@ -90,7 +90,6 @@ export default function Tabs({
       await addVideoToPlaylist(currentUser.uid, videoId, playlistId, {
         videoUrl: videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
         metadata,
-        notesReady: hasNotes
       });
       setVideoPlaylistIds(prev => [...prev, playlistId]);
       const updated = await getUserPlaylists(currentUser.uid);
@@ -114,7 +113,6 @@ export default function Tabs({
       await addVideoToPlaylist(currentUser.uid, videoId, playlistId, {
         videoUrl: videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
         metadata,
-        notesReady: hasNotes
       });
       setVideoPlaylistIds(prev => [...prev, playlistId]);
       setNewPlaylistName('');

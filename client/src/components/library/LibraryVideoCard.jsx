@@ -33,7 +33,7 @@ export default function LibraryVideoCard({
   }, []);
 
   // Check if notes already exist/processed for this video ID
-  const isProcessed = video.notesReady || (processedVideoIds && processedVideoIds.has(video.videoId));
+  const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(video.videoId));
 
   return (
     <div className={`group border rounded-xl transition duration-300 shadow-md relative flex flex-col justify-between ${

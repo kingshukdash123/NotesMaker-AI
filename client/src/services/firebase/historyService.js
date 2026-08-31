@@ -20,7 +20,7 @@ import { WatchHistoryModel } from '../../models';
  * Logs a video visit into Firestore watch_history.
  * Deduplicates back-to-back openings of the same video so it only shows as one entry.
  */
-export async function logVideoOpen(userId, videoId, videoUrl, metadata, notesGenerated = false) {
+export async function logVideoOpen(userId, videoId, videoUrl, metadata) {
   if (!userId || !videoId) return null;
 
   const historyRef = collection(db, 'watch_history');
@@ -44,7 +44,6 @@ export async function logVideoOpen(userId, videoId, videoUrl, metadata, notesGen
       if (latestData.videoId === videoId) {
         await updateDoc(latestDoc.ref, {
           openedAt: serverTimestamp(),
-          notesGenerated: notesGenerated || Boolean(latestData.notesGenerated),
           ...(metadata ? {
             metadata: {
               title: metadata.title || latestData.metadata?.title || 'YouTube Video',
@@ -63,7 +62,6 @@ export async function logVideoOpen(userId, videoId, videoUrl, metadata, notesGen
       videoId,
       videoUrl,
       metadata,
-      notesGenerated,
     });
 
     const docRef = await addDoc(historyRef, model.toFirestore({ isNew: true }));
