@@ -33,6 +33,8 @@ export default function VideoContentPage() {
   const { processStatus, processError, processVideo } = useVideoProcessor();
   const [isSaved, setIsSaved] = useState(false);
   const [isCheckingSaved, setIsCheckingSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
 
   // Sync with native fullscreen changes
   useEffect(() => {
@@ -109,7 +111,8 @@ export default function VideoContentPage() {
   }, [activeVideoId, currentUser]);
 
   const handleToggleSave = async () => {
-    if (!currentUser || !activeVideoId) return;
+    if (!currentUser || !activeVideoId || isSaving) return;
+    setIsSaving(true);
     try {
       if (isSaved) {
         await removeVideoFromLibrary(currentUser.uid, activeVideoId);
@@ -126,19 +129,27 @@ export default function VideoContentPage() {
       }
     } catch (err) {
       console.error('Error toggling save:', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const hasNotes = processStatus === 'COMPLETED';
 
   return (
-    <div className={`flex-1 flex flex-col overflow-y-auto lg:overflow-hidden h-full w-full custom-scrollbar ${
-      isVideoFullscreen ? 'w-full h-full p-2 sm:p-4' : 'p-3 sm:p-5 lg:p-6'
+    <div className={`flex-1 flex flex-col overflow-y-auto lg:overflow-hidden h-full w-full custom-scrollbar pt-0 px-0 pb-3 sm:pb-5 ${
+      isVideoFullscreen ? 'lg:p-4' : 'lg:p-6'
     }`}>
       {/* Main Grid: Player on left, Workspace tools on right */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 sm:gap-6 min-w-0 lg:min-h-0 lg:overflow-hidden">
-        {/* Left Side: Video Player with Tools under playback */}
-        <div className="w-full lg:w-[45%] xl:w-[42%] flex flex-col shrink-0 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 min-w-0 lg:min-h-0 lg:overflow-hidden">
+        {/* Left Side: Video Player with Tools (Adaptive Desktop Width & Mobile Sticky Header) */}
+        <div className={`flex flex-col shrink-0 min-h-0 sticky top-0 z-30 lg:static transition-all duration-300 ${
+          isVideoCollapsed 
+            ? 'w-full lg:w-auto pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 sm:px-5 lg:p-0 overflow-visible' 
+            : 'w-full lg:w-[45%] xl:w-[42%] pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 sm:px-5 lg:p-0'
+        } ${
+          isDark ? 'bg-black' : 'bg-white'
+        }`}>
           <VideoPlayer 
             videoId={activeVideoId} 
             videoUrl={activeVideoUrl}
@@ -148,16 +159,17 @@ export default function VideoContentPage() {
             currentUser={currentUser}
             isSaved={isSaved}
             onToggleSave={handleToggleSave}
-            isCheckingSaved={isCheckingSaved}
+            isCheckingSaved={isCheckingSaved || isSaving}
             hasNotes={hasNotes}
             onBack={resetActiveVideo}
             isFullscreen={isVideoFullscreen}
+            isVideoCollapsed={isVideoCollapsed}
+            setIsVideoCollapsed={setIsVideoCollapsed}
           />
         </div>
 
         {/* Right Side: Workspace Active Tool Header & Content Pane */}
-        {/* Right Side: Workspace Active Tool Header & Content Pane */}
-        <div className={`flex-1 min-w-0 flex flex-col h-full min-h-0 rounded-2xl relative border overflow-hidden ${
+        <div className={`flex-1 min-w-0 flex flex-col h-full min-h-0 rounded-2xl relative border overflow-hidden mx-3 sm:mx-5 lg:mx-0 ${
           isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-white border-orange-200/90 shadow-xs'
         }`}>
           {/* Active Tool Name Header on Right Side */}

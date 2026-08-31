@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, Subtitles, PlayCircle, ArrowLeft, ChevronUp, ChevronDown } from 'lucide-react';
+import { PlayCircle, ArrowLeft } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import Tabs from './Tabs';
 
@@ -15,11 +15,12 @@ export default function VideoPlayer({
   isCheckingSaved, 
   hasNotes = false, 
   onBack, 
-  isFullscreen = false 
+  isFullscreen = false,
+  isVideoCollapsed = false,
+  setIsVideoCollapsed
 }) {
   const { isDark } = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
   const iframeRef = useRef(null);
 
   useEffect(() => {
@@ -61,57 +62,40 @@ export default function VideoPlayer({
   const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=0&rel=0`;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 border rounded-xl overflow-hidden shadow-2xl glass-panel animate-in fade-in duration-300 ${
-      isDark ? 'bg-zinc-950/40 border-zinc-900' : 'bg-white border-orange-200/80'
+    <div className={`flex flex-col min-h-0 border rounded-xl shadow-2xl glass-panel animate-in fade-in duration-300 ${
+      isVideoCollapsed 
+        ? 'overflow-visible w-full lg:w-14 lg:h-full lg:items-center lg:py-2.5 z-40' 
+        : 'overflow-hidden w-full'
+    } ${
+      isDark ? 'bg-zinc-950/95 lg:bg-zinc-950/40 border-zinc-900 backdrop-blur-md' : 'bg-white/95 lg:bg-white border-orange-200/80 backdrop-blur-md'
     }`}>
-      {/* Player Header with Back Button, Title and Mobile Collapse Toggle */}
-      {!isFullscreen && (
-        <div className={`shrink-0 flex items-center justify-between px-3 py-2 border-b ${
-          isDark ? 'bg-zinc-900/50 border-zinc-900' : 'bg-orange-50/50 border-orange-100'
-        }`}>
-          <div className="flex items-center gap-2.5">
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="btn-icon"
-                title="Back to Discover"
-                aria-label="Back to Discover"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-            )}
-            <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
-              Watch & Learn
-            </h3>
-          </div>
-
-          {/* Collapse Video Toggle in Header on Phone & Tablet */}
-          <button
-            type="button"
-            onClick={() => setIsVideoCollapsed(!isVideoCollapsed)}
-            className="btn-icon lg:hidden flex items-center gap-1 text-[11px] font-semibold px-2 py-1"
-            title={isVideoCollapsed ? "Expand YouTube video" : "Collapse YouTube video"}
-            aria-label={isVideoCollapsed ? "Expand YouTube video" : "Collapse YouTube video"}
-          >
-            {isVideoCollapsed ? (
-              <>
-                <ChevronDown className="w-3.5 h-3.5 text-orange-500" />
-                <span className="text-orange-400 font-bold">Show Video</span>
-              </>
-            ) : (
-              <>
-                <ChevronUp className="w-3.5 h-3.5" />
-                <span>Hide Video</span>
-              </>
-            )}
-          </button>
+      {/* Player Header with Back Button and Title */}
+      <div className={`shrink-0 flex items-center justify-between px-3 py-2 border-b w-full ${
+        isVideoCollapsed ? 'lg:px-0 lg:py-0 lg:border-b-0 lg:justify-center lg:mb-2' : ''
+      } ${
+        isDark ? 'bg-zinc-900/50 border-zinc-900' : 'bg-orange-50/50 border-orange-100'
+      }`}>
+        <div className={`flex items-center ${isVideoCollapsed ? 'lg:justify-center' : 'gap-2.5'}`}>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="btn-icon"
+              title="Back to Discover"
+              aria-label="Back to Discover"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+          <h3 className={`text-xs sm:text-sm font-bold ${isVideoCollapsed ? 'lg:hidden' : ''} ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
+            Watch & Learn
+          </h3>
         </div>
-      )}
+      </div>
 
       {/* Video Embed IFrame */}
       <div className={`relative w-full aspect-video bg-black video-player-surface shrink-0 border-b overflow-hidden transition-all duration-300 ${
-        isVideoCollapsed ? 'hidden lg:block' : 'block'
+        isVideoCollapsed ? 'hidden' : 'block'
       } ${
         isDark ? 'border-zinc-900' : 'border-orange-100'
       }`}>
@@ -134,25 +118,8 @@ export default function VideoPlayer({
         />
       </div>
 
-      {/* Collapsed Video Quick-Expand Banner */}
-      {isVideoCollapsed && (
-        <div 
-          onClick={() => setIsVideoCollapsed(false)}
-          className={`lg:hidden px-3.5 py-2.5 flex items-center justify-center gap-2 border-b cursor-pointer transition select-none ${
-            isDark 
-              ? 'bg-orange-950/25 border-orange-900/30 text-orange-400 hover:bg-orange-950/35' 
-              : 'bg-orange-50 border-orange-200 text-orange-800 hover:bg-orange-100'
-          }`}
-        >
-          <PlayCircle className="w-4 h-4 text-orange-500 animate-pulse shrink-0" />
-          <span className="text-xs font-semibold">YouTube video collapsed (Tap to show)</span>
-        </div>
-      )}
-
       {/* Study Tools & Actions Tabs Bar */}
-      <div className={`shrink-0 px-4 py-3 sm:py-3.5 border-b ${
-        isDark ? 'border-zinc-900/80 bg-transparent' : 'border-orange-100/80 bg-transparent'
-      }`}>
+      <div className={`shrink-0 ${isVideoCollapsed ? 'px-3 py-2 lg:p-0 w-full lg:w-auto' : 'px-4 py-3 sm:py-3.5'} bg-transparent`}>
         <Tabs 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -164,53 +131,11 @@ export default function VideoPlayer({
           onToggleSave={onToggleSave}
           isCheckingSaved={isCheckingSaved}
           hasNotes={hasNotes}
+          isVideoCollapsed={isVideoCollapsed}
+          isVertical={isVideoCollapsed}
+          onToggleCollapseVideo={() => setIsVideoCollapsed?.(!isVideoCollapsed)}
         />
       </div>
-
-      {/* Video Information & Subtitles */}
-      {!isFullscreen && (
-        <div className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 space-y-4 ${hasNotes ? 'hidden lg:block' : 'block'}`}>
-          <div>
-            <h2 className={`text-sm sm:text-base font-bold leading-snug ${
-              isDark ? 'text-zinc-100' : 'text-orange-950'
-            }`}>
-              {metadata?.title || 'YouTube Video'}
-            </h2>
-            <div className="flex items-center gap-1.5 mt-2 text-xs">
-              <User className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
-              <span className={`font-medium ${isDark ? 'text-zinc-300' : 'text-orange-900'}`}>{metadata?.channel || 'Unknown Creator'}</span>
-            </div>
-          </div>
-
-          {/* Available Languages Display */}
-          {metadata?.available_languages && metadata.available_languages.length > 0 && (
-            <div className={`space-y-2 pt-2 border-t ${
-              isDark ? 'border-zinc-900/60' : 'border-orange-100'
-            }`}>
-              <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold ${
-                isDark ? 'text-zinc-500' : 'text-orange-700'
-              }`}>
-                <Subtitles className="w-3.5 h-3.5" />
-                <span>Available Video Subtitles ({metadata.available_languages.length})</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {metadata.available_languages.map((lang) => (
-                  <span
-                    key={lang.code}
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium border transition ${
-                      isDark 
-                        ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-zinc-100' 
-                        : 'bg-orange-50 border-orange-200 text-orange-950 hover:bg-orange-100'
-                    }`}
-                  >
-                    {lang.name} ({lang.code})
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

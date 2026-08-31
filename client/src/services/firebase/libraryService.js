@@ -121,6 +121,24 @@ export async function isVideoSaved(userId, videoId) {
 }
 
 /**
+ * Retrieves the list of playlist IDs a video has been added to.
+ */
+export async function getVideoPlaylistIds(userId, videoId) {
+  if (!userId || !videoId) return [];
+  try {
+    const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data().playlistIds || [];
+    }
+    return [];
+  } catch (err) {
+    console.error('Error fetching video playlist IDs:', err);
+    return [];
+  }
+}
+
+/**
  * Retrieves all saved videos in the user's library.
  */
 export async function getUserSavedVideos(userId) {

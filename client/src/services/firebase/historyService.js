@@ -17,7 +17,7 @@ import { db } from './firebaseConfig';
 
 /**
  * Logs a video visit into Firestore watch_history.
- * Deduplicates multiple openings of the same video within a 30-minute window.
+ * Deduplicates back-to-back openings of the same video so it only shows as one entry.
  */
 export async function logVideoOpen(userId, videoId, videoUrl, metadata, notesGenerated = false) {
   if (!userId || !videoId) return null;
@@ -25,11 +25,10 @@ export async function logVideoOpen(userId, videoId, videoUrl, metadata, notesGen
   const historyRef = collection(db, 'watch_history');
 
   try {
-    // Check for a recent entry of this video by this user in the last 30 minutes to dedup
+    // Check for the most recent entry of this user to dedup back-to-back views
     const q = query(
       historyRef,
       where('userId', '==', userId),
-      where('videoId', '==', videoId),
       orderBy('openedAt', 'desc'),
       limit(1)
     );
@@ -40,14 +39,18 @@ export async function logVideoOpen(userId, videoId, videoUrl, metadata, notesGen
       const latestDoc = querySnapshot.docs[0];
       const latestData = latestDoc.data();
 
-      const openedAtDate = latestData.openedAt ? latestData.openedAt.toDate() : new Date();
-      const diffMinutes = (new Date() - openedAtDate) / (1000 * 60);
-
-      if (diffMinutes < 30) {
-        // Update existing entry timestamp and status
+      // If the most recent entry was for the SAME video, update it instead of adding a new one
+      if (latestData.videoId === videoId) {
         await updateDoc(latestDoc.ref, {
           openedAt: serverTimestamp(),
-          notesGenerated
+          notesGenerated: notesGenerated || Boolean(latestData.notesGenerated),
+          ...(metadata ? {
+            metadata: {
+              title: metadata.title || latestData.metadata?.title || 'YouTube Video',
+              channel: metadata.channel || latestData.metadata?.channel || 'Unknown Creator',
+              thumbnail: metadata.thumbnail || latestData.metadata?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+            }
+          } : {})
         });
         return latestDoc.id;
       }
@@ -75,7 +78,7 @@ export async function logVideoOpen(userId, videoId, videoUrl, metadata, notesGen
 }
 
 /**
- * Retrieves the user's watch history.
+ * Retrieves the user's watch history, deduplicating any back-to-back entries.
  */
 export async function getUserWatchHistory(userId) {
   if (!userId) return [];
@@ -91,16 +94,21 @@ export async function getUserWatchHistory(userId) {
   try {
     const querySnapshot = await getDocs(q);
     const history = [];
+    let lastVideoId = null;
 
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const openedAtDate = data.openedAt ? data.openedAt.toDate() : new Date();
 
-      history.push({
-        id: docSnap.id,
-        ...data,
-        openedAtDate
-      });
+      // Deduplicate back-to-back consecutive entries of the same video
+      if (data.videoId !== lastVideoId) {
+        history.push({
+          id: docSnap.id,
+          ...data,
+          openedAtDate
+        });
+        lastVideoId = data.videoId;
+      }
     });
 
     return history;
