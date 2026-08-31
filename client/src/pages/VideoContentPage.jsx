@@ -36,59 +36,15 @@ export default function VideoContentPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
 
-  // Sync with native fullscreen changes
+  // Reset fullscreen state when leaving the video page
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      const isNativeFull = Boolean(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement
-      );
-      setIsVideoFullscreen(isNativeFull);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
       setIsVideoFullscreen(false);
     };
   }, [setIsVideoFullscreen]);
 
-  const handleToggleFullscreen = async (shouldBeFullscreen) => {
-    try {
-      if (shouldBeFullscreen) {
-        if (!document.fullscreenElement) {
-          if (document.documentElement.requestFullscreen) {
-            await document.documentElement.requestFullscreen();
-          } else if (document.documentElement.webkitRequestFullscreen) {
-            await document.documentElement.webkitRequestFullscreen();
-          } else if (document.documentElement.msRequestFullscreen) {
-            await document.documentElement.msRequestFullscreen();
-          }
-        }
-      } else {
-        if (document.fullscreenElement) {
-          if (document.exitFullscreen) {
-            await document.exitFullscreen();
-          } else if (document.webkitExitFullscreen) {
-            await document.webkitExitFullscreen();
-          } else if (document.msExitFullscreen) {
-            await document.msExitFullscreen();
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Fullscreen toggle error:', err);
-    }
-    setIsVideoFullscreen(shouldBeFullscreen);
+  const handleToggleFullscreen = () => {
+    setIsVideoFullscreen(prev => !prev);
   };
 
   // Check if video is saved in library

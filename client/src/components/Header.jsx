@@ -1,4 +1,5 @@
-import { Menu } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, Maximize2, Minimize2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
@@ -11,6 +12,56 @@ export default function Header({
   const { currentUser } = useAuth();
   const { setActiveSection, setIsProfileOpen, resetActiveVideo } = useApp();
   const { isDark } = useTheme();
+  const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
+
+  // Sync state with native browser fullscreen changes (e.g. Fn+F11 or Esc)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFull = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      setIsBrowserFullscreen(isFull);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  const handleToggleBrowserFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          await document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+          await document.documentElement.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          await document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          await document.msExitFullscreen();
+        }
+      }
+    } catch (err) {
+      console.error('Browser fullscreen toggle error:', err);
+    }
+  };
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-3 transition-colors duration-200 border-b ${
@@ -54,8 +105,25 @@ export default function Header({
           </div>
         </div>
 
-        {/* Right Side: Theme Toggle & Profile Button */}
+        {/* Right Side: Fullscreen, Theme Toggle & Profile Button */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Full Screen (Fn+F11) Toggle - Only shown when logged in */}
+          {currentUser && (
+            <button
+              type="button"
+              onClick={handleToggleBrowserFullscreen}
+              className={`w-8 h-8 rounded-full border transition flex items-center justify-center cursor-pointer select-none ${
+                isDark
+                  ? 'bg-zinc-900 border-zinc-800 text-orange-500 hover:border-zinc-700'
+                  : 'bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200'
+              }`}
+              title={isBrowserFullscreen ? "Exit Fullscreen (F11)" : "Enter Fullscreen (F11)"}
+              aria-label={isBrowserFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            >
+              {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
+          )}
+
           {/* Theme Mode Toggle Button */}
           <ThemeToggle />
 
