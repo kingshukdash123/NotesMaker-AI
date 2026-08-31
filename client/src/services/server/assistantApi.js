@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './api';
+import { API_BASE_URL, triggerApiDisconnect } from './api';
 
 /**
  * Streams the personal assistant chat response chunk by chunk.
@@ -43,6 +43,10 @@ export async function streamAssistantChat(
       }),
     });
 
+    if (response.status >= 502 && response.status <= 504) {
+      triggerApiDisconnect();
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `Failed to get assistant response (${response.status})`);
@@ -80,6 +84,7 @@ export async function streamAssistantChat(
       }
     }
   } catch (err) {
+    triggerApiDisconnect();
     if (onError) {
       onError(err);
     } else {

@@ -2,10 +2,34 @@
  * API service for Pathshala AI backend communication.
  */
 
-
 // Get the API base URL from environment variables in production
 // and use localhost:3000/api for development
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+/**
+ * Notifies the application that a server request failed due to connection/sleeping issue.
+ */
+export function triggerApiDisconnect() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('api:disconnected'));
+  }
+}
+
+/**
+ * Helper to handle fetch errors and notify disconnect on network failure.
+ */
+async function apiFetch(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+    if (response.status >= 502 && response.status <= 504) {
+      triggerApiDisconnect();
+    }
+    return response;
+  } catch (err) {
+    triggerApiDisconnect();
+    throw err;
+  }
+}
 
 /**
  * Fetches YouTube video metadata.
@@ -13,7 +37,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
  * @returns {Promise<Object>} Metadata object
  */
 export async function fetchYoutubeMetadata(url) {
-  const response = await fetch(`${API_BASE_URL}/youtube/metadata?url=${encodeURIComponent(url)}`);
+  const response = await apiFetch(`${API_BASE_URL}/youtube/metadata?url=${encodeURIComponent(url)}`);
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || `Failed to fetch video metadata (${response.status})`);
@@ -36,7 +60,7 @@ export async function startNoteGeneration(youtubeUrl, userId, idToken) {
   if (idToken) {
     headers['Authorization'] = `Bearer ${idToken}`;
   }
-  const response = await fetch(`${API_BASE_URL}/notes/generate`, {
+  const response = await apiFetch(`${API_BASE_URL}/notes/generate`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ youtube_url: youtubeUrl }),
@@ -56,7 +80,7 @@ export async function startNoteGeneration(youtubeUrl, userId, idToken) {
  * @returns {Promise<Object>} Task state object
  */
 export async function getTaskStatus(taskId) {
-  const response = await fetch(`${API_BASE_URL}/notes/status/${taskId}`);
+  const response = await apiFetch(`${API_BASE_URL}/notes/status/${taskId}`);
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || `Failed to fetch task status (${response.status})`);
@@ -82,7 +106,7 @@ export async function askVideoQuestion(videoId, question, userId, idToken) {
   if (idToken) {
     headers['Authorization'] = `Bearer ${idToken}`;
   }
-  const response = await fetch(`${API_BASE_URL}/notes/qa`, {
+  const response = await apiFetch(`${API_BASE_URL}/notes/qa`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ video_id: videoId, question: question }),
@@ -126,7 +150,7 @@ export async function askVideoQuestionStream(
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/notes/qa`, {
+    const response = await apiFetch(`${API_BASE_URL}/notes/qa`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -194,14 +218,10 @@ export async function searchYouTube(query, category = 'all', pageToken = '') {
   if (pageToken) {
     url += `&pageToken=${encodeURIComponent(pageToken)}`;
   }
-  const response = await fetch(url);
+  const response = await apiFetch(url);
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || `Failed to search YouTube videos (${response.status})`);
   }
   return response.json();
 }
-
-
-
-

@@ -60,7 +60,6 @@ function MainApp() {
   // API Status & Disconnect Modal State
   const [apiStatus, setApiStatus] = useState('checking'); // 'healthy' | 'unhealthy' | 'checking'
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
-  const isConnectingRef = useRef(false);
 
   // Handle browser back/forward (popstate) navigation
   useEffect(() => {
@@ -187,20 +186,17 @@ function MainApp() {
     localStorage.setItem('assistant_mode', targetMode);
   };
 
-  const hasShownModalRef = useRef(false);
-
+  // Check backend server health
   const checkHealth = useCallback(async (isManualRetry = false) => {
-    if (isConnectingRef.current) return false;
-    isConnectingRef.current = true;
     setApiStatus('checking');
 
-    const maxAttempts = isManualRetry ? 12 : 1;
+    const maxAttempts = isManualRetry ? 8 : 2;
     let success = false;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
         let res;
         try {
           res = await fetch(`${API_BASE_URL}/health`, {
@@ -208,7 +204,6 @@ function MainApp() {
             signal: controller.signal
           });
         } catch (fetchErr) {
-          // Dev fallback: try direct 127.0.0.1:8000 if proxy or origin differs
           try {
             res = await fetch('http://127.0.0.1:8000/api/health', {
               cache: 'no-store',
@@ -223,33 +218,44 @@ function MainApp() {
         if (res && res.ok) {
           success = true;
           setApiStatus('healthy');
-          setShowDisconnectModal(false);
-          hasShownModalRef.current = false;
           break;
         }
       } catch {
-        if (isManualRetry && attempt < maxAttempts - 1) {
+        if (attempt < maxAttempts - 1) {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       }
     }
 
-    if (!success) {
+    if (success) {
+      setApiStatus('healthy');
+    } else {
       setApiStatus('unhealthy');
-      if (!hasShownModalRef.current) {
+      // Only show modal if this was a user request or manual reconnect
+      if (isManualRetry) {
         setShowDisconnectModal(true);
-        hasShownModalRef.current = true;
       }
     }
 
-    isConnectingRef.current = false;
     return success;
   }, []);
 
+  // Silent server wake-up on mount and background polling (never opens modal)
   useEffect(() => {
-    checkHealth();
-    const interval = setInterval(() => checkHealth(false), 30000);
+    checkHealth(false);
+    const interval = setInterval(() => checkHealth(false), 45000);
     return () => clearInterval(interval);
+  }, [checkHealth]);
+
+  // Show modal if an API request fails while server is asleep/offline
+  useEffect(() => {
+    const handleDisconnected = () => {
+      setShowDisconnectModal(true);
+      checkHealth(true);
+    };
+
+    window.addEventListener('api:disconnected', handleDisconnected);
+    return () => window.removeEventListener('api:disconnected', handleDisconnected);
   }, [checkHealth]);
 
   const isWorkspaceActive = Boolean(currentUser);
@@ -276,12 +282,18 @@ function MainApp() {
       <ApiDisconnectModal
         isOpen={showDisconnectModal}
         onClose={() => setShowDisconnectModal(false)}
-        onConnect={checkHealth}
+        onConnect={() => checkHealth(true)}
         apiStatus={apiStatus}
       />
 
       {/* Settings Modal */}
-      <SettingsModal apiStatus={apiStatus} />
+      <SettingsModal 
+        apiStatus={apiStatus} 
+        onOpenApiModal={() => {
+          setShowDisconnectModal(true);
+          checkHealth(true);
+        }}
+      />
 
       {/* Profile Modal */}
       <ProfileModal />
