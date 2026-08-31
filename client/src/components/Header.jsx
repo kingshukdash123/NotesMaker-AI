@@ -64,9 +64,8 @@ export default function Header({
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-3 transition-colors duration-200 border-b ${
-      isDark ? 'bg-black/80 border-zinc-800/80' : 'bg-white/90 border-orange-200/80 shadow-xs'
-    }`}>
+    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-3 transition-colors duration-200 border-b ${isDark ? 'bg-black/80 border-zinc-800/80' : 'bg-white/90 border-orange-200/80 shadow-xs'
+      }`}>
       <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
         {/* Brand Logo & Name */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
@@ -96,9 +95,8 @@ export default function Header({
               className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0"
             />
             <div className="flex items-center gap-1 sm:gap-1.5">
-              <h1 className={`text-base sm:text-lg font-bold tracking-tight ${
-                isDark ? 'text-zinc-50' : 'text-orange-950'
-              }`}>
+              <h1 className={`text-base sm:text-lg font-bold tracking-tight ${isDark ? 'text-zinc-50' : 'text-orange-950'
+                }`}>
                 Pathshala <span className="text-orange-500 font-bold">A<i>I</i></span>
               </h1>
             </div>
@@ -107,16 +105,15 @@ export default function Header({
 
         {/* Right Side: Fullscreen, Theme Toggle & Profile Button */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Full Screen (Fn+F11) Toggle - Only shown when logged in */}
+          {/* Full Screen (Fn+F11) Toggle - Only shown on Desktop/Laptop views after login */}
           {currentUser && (
             <button
               type="button"
               onClick={handleToggleBrowserFullscreen}
-              className={`w-8 h-8 rounded-full border transition flex items-center justify-center cursor-pointer select-none ${
-                isDark
+              className={`hidden lg:flex w-8 h-8 rounded-full border transition items-center justify-center cursor-pointer select-none ${isDark
                   ? 'bg-zinc-900 border-zinc-800 text-orange-500 hover:border-zinc-700'
                   : 'bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200'
-              }`}
+                }`}
               title={isBrowserFullscreen ? "Exit Fullscreen (F11)" : "Enter Fullscreen (F11)"}
               aria-label={isBrowserFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             >
@@ -132,11 +129,10 @@ export default function Header({
             <button
               type="button"
               onClick={() => setIsProfileOpen(true)}
-              className={`w-8 h-8 rounded-full transition flex items-center justify-center text-xs font-black uppercase shadow-inner cursor-pointer select-none ${
-                isDark
+              className={`w-8 h-8 rounded-full transition flex items-center justify-center text-xs font-black uppercase shadow-inner cursor-pointer select-none ${isDark
                   ? 'bg-zinc-900 border border-zinc-800 text-orange-500 hover:border-zinc-700'
                   : 'bg-orange-100 border border-orange-300 text-orange-700 hover:bg-orange-200'
-              }`}
+                }`}
               title="User Profile"
               aria-label="Open User Profile"
             >
