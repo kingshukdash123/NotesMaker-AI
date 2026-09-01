@@ -199,13 +199,18 @@ export default function VideoContentPage() {
               )}
             </div>
           ) : (
-            /* Process Video Minimal Access Gate */
-            <div className="flex-1 flex items-center justify-center p-4 sm:p-6 min-h-[300px]">
+            /* Process Video Access Gate / Skeleton Loader */
+            <div className={`flex-1 min-w-0 min-h-0 flex ${
+              processStatus === 'PROCESSING' || processStatus === 'CHECKING_CACHE'
+                ? 'h-full overflow-y-auto custom-scrollbar p-2 sm:p-4'
+                : 'items-center justify-center p-4 sm:p-6 min-h-[300px]'
+            }`}>
               <ProcessingGate
                 status={processStatus}
                 error={processError}
                 onProcess={() => processVideo()}
                 activeTab={activeTab}
+                metadata={activeVideoMetadata}
               />
             </div>
           )}

@@ -1,12 +1,17 @@
+import { useTheme } from '../../context/ThemeContext';
+
 /**
- * Base atomic Skeleton component with dark-mode glassmorphic styling and shimmer effect.
+ * Base atomic Skeleton component with theme-adaptive styling and pulse animation.
  * @param {Object} props
  * @param {string} [props.className] - Optional custom Tailwind classes
  */
 export default function Skeleton({ className = '', ...props }) {
+  const { isDark } = useTheme();
   return (
     <div
-      className={`skeleton-shimmer bg-zinc-900/70 border border-zinc-800/40 rounded-lg ${className}`}
+      className={`animate-pulse rounded-lg transition-colors ${
+        isDark ? 'bg-zinc-900/80' : 'bg-orange-100/80'
+      } ${className}`}
       {...props}
     />
   );

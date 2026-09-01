@@ -1,8 +1,15 @@
 import { AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
-import LoadingModal from '../LoadingModal';
+import VideoProcessingSkeleton from './VideoProcessingSkeleton';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function ProcessingGate({ status = 'IDLE', error = '', onProcess, activeTab = 'notes' }) {
+export default function ProcessingGate({
+  status = 'IDLE',
+  error = '',
+  onProcess,
+  activeTab = 'notes',
+  metadata = null,
+  videoDuration = null
+}) {
   const { isDark } = useTheme();
 
   const toolConfig = {
@@ -27,22 +34,13 @@ export default function ProcessingGate({ status = 'IDLE', error = '', onProcess,
 
   if (status === 'PROCESSING' || status === 'CHECKING_CACHE') {
     return (
-      <div className="w-full max-w-md mx-auto space-y-4">
-        {status === 'CHECKING_CACHE' ? (
-          <div className={`flex flex-col items-center justify-center p-8 rounded-2xl text-center py-12 gap-3 border ${
-            isDark ? 'bg-zinc-950/40 border-zinc-900 text-zinc-300' : 'bg-white border-orange-200 text-orange-950'
-          }`}>
-            <RefreshCw className="w-6 h-6 animate-spin text-orange-500" />
-            <div className="space-y-1">
-              <h3 className="text-xs sm:text-sm font-bold">Checking study records...</h3>
-              <p className={`text-[10px] ${isDark ? 'text-zinc-500' : 'text-orange-900/60'}`}>
-                Checking if study records already exist for this video.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <LoadingModal isOpen={true} inline={true} />
-        )}
+      <div className="w-full h-full">
+        <VideoProcessingSkeleton
+          activeTab={activeTab}
+          metadata={metadata}
+          videoDuration={videoDuration}
+          isCheckingCache={status === 'CHECKING_CACHE'}
+        />
       </div>
     );
   }
@@ -53,7 +51,7 @@ export default function ProcessingGate({ status = 'IDLE', error = '', onProcess,
         <div className="w-10 h-10 rounded-xl bg-red-950 border border-red-900/40 flex items-center justify-center text-red-500">
           <AlertCircle className="w-5 h-5 shrink-0" />
         </div>
-        
+
         <div className="space-y-1">
           <h3 className="text-sm font-bold text-red-200">Processing failed</h3>
           <p className="text-xs text-red-400 leading-relaxed">
