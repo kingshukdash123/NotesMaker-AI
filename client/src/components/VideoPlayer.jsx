@@ -22,22 +22,55 @@ export default function VideoPlayer({
   const { isDark } = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const iframeRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const isVideoCollapsedRef = useRef(isVideoCollapsed);
+  const setIsVideoCollapsedRef = useRef(setIsVideoCollapsed);
+
+  useEffect(() => {
+    isVideoCollapsedRef.current = isVideoCollapsed;
+    setIsVideoCollapsedRef.current = setIsVideoCollapsed;
+  }, [isVideoCollapsed, setIsVideoCollapsed]);
+
+  const sendPlayerCommand = (func, args = []) => {
+    if (iframeRef.current?.contentWindow) {
+      try {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func, args }),
+          '*'
+        );
+      } catch (err) {
+        console.warn('Failed to postMessage to YouTube iframe:', err);
+      }
+    }
+  };
 
   useEffect(() => {
     const handleSeek = (event) => {
       const seconds = event.detail?.seconds;
-      if (typeof seconds === 'number' && iframeRef.current?.contentWindow) {
-        try {
-          iframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'seekTo', args: [seconds, true] }),
-            '*'
-          );
-          iframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-            '*'
-          );
-        } catch (err) {
-          console.warn('Failed to postMessage to YouTube iframe:', err);
+      if (typeof seconds === 'number') {
+        const wasCollapsed = isVideoCollapsedRef.current;
+        // Always ensure the video player is open/unhidden when a timestamp is clicked
+        if (setIsVideoCollapsedRef.current) {
+          setIsVideoCollapsedRef.current(false);
+        }
+
+        // Send commands immediately
+        sendPlayerCommand('seekTo', [seconds, true]);
+        sendPlayerCommand('playVideo', []);
+
+        // Schedule retries across animation/layout transition ticks
+        const delays = wasCollapsed ? [50, 150, 300, 500] : [50, 200];
+        delays.forEach((ms) => {
+          setTimeout(() => {
+            sendPlayerCommand('seekTo', [seconds, true]);
+            sendPlayerCommand('playVideo', []);
+          }, ms);
+        });
+
+        // On mobile or small screens, scroll the video player into view
+        if (window.innerWidth < 1024 && containerRef.current) {
+          containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       }
     };
@@ -62,7 +95,9 @@ export default function VideoPlayer({
   const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=0&rel=0`;
 
   return (
-    <div className={`flex flex-col min-h-0 border rounded-xl shadow-2xl glass-panel animate-in fade-in duration-300 ${
+    <div 
+      ref={containerRef}
+      className={`flex flex-col min-h-0 border rounded-xl shadow-2xl glass-panel animate-in fade-in duration-300 ${
       isVideoCollapsed 
         ? 'overflow-visible w-full lg:w-14 lg:h-full lg:items-center lg:py-2.5 z-40' 
         : 'overflow-hidden w-full'
@@ -98,8 +133,10 @@ export default function VideoPlayer({
       </div>
 
       {/* Video Embed IFrame */}
-      <div className={`relative w-full aspect-video bg-black video-player-surface shrink-0 border-b overflow-hidden transition-all duration-300 ${
-        isVideoCollapsed ? 'hidden' : 'block'
+      <div className={`relative w-full bg-black video-player-surface shrink-0 transition-all duration-300 ${
+        isVideoCollapsed 
+          ? 'h-0 max-h-0 opacity-0 pointer-events-none border-b-0 overflow-hidden invisible' 
+          : 'aspect-video w-full opacity-100 border-b overflow-hidden visible'
       } ${
         isDark ? 'border-zinc-900' : 'border-orange-100'
       }`}>

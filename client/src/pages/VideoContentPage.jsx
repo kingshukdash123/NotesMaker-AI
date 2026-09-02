@@ -27,14 +27,15 @@ export default function VideoContentPage() {
     setVideoTab: setActiveTab,
     resetActiveVideo,
     isVideoFullscreen,
-    setIsVideoFullscreen
+    setIsVideoFullscreen,
+    isVideoCollapsed,
+    setIsVideoCollapsed
   } = useApp();
 
   const { processStatus, processError, processVideo } = useVideoProcessor();
   const [isSaved, setIsSaved] = useState(false);
   const [isCheckingSaved, setIsCheckingSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
 
   // Reset fullscreen state when leaving the video page
   useEffect(() => {

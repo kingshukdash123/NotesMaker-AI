@@ -32,6 +32,7 @@ export function AppProvider({ children }) {
   const [videoProcessError, setVideoProcessError] = useState(null);
   const [videoPipelineTaskId, setVideoPipelineTaskId] = useState(null);
   const [isVideoFullscreen, setIsVideoFullscreen] = useState(false);
+  const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsedState] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
@@ -119,6 +120,7 @@ export function AppProvider({ children }) {
     }
     setVideoProcessError(null);
     setVideoPipelineTaskId(null);
+    setIsVideoCollapsed(false);
     setActiveSection('discover'); // Unified watch workspace
   };
 
@@ -134,7 +136,20 @@ export function AppProvider({ children }) {
     setVideoProcessError(null);
     setVideoPipelineTaskId(null);
     setIsVideoFullscreen(false);
+    setIsVideoCollapsed(false);
   };
+
+  // Whenever a timestamp is clicked, make sure the video is open/unhidden
+  useEffect(() => {
+    const handleSeekGlobal = () => {
+      setIsVideoCollapsed(false);
+      if (activeVideoId && activeSection !== 'discover') {
+        setActiveSection('discover');
+      }
+    };
+    window.addEventListener('seek-video', handleSeekGlobal);
+    return () => window.removeEventListener('seek-video', handleSeekGlobal);
+  }, [activeVideoId, activeSection]);
 
   const value = {
     activeSection,
@@ -163,6 +178,8 @@ export function AppProvider({ children }) {
     setVideoPipelineTaskId,
     isVideoFullscreen,
     setIsVideoFullscreen,
+    isVideoCollapsed,
+    setIsVideoCollapsed,
     isSidebarCollapsed,
     setIsSidebarCollapsed,
     isSettingsOpen,
