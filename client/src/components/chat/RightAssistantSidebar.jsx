@@ -6,10 +6,10 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
 const COMPACT_SUGGESTIONS = [
-  { text: 'Explain a study concept', command: '/explain ' },
-  { text: 'Solve a math calculation', command: '/math ' },
-  { text: 'Create a subject todo list', command: '/todo ' },
-  { text: 'Draft a quick summary email', command: '/email ' }
+  { text: 'Ask Guruji a study question', command: '/explain ' },
+  { text: 'Solve a math problem step-by-step', command: '/math ' },
+  { text: 'Create a focused study checklist', command: '/todo ' },
+  { text: 'Draft a summary or email', command: '/email ' }
 ];
 
 export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mode = 'sidebar', onToggleMode, onZoom }) {
@@ -120,7 +120,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               </button>
             </div>
           ) : (
-            <span className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Nova Assistant</span>
+            <span className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Guruji — Personal Mentor</span>
           )}
 
           <div className="flex items-center gap-1 shrink-0">
@@ -329,9 +329,9 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                 }`}>
                   <Bot className="w-5 h-5 text-orange-500" />
                 </div>
-                <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Nova AI Companion</h4>
+                <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Guruji — Personal Mentor</h4>
                 <p className={`text-[10px] max-w-[200px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
-                  Create a study session page to start conversing with memory context.
+                  Start a study session to learn and study with Guruji's guidance.
                 </p>
                 <button
                   onClick={async () => {
@@ -340,7 +340,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                   }}
                   className="px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold transition cursor-pointer shadow-sm"
                 >
-                  Create Page
+                  Start Session with Guruji
                 </button>
               </div>
             ) : messages.length === 0 ? (
@@ -350,7 +350,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                     <FileText className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-zinc-650' : 'text-orange-400'}`} />
                     <h3 className={`text-xs font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>{activeThread.title}</h3>
                     <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-550' : 'text-orange-800'}`}>
-                      Ask questions, plan schedules, or draft math/code equations.
+                      Ask Guruji any study doubt, discuss your goals, or use slash commands.
                     </p>
                   </div>
                   <div className={`space-y-1.5 border-t pt-4 flex flex-col ${isDark ? 'border-zinc-900' : 'border-orange-100'}`}>
@@ -397,10 +397,10 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
 
           {/* 3. Input container at bottom */}
           {activeThread && !showSelector && (
-            <div className={`p-4 border-t shrink-0 ${
+            <div className={`p-3 border-t shrink-0 ${
               isDark ? 'border-zinc-900/80 bg-zinc-950' : 'border-orange-100 bg-white'
             }`}>
-              <div className={`rounded-2xl p-2.5 flex flex-col gap-1.5 border ${
+              <div className={`rounded-2xl px-2.5 py-1.5 flex items-end border ${
                 isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-orange-50/50 border-orange-200 shadow-xs'
               }`}>
                 <ChatInput

@@ -64,9 +64,9 @@ export const SEO_PAGE_CONFIGS = {
     path: '/planner/monthly',
   },
   assistant: {
-    title: 'Nova Assistant — Personal Academic AI Companion | Pathshala AI',
-    description: 'Chat with Nova AI for real-time academic explanations, tutoring, research assistance, and concepts synthesis.',
-    keywords: 'AI tutor, study assistant, academic chat, personal AI mentor, homework help',
+    title: 'Guruji — Personal Academic Mentor | Pathshala AI',
+    description: 'Converse with Guruji, your dedicated personal study mentor for real-time explanations, motivation, and conceptual clarity.',
+    keywords: 'Guruji, Pathshala AI, personal mentor, AI tutor, study assistant, academic chat',
     path: '/assistant',
   },
 };

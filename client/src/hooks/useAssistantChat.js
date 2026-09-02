@@ -193,6 +193,14 @@ export function useAssistantChat(currentUser) {
 
     try {
       const idToken = await currentUser.getIdToken();
+      const rawEmail = currentUser?.email || '';
+      const emailPrefix = rawEmail.endsWith('@pathshala.ai')
+        ? rawEmail.replace('@pathshala.ai', '')
+        : (rawEmail.includes('@') ? rawEmail.split('@')[0] : rawEmail);
+      const rawName = (currentUser?.displayName && currentUser.displayName.trim()) || emailPrefix || '';
+      const userName = rawName
+        ? rawName.split(/[._]/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+        : '';
       // Only send the last 4 messages (excluding the placeholder) for context
       const recentMessages = [...cleanHistory, userMessage].slice(-4);
 
@@ -220,7 +228,8 @@ export function useAssistantChat(currentUser) {
         },
         (err) => {
           throw err;
-        }
+        },
+        userName
       );
 
       // Streaming completed successfully

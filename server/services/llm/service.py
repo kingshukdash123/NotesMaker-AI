@@ -1,12 +1,12 @@
 import os
-from typing import Optional
+from typing import Optional, List
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_groq import ChatGroq
 
 from utils.exceptions import PathshalaError
 from utils.logger import get_logger
 from config.settings import settings
-from config.constants import EMBEDDING_MODEL, MAX_RETRIES
+from config.constants import EMBEDDING_MODEL, MAX_RETRIES, CHAT_MODEL, CHAT_FALLBACK_MODELS
 
 logger = get_logger(__name__)
 
@@ -102,18 +102,18 @@ class LLMService:
     def get_groq_llm(
         cls,
         groq_api_key: Optional[str] = None,
-        model_name: str = "openai/gpt-oss-20b",
+        model_name: str = CHAT_MODEL,
         temperature: float = 0.2,
         max_retries: int = MAX_RETRIES,
+        fallback_models: Optional[List[str]] = None,
     ):
         """
-        Dynamically initializes and returns the Groq LLM.
+        Dynamically initializes and returns the Groq LLM with centralized fallbacks.
         """
         try:
             # If no user-provided key, fall back to environment variables
             if not groq_api_key:
                 groq_api_key = settings.GROQ_API_KEY
-
 
             if not groq_api_key:
                 logger.error("Groq API key is missing.")
@@ -125,12 +125,32 @@ class LLMService:
 
             logger.info(f"Initializing Groq model '{model_name}' (temp: {temperature}, retries: {max_retries}).")
 
-            return ChatGroq(
+            primary_llm = ChatGroq(
                 model=model_name,
                 groq_api_key=groq_api_key.strip(),
                 temperature=temperature,
                 max_retries=max_retries,
+                model_kwargs={"disable_tool_validation": True},
             )
+
+            fallbacks_to_use = fallback_models if fallback_models is not None else CHAT_FALLBACK_MODELS
+            if fallbacks_to_use:
+                fallback_runnables = [
+                    ChatGroq(
+                        model=fb,
+                        groq_api_key=groq_api_key.strip(),
+                        temperature=temperature,
+                        max_retries=max_retries,
+                        model_kwargs={"disable_tool_validation": True},
+                    )
+                    for fb in fallbacks_to_use
+                    if fb and fb != model_name
+                ]
+                if fallback_runnables:
+                    logger.info(f"Centralized Groq fallbacks configured for '{model_name}': {[fb for fb in fallbacks_to_use if fb != model_name]}")
+                    return primary_llm.with_fallbacks(fallback_runnables)
+
+            return primary_llm
 
         except Exception as e:
             if isinstance(e, PathshalaError):

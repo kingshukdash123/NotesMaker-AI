@@ -99,13 +99,24 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
   };
 
   return (
-    <div className="relative w-full flex flex-col gap-2">
+    <div className="relative w-full flex items-end gap-2">
       <SlashCommandMenu
         visible={showMenu}
         searchQuery={searchQuery}
         onSelect={handleCommandSelect}
         onClose={() => setShowMenu(false)}
       />
+
+      {/* Plus / Commands Button */}
+      <button
+        type="button"
+        onClick={handlePlusClick}
+        className="btn-icon !w-7 !h-7 !p-1 text-zinc-400 hover:text-orange-500 shrink-0"
+        title="Add command (/)"
+        aria-label="Add command"
+      >
+        <Plus className="w-3.5 h-3.5" />
+      </button>
 
       {/* Input textarea */}
       <textarea
@@ -114,48 +125,28 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder="Do anything with AI..."
-        className={`w-full max-h-36 resize-none bg-transparent outline-none border-none py-1 text-xs custom-scrollbar font-sans leading-relaxed ${
+        placeholder="Ask Guruji anything..."
+        className={`flex-1 max-h-32 resize-none bg-transparent outline-none border-none py-1.5 text-sm custom-scrollbar font-sans leading-relaxed ${
           isDark ? 'text-zinc-100 placeholder-zinc-550' : 'text-orange-950 placeholder-orange-400'
         }`}
         disabled={isLoading}
       />
 
-      {/* Bottom control row */}
-      <div className={`flex items-center justify-between border-t pt-2 shrink-0 ${
-        isDark ? 'border-zinc-900/60' : 'border-orange-100'
-      }`}>
-        {/* Left tools icons */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handlePlusClick}
-            className="btn-icon !w-7 !h-7 !p-1 text-zinc-400 hover:text-orange-500"
-            title="Add command"
-            aria-label="Add command"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Right send button */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={isLoading || isStreaming || !value.trim()}
-            onClick={onSubmit}
-            className="btn-primary !w-7 !h-7 !p-0 !rounded-full shrink-0 shadow-xs flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
-            title="Send message"
-            aria-label="Send message"
-          >
-            {isStreaming ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <ChevronUp className="w-4 h-4 stroke-[2.5]" />
-            )}
-          </button>
-        </div>
-      </div>
+      {/* Send message button */}
+      <button
+        type="button"
+        disabled={isLoading || isStreaming || !value.trim()}
+        onClick={onSubmit}
+        className="btn-primary !w-7 !h-7 !p-0 !rounded-full shrink-0 shadow-xs flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+        title="Send message"
+        aria-label="Send message"
+      >
+        {isStreaming ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : (
+          <ChevronUp className="w-4 h-4 stroke-[2.5]" />
+        )}
+      </button>
     </div>
   );
 }

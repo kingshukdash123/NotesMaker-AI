@@ -270,6 +270,7 @@ async def ask_question(
 class AssistantChatRequest(BaseModel):
     messages: List[Dict[str, Any]]
     summary: Optional[str] = None
+    user_name: Optional[str] = None
 
 
 @app.post("/api/assistant/chat")
@@ -303,7 +304,8 @@ async def assistant_chat(
             assistant_service = AssistantService(groq_api_key=groq_api_key)
             async for chunk in assistant_service.chat_stream(
                 messages=request.messages,
-                summary=request.summary
+                summary=request.summary,
+                user_name=request.user_name
             ):
                 yield chunk + "\n"
         except Exception as e:

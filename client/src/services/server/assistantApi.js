@@ -18,7 +18,8 @@ export async function streamAssistantChat(
   idToken,
   onChunk,
   onSummaryUpdate,
-  onError
+  onError,
+  userName = ''
 ) {
   const headers = {
     'Content-Type': 'application/json',
@@ -39,7 +40,8 @@ export async function streamAssistantChat(
           role: m.role || (m.sender === 'user' ? 'user' : 'assistant'),
           content: m.content || m.text
         })),
-        summary: summary || ''
+        summary: summary || '',
+        user_name: userName || ''
       }),
     });
 

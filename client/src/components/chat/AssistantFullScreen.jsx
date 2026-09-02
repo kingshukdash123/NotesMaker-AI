@@ -6,10 +6,10 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
 const FULLSCREEN_SUGGESTIONS = [
-  { text: 'Explain a study concept in detail', command: '/explain ' },
+  { text: 'Explain a complex concept', command: '/explain ' },
   { text: 'Solve a math formula step-by-step', command: '/math ' },
-  { text: 'Create a structured checklist or todo', command: '/todo ' },
-  { text: 'Draft an email response or summary', command: '/email ' }
+  { text: 'Create a structured study checklist', command: '/todo ' },
+  { text: 'Draft a summary or email response', command: '/email ' }
 ];
 
 export default function AssistantFullScreen({ currentUser }) {
@@ -253,7 +253,7 @@ export default function AssistantFullScreen({ currentUser }) {
                 </h2>
               </div>
             ) : (
-              <span className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Nova Assistant Workspace</span>
+              <span className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Guruji's Study Desk</span>
             )}
           </div>
 
@@ -316,9 +316,9 @@ export default function AssistantFullScreen({ currentUser }) {
                 <Bot className="w-6 h-6 text-orange-500" />
               </div>
               <div className="space-y-1">
-                <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>Spacious Full-Screen AI Chat</h3>
+                <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>Guruji's Study Desk</h3>
                 <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
-                  Start a new study session thread in this split-screen layout to converse with memory recall.
+                  Start a study session to learn with Guruji's personal guidance and motivation.
                 </p>
               </div>
               <button
@@ -328,7 +328,7 @@ export default function AssistantFullScreen({ currentUser }) {
                 }}
                 className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition cursor-pointer shadow-lg shadow-orange-500/20"
               >
-                Create Study Session
+                Start Session with Guruji
               </button>
             </div>
           ) : messages.length === 0 ? (
@@ -338,7 +338,7 @@ export default function AssistantFullScreen({ currentUser }) {
                   <FileText className={`w-10 h-10 mx-auto ${isDark ? 'text-zinc-650' : 'text-orange-400'}`} />
                   <h2 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>{activeThread.title}</h2>
                   <p className={`text-xs max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-550' : 'text-orange-800'}`}>
-                    Ask questions, map homework planners, outline code tasks, or draft complex equations.
+                    Ask Guruji any study doubts, plan routines, or use slash commands for detailed notes.
                   </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 max-w-sm mx-auto">
@@ -381,7 +381,7 @@ export default function AssistantFullScreen({ currentUser }) {
           <div className={`p-2.5 sm:p-4 border-t shrink-0 ${
             isDark ? 'border-zinc-900 bg-zinc-950' : 'border-orange-100 bg-white'
           }`}>
-            <div className={`max-w-3xl mx-auto rounded-2xl p-3 flex flex-col gap-2 border ${
+            <div className={`max-w-3xl mx-auto rounded-2xl px-3 py-1.5 sm:py-2 flex items-end border ${
               isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-orange-50/50 border-orange-200 shadow-xs'
             }`}>
               <ChatInput

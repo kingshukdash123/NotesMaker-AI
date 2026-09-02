@@ -243,14 +243,15 @@ export default function VideoQa({ videoId, currentUser }) {
                           ? 'bg-orange-950/30 text-orange-400'
                           : 'bg-orange-100 text-orange-600 shadow-xs'
                   }`}
+                  title={isUser ? 'You' : 'Guruji'}
                 >
-                  {isUser ? 'ME' : 'AI'}
+                  {isUser ? 'ME' : 'G'}
                 </div>
 
                 {/* Message Content */}
                 <div className={`flex flex-col min-w-0 ${isUser ? 'items-end' : 'items-start'}`}>
                   <div
-                    className={`px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl text-xs leading-relaxed break-words shadow-xs ${
+                    className={`px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl text-sm leading-relaxed break-words shadow-xs ${
                       isUser
                         ? isDark
                           ? 'bg-zinc-900 text-zinc-100 rounded-tr-xs'
@@ -263,7 +264,7 @@ export default function VideoQa({ videoId, currentUser }) {
                     }`}
                   >
                     {isUser ? (
-                      <p className="whitespace-pre-wrap leading-relaxed m-0 text-xs">{msg.text}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed m-0 text-sm">{msg.text}</p>
                     ) : !msg.text && isLoading && index === messages.length - 1 ? (
                       <div className="flex items-center gap-1 py-1">
                         <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
@@ -300,7 +301,7 @@ export default function VideoQa({ videoId, currentUser }) {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask a question about this lecture..."
-          className={`flex-1 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs transition disabled:opacity-50 border outline-none ${
+          className={`flex-1 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-sm transition disabled:opacity-50 border outline-none ${
             isDark
               ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-zinc-100 placeholder-zinc-500 focus:border-zinc-500'
               : 'bg-orange-50/50 border-orange-200 text-orange-950 placeholder-orange-400 focus:border-orange-400'

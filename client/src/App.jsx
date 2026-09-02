@@ -309,7 +309,7 @@ function MainApp() {
             </div>
           </div>
 
-          {/* Right Floating Nova Assistant Drawer (Hidden in Fullscreen Video Mode) */}
+          {/* Right Floating Guruji Assistant Drawer (Hidden in Fullscreen Video Mode) */}
           {!isVideoFullscreen && activeSection !== 'assistant' && (
             <RightAssistantSidebar
               currentUser={currentUser}
@@ -329,12 +329,12 @@ function MainApp() {
             <button
               onClick={() => setIsAssistantOpen(true)}
               className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-2xl z-[100] cursor-pointer bg-black hover:scale-105 active:scale-95 transition-all hover:shadow-orange-500/20 hover:shadow-2xl overflow-hidden border border-zinc-800"
-              title="Open Assistant"
-              aria-label="Open Nova Assistant"
+              title="Ask Guruji"
+              aria-label="Guruji"
             >
               <img
                 src="/nova.png"
-                alt="Nova Assistant"
+                alt="Guruji"
                 className="w-full h-full object-cover select-none pointer-events-none"
               />
             </button>

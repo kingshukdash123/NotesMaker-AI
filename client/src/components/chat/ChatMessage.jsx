@@ -23,7 +23,7 @@ export default function ChatMessage({ message, isStreaming = false }) {
   if (isUser) {
     return (
       <div className="flex flex-col items-end w-full py-2.5 px-2">
-        <div className={`max-w-[88%] rounded-2xl rounded-tr-xs px-3.5 py-2.5 sm:px-4 sm:py-2.5 text-xs leading-relaxed font-sans shadow-xs break-words ${
+        <div className={`max-w-[88%] rounded-2xl rounded-tr-xs px-3.5 py-2.5 sm:px-4 sm:py-2.5 text-sm leading-relaxed font-sans shadow-xs break-words ${
           isDark 
             ? 'bg-zinc-900 text-zinc-100' 
             : 'bg-orange-100 text-orange-950 font-medium'
@@ -31,7 +31,7 @@ export default function ChatMessage({ message, isStreaming = false }) {
           <div className="whitespace-pre-wrap">{text}</div>
         </div>
         {formattedTime && (
-          <span className={`text-[9px] mt-1 pr-1 font-mono select-none ${
+          <span className={`text-[10px] mt-1 pr-1 font-mono select-none ${
             isDark ? 'text-zinc-600' : 'text-orange-900/60'
           }`}>
             {formattedTime}
@@ -45,33 +45,29 @@ export default function ChatMessage({ message, isStreaming = false }) {
     <div className={`flex gap-2.5 w-full py-3.5 px-2 transition duration-150 border-b relative ${
       isDark ? 'border-zinc-900/40' : 'border-orange-100'
     }`}>
-      {/* Bot Icon */}
-      <div className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5 select-none border ${
+      {/* Guruji Avatar Badge */}
+      <div className={`w-5.5 h-5.5 sm:w-6 sm:h-6 rounded flex items-center justify-center text-[11px] font-black shrink-0 mt-0.5 select-none border ${
         isDark 
-          ? 'bg-orange-950/20 border-orange-900/30 text-orange-400 shadow-sm' 
+          ? 'bg-orange-950/30 border-orange-900/40 text-orange-400 shadow-sm' 
           : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
-      }`}>
-        N
+      }`} title="Guruji">
+        G
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className={`max-w-none text-xs leading-relaxed ${
+        <div className={`max-w-none text-sm leading-relaxed ${
           isDark 
             ? 'text-zinc-200 selection:bg-zinc-800' 
             : 'text-orange-950 selection:bg-orange-100'
         }`}>
-          <MarkdownRenderer content={text} className="chat-markdown" />
-          
-          {isStreaming && !text && (
+          {!text && isStreaming ? (
             <div className="flex items-center gap-1 py-1">
-              <span className="w-1 h-1 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-              <span className="w-1 h-1 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-              <span className="w-1 h-1 bg-orange-500 rounded-full animate-bounce"></span>
+              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"></span>
             </div>
-          )}
-          
-          {isStreaming && text && (
-            <span className="inline-block w-1 h-3 bg-orange-500 animate-pulse ml-0.5 align-middle"></span>
+          ) : (
+            <MarkdownRenderer content={text} className="chat-markdown" />
           )}
         </div>
 

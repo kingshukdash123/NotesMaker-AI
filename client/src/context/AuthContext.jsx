@@ -50,13 +50,23 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  // Format user display name (e.g. "alex" from "alex@pathshala.ai" or full email)
+  // Format user display name (e.g. "Kingshuk" from "kingshuk@pathshala.ai" or "kingshuk@gmail.com")
   const getUserDisplayName = (user) => {
-    if (!user || !user.email) return 'User';
-    if (user.email.endsWith('@pathshala.ai')) {
-      return user.email.replace('@pathshala.ai', '');
+    if (!user) return 'Student';
+    if (user.displayName && user.displayName.trim()) {
+      return user.displayName.trim();
     }
-    return user.email;
+    if (user.email) {
+      const prefix = user.email.includes('@') ? user.email.split('@')[0] : user.email;
+      const clean = prefix.replace(/@pathshala\.ai$/, '');
+      const formatted = clean
+        .split(/[._]/)
+        .filter(Boolean)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+      return formatted || 'Student';
+    }
+    return 'Student';
   };
 
   const value = {

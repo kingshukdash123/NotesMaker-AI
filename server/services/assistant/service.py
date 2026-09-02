@@ -20,16 +20,36 @@ class AssistantService:
             model_name=CHAT_MODEL
         )
 
-    async def chat_stream(self, messages: List[Dict[str, Any]], summary: Optional[str] = None) -> AsyncIterator[str]:
+    async def chat_stream(self, messages: List[Dict[str, Any]], summary: Optional[str] = None, user_name: Optional[str] = None) -> AsyncIterator[str]:
         """
         Processes messages and summary, runs safety system instructions, streams back chat tokens,
         and yields an updated summary block at the end.
         """
         logger.info("Assistant Service: processing chat query stream.")
 
-        # 1. Format system instructions with current summary
+        # 1. Format system instructions with current summary and student name
         summary_val = summary if (summary and summary.strip()) else "No significant context yet."
-        system_content = ASSISTANT_SYSTEM_PROMPT.format(conversation_summary=summary_val)
+        raw_name = (user_name or "").strip()
+        is_known_name = bool(raw_name and raw_name.lower() not in ("user", "student", "my student", "none", "null"))
+        student_name_val = raw_name if is_known_name else "champion"
+
+        if is_known_name:
+            name_instruction = (
+                f"- The student you are talking to is: {student_name_val}.\n"
+                f"- You know {student_name_val} personally and call them by their name.\n"
+                f"- If {student_name_val} asks 'what is my name?' or 'who am I?', answer directly, warmly, and proudly (e.g. 'You are {student_name_val}, champion!' or 'Arre {student_name_val}, how could I ever forget your name?'). NEVER claim you do not know their name."
+            )
+        else:
+            name_instruction = (
+                "- You do not know the student's personal real name yet.\n"
+                "- If they ask 'what is my name?', answer warmly and naturally: 'Arre dost, you haven't told me your real name yet! What should I call you?' (Never use robotic AI phrases like 'I am an AI, remind me what you would like to be called')."
+            )
+
+        system_content = ASSISTANT_SYSTEM_PROMPT.format(
+            student_name=student_name_val,
+            student_name_instruction=name_instruction,
+            conversation_summary=summary_val
+        )
 
         langchain_messages = [SystemMessage(content=system_content)]
 
@@ -49,7 +69,7 @@ class AssistantService:
                 elif role in ("assistant", "ai", "bot"):
                     langchain_messages.append(AIMessage(content=clean_content))
 
-        # 3. Stream response from LLM
+        # 3. Stream response from LLM (centralized fallbacks are handled by LLMService)
         full_response = ""
         try:
             async for chunk in self.llm.astream(langchain_messages):

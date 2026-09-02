@@ -24,7 +24,8 @@ RETRY_DELAY = 2
 # LLM Models
 ORCHESTRATOR_MODEL = "gemini-3.1-flash-lite"
 WRITER_MODEL = "gemini-3.5-flash-lite"
-CHAT_MODEL = "openai/gpt-oss-20b"
+CHAT_MODEL = "qwen/qwen3.8-27b"
+CHAT_FALLBACK_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]
 EMBEDDING_MODEL = "models/gemini-embedding-2-preview"
 
 # Vector Store Configs

@@ -32,7 +32,7 @@ export default function Sidebar({
     { id: 'discover', label: 'Discover', icon: Search },
     { id: 'library', label: 'Library', icon: Library },
     { id: 'planner', label: 'Planner', icon: Calendar },
-    { id: 'assistant', label: 'Assistant', icon: Bot },
+    { id: 'assistant', label: 'Guruji', icon: Bot },
   ];
 
   return (
