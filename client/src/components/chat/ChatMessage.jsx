@@ -23,10 +23,10 @@ export default function ChatMessage({ message, isStreaming = false }) {
   if (isUser) {
     return (
       <div className="flex flex-col items-end w-full py-2.5 px-2">
-        <div className={`max-w-[88%] rounded-2xl rounded-tr-sm px-3.5 py-2 text-xs leading-relaxed font-sans shadow-sm break-words ${
+        <div className={`max-w-[88%] rounded-2xl rounded-tr-xs px-3.5 py-2.5 sm:px-4 sm:py-2.5 text-xs leading-relaxed font-sans shadow-xs break-words ${
           isDark 
-            ? 'bg-zinc-900 border border-zinc-800 text-zinc-100' 
-            : 'bg-orange-500 text-white font-medium shadow-orange-500/10'
+            ? 'bg-zinc-900 text-zinc-100' 
+            : 'bg-orange-100 text-orange-950 font-medium'
         }`}>
           <div className="whitespace-pre-wrap">{text}</div>
         </div>
