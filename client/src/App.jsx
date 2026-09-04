@@ -38,6 +38,14 @@ function MainApp() {
     setPlannerTab,
     videoTab,
     setVideoTab,
+    searchQuery,
+    setSearchQuery,
+    searchCategory,
+    setSearchCategory,
+    searchType,
+    setSearchType,
+    activePlaylistId,
+    setActivePlaylistId,
     activeVideoId,
     setActiveVideoId,
     setActiveVideoUrl,
@@ -87,6 +95,17 @@ function MainApp() {
           setPlannerTab(parsed.plannerTab);
         }
       }
+
+      if (parsed.searchQuery !== undefined) {
+        setSearchQuery(parsed.searchQuery);
+      }
+      if (parsed.searchCategory !== undefined) {
+        setSearchCategory(parsed.searchCategory);
+      }
+      if (parsed.searchType !== undefined) {
+        setSearchType(parsed.searchType);
+      }
+      setActivePlaylistId(parsed.playlistId || '');
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -100,6 +119,10 @@ function MainApp() {
     setVideoTab,
     setLibraryTab,
     setPlannerTab,
+    setSearchQuery,
+    setSearchCategory,
+    setSearchType,
+    setActivePlaylistId,
     resetActiveVideo
   ]);
 
@@ -147,6 +170,10 @@ function MainApp() {
       plannerTab,
       videoId: activeVideoId,
       videoTab,
+      searchQuery: activeSection === 'discover' ? searchQuery : '',
+      searchCategory: activeSection === 'discover' ? searchCategory : 'all',
+      searchType: activeSection === 'discover' ? searchType : 'all',
+      playlistId: activeSection === 'discover' ? activePlaylistId : '',
     });
 
     const currentUrl = window.location.pathname + window.location.search;
@@ -160,6 +187,7 @@ function MainApp() {
       plannerTab,
       videoId: activeVideoId,
       videoTab,
+      searchQuery: activeSection === 'discover' ? searchQuery : '',
       videoMetadata: activeVideoMetadata,
       isLoggedIn: true,
     });
@@ -170,6 +198,10 @@ function MainApp() {
     plannerTab,
     activeVideoId,
     videoTab,
+    searchQuery,
+    searchCategory,
+    searchType,
+    activePlaylistId,
     activeVideoMetadata,
   ]);
 

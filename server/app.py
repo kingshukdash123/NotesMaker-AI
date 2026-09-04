@@ -20,6 +20,7 @@ from services.rag.service import RAGService
 from services.assistant.service import AssistantService
 from services.youtube.metadata import get_video_metadata
 from services.youtube.search import search_youtube_videos
+from services.youtube.playlist import get_youtube_playlist_items, get_all_youtube_playlist_items
 from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
 import time
@@ -123,18 +124,20 @@ async def fetch_metadata(url: str = Query(..., description="The YouTube URL to f
 async def search_youtube(
     q: str = Query(..., description="The search query"),
     category: str = Query("all", description="Category filter"),
-    pageToken: Optional[str] = Query(None, description="YouTube API page token for pagination")
+    pageToken: Optional[str] = Query(None, description="YouTube API page token for pagination"),
+    type: Optional[str] = Query("all", description="Filter by type: all, video, playlist, or live")
 ):
     """
-    Searches YouTube for educational videos using official YouTube search API.
+    Searches YouTube for educational content (videos, playlists, live streams) using official API.
     Utilizes Firestore caching to protect YouTube API quota.
     """
     if not q.strip():
         return {"items": [], "nextPageToken": None}
 
-    # 1. Compute query hash
+    # 1. Compute query hash including type filter
     normalized_q = q.lower().strip()
-    hash_input = f"{normalized_q}|{category.lower()}"
+    content_type = (type or "all").lower().strip()
+    hash_input = f"{normalized_q}|{category.lower()}|{content_type}"
     if pageToken:
         hash_input += f"|{pageToken}"
     query_hash = hashlib.md5(hash_input.encode("utf-8")).hexdigest()
@@ -146,7 +149,7 @@ async def search_youtube(
 
     # 3. Cache miss: Call YouTube API
     try:
-        result = await search_youtube_videos(q, category, pageToken)
+        result = await search_youtube_videos(q, category, pageToken, content_type)
         
         # 4. Save to cache
         await save_cached_search(
@@ -164,6 +167,71 @@ async def search_youtube(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/youtube/playlist")
+async def fetch_playlist(
+    playlistId: str = Query(..., description="YouTube Playlist ID"),
+    pageToken: Optional[str] = Query(None, description="YouTube playlist pagination page token"),
+    fetchAll: Optional[bool] = Query(False, description="Fetch all pages of playlist in sequence")
+):
+    """
+    Fetches items in a YouTube playlist with caching and pagination to conserve quota.
+    When fetchAll is True, fetches all pages across the playlist in strict sequence.
+    """
+    clean_id = playlistId.strip() if isinstance(playlistId, str) else str(playlistId)
+    if not clean_id or clean_id == "...":
+        raise HTTPException(status_code=400, detail="playlistId is required")
+
+    is_fetch_all = bool(fetchAll)
+
+    clean_token = pageToken.strip() if isinstance(pageToken, str) and pageToken.strip() else None
+    if is_fetch_all:
+        cache_key = f"playlist_all_{clean_id}"
+    elif clean_token:
+        cache_key = f"playlist_{clean_id}_{clean_token}"
+    else:
+        cache_key = f"playlist_{clean_id}"
+
+    try:
+        cached = await get_cached_search(cache_key)
+        if cached:
+            cached_payload = cached.get("items")
+            if isinstance(cached_payload, dict) and "videos" in cached_payload:
+                return cached_payload
+            elif isinstance(cached_payload, list) and len(cached_payload) > 0:
+                return {
+                    "playlistId": clean_id,
+                    "title": "Course Playlist",
+                    "channel": "YouTube Creator",
+                    "videos": cached_payload,
+                    "itemCount": len(cached_payload),
+                    "totalResults": len(cached_payload),
+                    "nextPageToken": cached.get("nextPageToken")
+                }
+    except Exception as cache_err:
+        logger.warning(f"Error checking playlist cache for {clean_id}: {cache_err}")
+
+    try:
+        if is_fetch_all:
+            playlist_data = await get_all_youtube_playlist_items(clean_id)
+        else:
+            playlist_data = await get_youtube_playlist_items(clean_id, page_token=clean_token)
+
+        try:
+            await save_cached_search(
+                query_hash=cache_key,
+                query=clean_id,
+                category="playlist",
+                results=playlist_data,
+                next_page_token=playlist_data.get("nextPageToken")
+            )
+        except Exception as cache_save_err:
+            logger.warning(f"Error saving playlist cache for {clean_id}: {cache_save_err}")
+        return playlist_data
+    except Exception as e:
+        logger.exception(f"Error in fetch_playlist endpoint for playlist {clean_id}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/notes/generate", status_code=202)
 async def generate_notes(
     request: GenerateNotesRequest,
@@ -176,6 +244,21 @@ async def generate_notes(
     """
     task_id = str(uuid.uuid4())
     url = str(request.youtube_url)
+
+    # 0. Live Stream Guard: Block notes generation if video is currently an active live stream
+    try:
+        video_id = extract_video_id(url)
+        meta = await asyncio.to_thread(get_video_metadata, video_id)
+        if meta and meta.get("is_live"):
+            logger.warning(f"Blocked note generation for ongoing live stream: {video_id}")
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot generate notes for an ongoing live stream. Please wait until the livestream has ended and been archived by YouTube.",
+            )
+    except HTTPException:
+        raise
+    except Exception as check_err:
+        logger.warning(f"Metadata live check skipped due to error: {check_err}")
     
     # Parse Firebase Authorization ID Token if present
     id_token = None

@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import { AlertCircle, RefreshCw, ArrowRight, Radio, Sparkles } from 'lucide-react';
 import VideoProcessingSkeleton from './VideoProcessingSkeleton';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -32,6 +32,32 @@ export default function ProcessingGate({
 
   const currentTool = toolConfig[activeTab] || toolConfig.notes;
 
+  // Safeguard: Block ongoing live streams
+  if (metadata?.is_live) {
+    return (
+      <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 border rounded-2xl py-14 gap-4 animate-in fade-in duration-300 max-w-md w-full mx-auto transition ${
+        isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-orange-50/40 border-orange-100'
+      }`}>
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+          isDark ? 'bg-zinc-900 text-red-400' : 'bg-red-50 text-red-500'
+        }`}>
+          <Radio className="w-5 h-5 animate-pulse" />
+        </div>
+
+        <div className="space-y-1">
+          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+            Live stream in progress
+          </h3>
+          <p className={`text-[10px] sm:text-xs max-w-xs mx-auto leading-relaxed ${
+            isDark ? 'text-zinc-550' : 'text-orange-900/60'
+          }`}>
+            Notes, summaries, and transcripts can only be generated once this livestream has concluded and is archived by YouTube.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (status === 'PROCESSING' || status === 'CHECKING_CACHE') {
     return (
       <div className="w-full h-full">
@@ -47,14 +73,20 @@ export default function ProcessingGate({
 
   if (status === 'FAILED') {
     return (
-      <div className="border border-red-950/40 bg-red-950/10 rounded-2xl p-6 text-center flex flex-col items-center justify-center gap-4 py-10 max-w-md w-full mx-auto">
-        <div className="w-10 h-10 rounded-xl bg-red-950 border border-red-900/40 flex items-center justify-center text-red-500">
-          <AlertCircle className="w-5 h-5 shrink-0" />
+      <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 border rounded-2xl py-14 gap-4 animate-in fade-in duration-300 max-w-md w-full mx-auto transition ${
+        isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-orange-50/40 border-orange-100'
+      }`}>
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+          isDark ? 'bg-zinc-900 text-red-400' : 'bg-red-50 text-red-500'
+        }`}>
+          <AlertCircle className="w-5 h-5" />
         </div>
 
         <div className="space-y-1">
-          <h3 className="text-sm font-bold text-red-200">Processing failed</h3>
-          <p className="text-xs text-red-400 leading-relaxed">
+          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+            Processing failed
+          </h3>
+          <p className="text-[10px] sm:text-xs text-red-400 max-w-xs mx-auto leading-relaxed">
             {error || 'An error occurred while processing this video. Please try again.'}
           </p>
         </div>
@@ -72,17 +104,21 @@ export default function ProcessingGate({
   }
 
   return (
-    <div className={`border rounded-2xl p-6 sm:p-8 text-center flex flex-col items-center justify-center gap-4 py-8 sm:py-10 max-w-md w-full mx-auto transition ${
-      isDark ? 'bg-zinc-950/40 border-zinc-800/80' : 'bg-white border-orange-200 shadow-xs'
+    <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 border rounded-2xl py-14 gap-4 animate-in fade-in duration-300 max-w-md w-full mx-auto transition ${
+      isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-orange-50/40 border-orange-100'
     }`}>
-      <div className="space-y-1.5 text-center">
-        <h3 className={`text-base sm:text-lg font-bold tracking-tight ${
-          isDark ? 'text-zinc-100' : 'text-orange-950'
-        }`}>
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+        isDark ? 'bg-zinc-900 text-orange-400' : 'bg-orange-100 text-orange-600'
+      }`}>
+        <Sparkles className="w-5 h-5" />
+      </div>
+
+      <div className="space-y-1">
+        <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
           {currentTool.title}
         </h3>
-        <p className={`text-xs max-w-xs mx-auto leading-relaxed ${
-          isDark ? 'text-zinc-400' : 'text-orange-900/70'
+        <p className={`text-[10px] sm:text-xs max-w-xs mx-auto leading-relaxed ${
+          isDark ? 'text-zinc-550' : 'text-orange-900/60'
         }`}>
           {currentTool.description}
         </p>
@@ -91,10 +127,10 @@ export default function ProcessingGate({
       <button
         type="button"
         onClick={onProcess}
-        className="btn-primary px-5 py-2.5 text-xs sm:text-sm font-bold flex items-center gap-2"
+        className="btn-primary px-4 py-2 text-xs font-bold flex items-center gap-2"
       >
         <span>{currentTool.buttonLabel}</span>
-        <ArrowRight className="w-4 h-4" />
+        <ArrowRight className="w-3.5 h-3.5" />
       </button>
     </div>
   );

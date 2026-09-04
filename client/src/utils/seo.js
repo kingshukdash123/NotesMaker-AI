@@ -68,6 +68,7 @@ export function updatePageSEO({
   plannerTab = 'daily',
   videoId = '',
   videoTab = 'notes',
+  searchQuery = '',
   videoMetadata = null,
   isLoggedIn = true,
 } = {}) {
@@ -114,6 +115,20 @@ export function updatePageSEO({
       canonicalUrl,
       ogType: 'video.other',
       image: thumbnail,
+    });
+    return;
+  }
+
+  // Active search query on Discover
+  if ((section === 'discover' || section === 'search') && searchQuery && searchQuery.trim()) {
+    const cleanQ = searchQuery.trim();
+    applySEO({
+      title: `Search: "${cleanQ}" — Educational Lectures & Courses | ${SITE_NAME}`,
+      description: `Explore academic lectures, course playlists, and AI study notes for "${cleanQ}" on Pathshala AI.`,
+      keywords: `${cleanQ}, online lectures, course playlists, study notes, academic tutorials, ${SITE_NAME}`,
+      canonicalUrl: `${SITE_URL}/discover?q=${encodeURIComponent(cleanQ)}`,
+      ogType: 'website',
+      image: DEFAULT_IMAGE,
     });
     return;
   }

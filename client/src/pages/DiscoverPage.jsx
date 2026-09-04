@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
-import { searchYouTube } from '../services/server/api';
+import { useTheme } from '../context/ThemeContext';
+import { searchYouTube, fetchYouTubePlaylistItems } from '../services/server/api';
 import SearchBar from '../components/discover/SearchBar';
 import VideoGrid from '../components/discover/VideoGrid';
+import PlaylistBrowserDrawer from '../components/discover/PlaylistBrowserDrawer';
 import VideoContentPage from './VideoContentPage';
 import {
   getUserPlaylists,
@@ -12,38 +14,99 @@ import {
   removeVideoFromLibrary,
   addVideoToPlaylist,
   removeVideoFromPlaylist,
-  createPlaylist
+  createPlaylist,
+  createPlaylistWithVideos
 } from '../services/firebase/libraryService';
+import { extractYouTubeVideoId, extractYouTubePlaylistId } from '../utils/router';
 
 // Icons
-import { AlertCircle, Search } from 'lucide-react';
+import { AlertCircle, Search, Layers, Video, ListVideo, Radio } from 'lucide-react';
+
+const FILTER_TYPES = [
+  { id: 'all', label: 'All', icon: Layers },
+  { id: 'video', label: 'Videos', icon: Video },
+  { id: 'playlist', label: 'Playlists', icon: ListVideo },
+  { id: 'live', label: 'Live Streams', icon: Radio },
+];
 
 export default function DiscoverPage() {
   const { currentUser } = useAuth();
-  const { activeVideoId, loadVideo } = useApp();
+  const { isDark } = useTheme();
+  const {
+    activeVideoId,
+    loadVideo,
+    searchQuery,
+    setSearchQuery,
+    searchCategory,
+    setSearchCategory,
+    searchType,
+    setSearchType,
+    activePlaylistId,
+    setActivePlaylistId,
+  } = useApp();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [inputQuery, setInputQuery] = useState(searchQuery || '');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
 
+  // Playlist Browser Drawer state (Option A)
+  const [isPlaylistDrawerOpen, setIsPlaylistDrawerOpen] = useState(Boolean(activePlaylistId));
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState(activePlaylistId || null);
+  const [selectedPlaylistSummary, setSelectedPlaylistSummary] = useState(null);
+
+  // Sync drawer with activePlaylistId from URL
+  useEffect(() => {
+    if (activePlaylistId) {
+      setSelectedPlaylistId(activePlaylistId);
+      setIsPlaylistDrawerOpen(true);
+    } else {
+      setIsPlaylistDrawerOpen(false);
+      setSelectedPlaylistId(null);
+      setSelectedPlaylistSummary(null);
+    }
+  }, [activePlaylistId]);
+
   // Library info for card interactions (Saving, Playlists dropdown)
   const [savedVideos, setSavedVideos] = useState([]);
   const [playlists, setPlaylists] = useState([]);
 
-  const handleSearch = useCallback(async (query, setSearchedFlag = true) => {
-    const q = (typeof query === 'string' ? query : '').trim();
-    if (!q) return;
+  // Keep inputQuery synced with AppContext searchQuery on popstate/navigation
+  useEffect(() => {
+    setInputQuery(searchQuery || '');
+  }, [searchQuery]);
 
+  const handleSearch = useCallback(async (query, cat = searchCategory, stype = searchType, setSearchedFlag = true) => {
+    const rawInput = (typeof query === 'string' ? query : '').trim();
+    if (!rawInput) return;
+
+    // 1. SMART PASTE INTERCEPTION: Playlist URL
+    const detectedPlaylistId = extractYouTubePlaylistId(rawInput);
+    if (detectedPlaylistId) {
+      setSelectedPlaylistId(detectedPlaylistId);
+      setSelectedPlaylistSummary({ title: 'Imported Playlist', channel: 'YouTube' });
+      setIsPlaylistDrawerOpen(true);
+      return;
+    }
+
+    // 2. SMART PASTE INTERCEPTION: Direct Video or Live Stream URL
+    const detectedVideoId = extractYouTubeVideoId(rawInput);
+    if (detectedVideoId) {
+      loadVideo(detectedVideoId, rawInput.startsWith('http') ? rawInput : `https://www.youtube.com/watch?v=${detectedVideoId}`);
+      return;
+    }
+
+    // 3. TEXT SEARCH QUERY
     setIsLoading(true);
     setError('');
     if (setSearchedFlag) {
       setHasSearched(true);
+      setSearchQuery(rawInput);
     }
 
     try {
-      const data = await searchYouTube(q, 'all');
+      const data = await searchYouTube(rawInput, cat || 'all', '', stype || 'all');
       setResults(data.items || []);
     } catch (err) {
       console.error('YouTube search failed:', err);
@@ -52,13 +115,36 @@ export default function DiscoverPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchCategory, searchType, loadVideo, setSearchQuery]);
 
-  // Initial search on mount
+  // Handle clearing the search query and resetting to clean empty state
+  const handleClearSearch = useCallback(() => {
+    setInputQuery('');
+    setSearchQuery('');
+    setHasSearched(false);
+    setError('');
+    setResults([]);
+  }, [setSearchQuery]);
+
+  const handleInputChange = (val) => {
+    setInputQuery(val);
+    if (!val) {
+      handleClearSearch();
+    }
+  };
+
+  // Initial search on mount / deep-link query detection
+  const hasInitialized = useRef(false);
   useEffect(() => {
-    handleSearch("education lectures", false);
-  }, [handleSearch]);
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
 
+    if (searchQuery && searchQuery.trim()) {
+      handleSearch(searchQuery, searchCategory, searchType, true);
+    }
+  }, [searchQuery, searchCategory, searchType, handleSearch]);
+
+  // Fetch library info for saving / playlists
   useEffect(() => {
     const fetchLibraryInfo = async () => {
       if (!currentUser) return;
@@ -76,9 +162,73 @@ export default function DiscoverPage() {
     fetchLibraryInfo();
   }, [currentUser]);
 
+  // Handle Video card click
   const handleVideoSelect = (video) => {
-    // Navigates to VideoContentPage by setting AppContext active video state
     loadVideo(video.videoId, `https://www.youtube.com/watch?v=${video.videoId}`, video);
+  };
+
+  // Handle Playlist card click -> Open Option A Drawer and sync URL
+  const handlePlaylistSelect = (playlist) => {
+    const pid = playlist.playlistId || playlist.id;
+    setSelectedPlaylistId(pid);
+    setSelectedPlaylistSummary(playlist);
+    setActivePlaylistId(pid);
+    setIsPlaylistDrawerOpen(true);
+  };
+
+  // Close Drawer and clear URL playlist parameter
+  const handleClosePlaylistDrawer = () => {
+    setIsPlaylistDrawerOpen(false);
+    setActivePlaylistId('');
+    setSelectedPlaylistId(null);
+    setSelectedPlaylistSummary(null);
+  };
+
+  // Handle Lecture select inside Playlist Drawer
+  const handleDrawerVideoSelect = (video) => {
+    setIsPlaylistDrawerOpen(false);
+    setActivePlaylistId('');
+    setSelectedPlaylistId(null);
+    setSelectedPlaylistSummary(null);
+    loadVideo(video.videoId, `https://www.youtube.com/watch?v=${video.videoId}`, video);
+  };
+
+  // Batch import complete playlist into user's Library with all pages in strict sequence
+  const handleSavePlaylistToLibrary = async (playlistData, currentVideos = []) => {
+    if (!currentUser || !playlistData) return;
+    const targetPlaylistId = playlistData.playlistId || playlistData.id || selectedPlaylistId;
+    if (!targetPlaylistId) return;
+
+    let orderedVideos = Array.isArray(currentVideos) && currentVideos.length > 0 ? [...currentVideos] : [];
+
+    // Fetch complete playlist across all pages in strict sequence
+    try {
+      const fullPlaylist = await fetchYouTubePlaylistItems(targetPlaylistId, '', true);
+      if (fullPlaylist?.videos && fullPlaylist.videos.length > 0) {
+        orderedVideos = fullPlaylist.videos;
+      }
+    } catch (err) {
+      console.warn('Could not fetch complete playlist via fetchAll, using currently loaded sequence:', err);
+    }
+
+    if (orderedVideos.length === 0) {
+      throw new Error('No videos found to save.');
+    }
+
+    const playlistTitle = playlistData.title || selectedPlaylistSummary?.title || 'Course Playlist';
+    const created = await createPlaylistWithVideos(currentUser.uid, playlistTitle, orderedVideos);
+
+    setPlaylists(prev => [
+      {
+        id: created.id,
+        name: created.name,
+        videoCount: created.videoCount,
+        userId: currentUser.uid,
+        createdAt: new Date(),
+        videos: created.videos
+      },
+      ...prev
+    ]);
   };
 
   // Toggle Save/Bookmark state of a search result card
@@ -93,7 +243,8 @@ export default function DiscoverPage() {
         const metadata = {
           title: video.title || 'YouTube Video',
           channel: video.channel || 'Unknown Creator',
-          thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`
+          thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`,
+          is_live: video.isLive
         };
         await saveVideoToLibrary(
           currentUser.uid,
@@ -120,8 +271,6 @@ export default function DiscoverPage() {
   const handleTogglePlaylistAssociation = async (videoId, playlistId, alreadyAssociated, video) => {
     if (!currentUser) return;
     try {
-      const isCurrentlySaved = savedVideos.some(v => v.videoId === videoId);
-
       const videoEntry = {
         videoId,
         videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
@@ -171,6 +320,15 @@ export default function DiscoverPage() {
     }
   };
 
+  // Change content type filter
+  const handleFilterTypeChange = (newType) => {
+    setSearchType(newType);
+    const targetQuery = inputQuery.trim() || searchQuery.trim();
+    if (targetQuery) {
+      handleSearch(targetQuery, searchCategory, newType, true);
+    }
+  };
+
   // If a video is selected, render the unified watch page instead of the search list
   if (activeVideoId) {
     return <VideoContentPage />;
@@ -181,23 +339,47 @@ export default function DiscoverPage() {
       <div className="max-w-7xl mx-auto p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
         {/* Page Header */}
         <div className="space-y-1">
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-550 flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-100 flex items-center gap-2">
             <Search className="w-5 h-5 text-orange-500" />
-            Discover Lectures
+            Discover Lectures & Courses
           </h2>
-          <p className="text-xs text-zinc-450">
-            Find high-quality educational videos to outline, transcribe, and study.
+          <p className="text-xs text-zinc-400">
+            Find high-quality academic lectures, full course playlists, and live masterclasses to outline, transcribe, and study.
           </p>
         </div>
 
         {/* Search Bar section */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onSubmit={() => handleSearch(searchQuery)}
-            placeholder="Search for courses, lectures, or topics..."
+            value={inputQuery}
+            onChange={handleInputChange}
+            onClear={handleClearSearch}
+            onSubmit={() => handleSearch(inputQuery, searchCategory, searchType, true)}
+            placeholder="Search lectures, topics, course playlists (or paste any YouTube video / playlist link)..."
           />
+
+          {/* Filter Chips: All, Videos, Playlists, Live Streams */}
+          <div className="flex items-center gap-2 overflow-x-auto py-1.5 px-0.5 custom-scrollbar text-xs">
+            {FILTER_TYPES.map((filter) => {
+              const Icon = filter.icon;
+              const isActive = (searchType || 'all') === filter.id;
+              return (
+                <button
+                  key={filter.id}
+                  type="button"
+                  onClick={() => handleFilterTypeChange(filter.id)}
+                  className={`px-3.5 py-1.5 !rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer hover:!transform-none hover:!translate-y-0 ${
+                    isActive
+                      ? 'btn-primary'
+                      : 'btn-secondary'
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-current' : isDark ? 'text-zinc-400' : 'text-orange-700'}`} />
+                  <span>{filter.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Error Notification */}
@@ -214,6 +396,7 @@ export default function DiscoverPage() {
             videos={results}
             isLoading={isLoading}
             onVideoClick={handleVideoSelect}
+            onPlaylistClick={handlePlaylistSelect}
             hasSearched={hasSearched}
             savedVideos={savedVideos}
             playlists={playlists}
@@ -223,6 +406,17 @@ export default function DiscoverPage() {
           />
         </div>
       </div>
+
+      {/* Playlist Browser Drawer (Option A) */}
+      <PlaylistBrowserDrawer
+        key={selectedPlaylistId || 'none'}
+        isOpen={isPlaylistDrawerOpen}
+        playlistId={selectedPlaylistId}
+        playlistSummary={selectedPlaylistSummary}
+        onClose={handleClosePlaylistDrawer}
+        onVideoSelect={handleDrawerVideoSelect}
+        onSaveToLibrary={handleSavePlaylistToLibrary}
+      />
     </div>
   );
 }

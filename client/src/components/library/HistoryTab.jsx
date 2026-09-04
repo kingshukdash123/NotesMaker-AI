@@ -45,7 +45,7 @@ export default function HistoryTab({
   };
 
   if (isLoading) {
-    return <VideoGridSkeleton count={8} />;
+    return <VideoGridSkeleton count={8} layout="grid" />;
   }
 
   if (history.length === 0) {
@@ -65,9 +65,9 @@ export default function HistoryTab({
   }
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
-      {/* Tab control bar */}
-      <div className="flex items-center justify-between border-b border-zinc-900/50 pb-2">
+    <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden space-y-3 sm:space-y-4 animate-in fade-in duration-300">
+      {/* Tab control bar (Pinned) */}
+      <div className="flex items-center justify-between border-b border-zinc-900/50 pb-2 shrink-0">
         <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-550">WATCH HISTORY</span>
         <button
           type="button"
@@ -80,34 +80,36 @@ export default function HistoryTab({
         </button>
       </div>
 
-      {/* History Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {history.map((item) => {
-          const videoObject = {
-            videoId: item.videoId,
-            videoUrl: item.videoUrl,
-            metadata: item.metadata,
-          };
+      {/* History Grid (Only Grid is Scrollable!) */}
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {history.map((item) => {
+            const videoObject = {
+              videoId: item.videoId,
+              videoUrl: item.videoUrl,
+              metadata: item.metadata,
+            };
 
-          return (
-            <LibraryVideoCard
-              key={item.id}
-              video={videoObject}
-              playlists={playlists}
-              onOpen={() => handleOpenItem(item)}
-              onDelete={async () => {
-                const confirmed = await showConfirm('Are you sure you want to remove this video from your watch history?');
-                if (confirmed) {
-                  deleteItem(item.id);
-                }
-              }}
-              onAddToPlaylist={onTogglePlaylistAssociation}
-              onCreatePlaylist={onCreatePlaylist}
-              onSave={() => onToggleSave(videoObject)}
-              isSaved={savedVideos.some(v => v.videoId === item.videoId)}
-            />
-          );
-        })}
+            return (
+              <LibraryVideoCard
+                key={item.id}
+                video={videoObject}
+                playlists={playlists}
+                onOpen={() => handleOpenItem(item)}
+                onDelete={async () => {
+                  const confirmed = await showConfirm('Are you sure you want to remove this video from your watch history?');
+                  if (confirmed) {
+                    deleteItem(item.id);
+                  }
+                }}
+                onAddToPlaylist={onTogglePlaylistAssociation}
+                onCreatePlaylist={onCreatePlaylist}
+                onSave={() => onToggleSave(videoObject)}
+                isSaved={savedVideos.some(v => v.videoId === item.videoId)}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

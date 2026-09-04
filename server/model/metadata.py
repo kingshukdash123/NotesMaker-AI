@@ -8,3 +8,4 @@ class VideoMetadata(TypedDict):
     channel: str
     thumbnail: str
     available_languages: NotRequired[list[dict]]
+    is_live: NotRequired[bool]

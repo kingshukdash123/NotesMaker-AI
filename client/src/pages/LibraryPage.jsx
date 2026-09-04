@@ -190,11 +190,11 @@ export default function LibraryPage() {
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="max-w-7xl mx-auto p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
+    <div className="flex-1 w-full h-full flex flex-col min-h-0 overflow-hidden">
+      <div className="max-w-7xl w-full mx-auto p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-5 pb-2 sm:pb-4 animate-in fade-in duration-300">
         
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Page Header (Pinned) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
           <div className="space-y-1">
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-50 flex items-center gap-2">
               <Library className="w-5 h-5 text-orange-500" />
@@ -213,8 +213,8 @@ export default function LibraryPage() {
           onCreate={handleCreatePlaylist}
         />
 
-        {/* Library Sub-navigation tab bar */}
-        <div className="flex border-b border-zinc-900/60 pb-px overflow-x-auto select-none custom-scrollbar flex-nowrap">
+        {/* Library Sub-navigation tab bar (Pinned) */}
+        <div className="flex border-b border-zinc-900/60 pb-px overflow-x-auto select-none custom-scrollbar flex-nowrap shrink-0">
           {subTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = libraryTab === tab.id;
@@ -242,7 +242,7 @@ export default function LibraryPage() {
         </div>
 
         {/* Library Sub-tab Content Pane */}
-        <div className="min-h-0 w-full flex-1">
+        <div className="min-h-0 w-full flex-1 flex flex-col overflow-hidden">
           {libraryTab === 'history' && (
             <HistoryTab 
               onOpenVideo={handleOpenVideo} 
@@ -269,6 +269,7 @@ export default function LibraryPage() {
             <SavedVideosTab
               savedVideos={savedVideos}
               playlists={playlists}
+              isLoading={isLoading}
               onOpenVideo={handleOpenVideo}
               onRemoveVideo={handleRemoveVideo}
               onTogglePlaylistAssociation={handleTogglePlaylistAssociation}

@@ -201,17 +201,42 @@ export async function askVideoQuestionStream(
  * @param {string} query - The search term
  * @param {string} category - Category filter (e.g. 'all', 'science')
  * @param {string} pageToken - Optional pagination token
+ * @param {string} type - Content type filter ('all', 'video', 'playlist', 'live')
  * @returns {Promise<Object>} Search results and nextPageToken
  */
-export async function searchYouTube(query, category = 'all', pageToken = '') {
-  let url = `${API_BASE_URL}/youtube/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
+export async function searchYouTube(query, category = 'all', pageToken = '', type = 'all') {
+  let url = `${API_BASE_URL}/youtube/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&type=${encodeURIComponent(type)}`;
   if (pageToken) {
     url += `&pageToken=${encodeURIComponent(pageToken)}`;
   }
   const response = await apiFetch(url);
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `Failed to search YouTube videos (${response.status})`);
+    throw new Error(errorData.detail || `Failed to search YouTube content (${response.status})`);
   }
   return response.json();
 }
+
+/**
+ * Fetches videos and info inside a YouTube playlist with pagination or all items.
+ * @param {string} playlistId - The YouTube playlist ID
+ * @param {string} [pageToken=''] - Optional pagination page token
+ * @param {boolean} [fetchAll=false] - When true, fetches all pages across the playlist in strict sequence
+ * @returns {Promise<Object>} Playlist metadata, videos list, and nextPageToken
+ */
+export async function fetchYouTubePlaylistItems(playlistId, pageToken = '', fetchAll = false) {
+  let url = `${API_BASE_URL}/youtube/playlist?playlistId=${encodeURIComponent(playlistId)}`;
+  if (fetchAll) {
+    url += '&fetchAll=true';
+  } else if (pageToken) {
+    url += `&pageToken=${encodeURIComponent(pageToken)}`;
+  }
+  const response = await apiFetch(url);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to load playlist (${response.status})`);
+  }
+  return response.json();
+}
+
+

@@ -18,6 +18,10 @@ export function AppProvider({ children }) {
   const [libraryTab, setLibraryTab] = useState(initialRoute.libraryTab || 'history');
   const [plannerTab, setPlannerTab] = useState(initialRoute.plannerTab || 'daily');
   const [videoTab, setVideoTab] = useState(initialRoute.videoTab || 'notes');
+  const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery || '');
+  const [searchCategory, setSearchCategory] = useState(initialRoute.searchCategory || 'all');
+  const [searchType, setSearchType] = useState(initialRoute.searchType || 'all');
+  const [activePlaylistId, setActivePlaylistId] = useState(initialRoute.playlistId || '');
   const [processedVideoIds, setProcessedVideoIds] = useState(new Set());
   
   // States for the active video content page (watch/study)
@@ -160,6 +164,14 @@ export function AppProvider({ children }) {
     setPlannerTab,
     videoTab,
     setVideoTab,
+    searchQuery,
+    setSearchQuery,
+    searchCategory,
+    setSearchCategory,
+    searchType,
+    setSearchType,
+    activePlaylistId,
+    setActivePlaylistId,
     activeVideoId,
     setActiveVideoId,
     activeVideoUrl,

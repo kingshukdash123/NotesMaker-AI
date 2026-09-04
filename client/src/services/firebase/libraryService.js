@@ -32,6 +32,45 @@ export async function createPlaylist(userId, name) {
 }
 
 /**
+ * Creates a new playlist with initial videos in strict sequence in a single Firestore write.
+ * @param {string} userId - Auth user ID
+ * @param {string} name - Playlist title
+ * @param {Array} videos - Complete array of video objects in sequence
+ * @returns {Promise<{ id: string, name: string, videoCount: number, videos: Array }>}
+ */
+export async function createPlaylistWithVideos(userId, name, videos = []) {
+  if (!userId) throw new Error('User ID is required');
+
+  const formattedVideos = (videos || []).map((v, idx) => ({
+    videoId: v.videoId,
+    videoUrl: v.videoUrl || `https://www.youtube.com/watch?v=${v.videoId}`,
+    metadata: {
+      title: v.metadata?.title || v.title || 'YouTube Video',
+      channel: v.metadata?.channel || v.channel || 'Unknown Creator',
+      thumbnail: v.metadata?.thumbnail || v.thumbnail || (v.videoId ? `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg` : ''),
+    },
+    position: typeof v.position === 'number' ? v.position : idx,
+    addedAt: new Date().toISOString(),
+  }));
+
+  const model = new PlaylistModel({
+    userId,
+    name: name || 'Saved Course',
+    videos: formattedVideos,
+  });
+
+  const playlistRef = collection(db, 'playlists');
+  const docRef = await addDoc(playlistRef, model.toFirestore({ isNew: true }));
+
+  return {
+    id: docRef.id,
+    name: model.name,
+    videoCount: formattedVideos.length,
+    videos: formattedVideos,
+  };
+}
+
+/**
  * Retrieves all playlists created by a user.
  * @returns {Promise<Array<PlaylistModel>>}
  */

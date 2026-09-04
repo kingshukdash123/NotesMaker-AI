@@ -30,7 +30,7 @@ export default function LibrarySkeleton() {
         </div>
 
         {/* Video Card Grid Skeleton */}
-        <VideoGridSkeleton count={8} />
+        <VideoGridSkeleton count={8} layout="grid" />
 
       </div>
     </div>
