@@ -9,7 +9,7 @@ export default function Header({
   isSidebarMobileOpen = false,
   setIsSidebarMobileOpen,
 }) {
-  const { currentUser } = useAuth();
+  const { currentUser, getUserDisplayName } = useAuth();
   const { setActiveSection, setIsProfileOpen, resetActiveVideo } = useApp();
   const { isDark } = useTheme();
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
@@ -136,7 +136,7 @@ export default function Header({
               title="User Profile"
               aria-label="Open User Profile"
             >
-              {currentUser.email?.charAt(0) || 'U'}
+              {getUserDisplayName(currentUser)?.charAt(0) || currentUser.phoneNumber?.slice(-2) || 'U'}
             </button>
           )}
         </div>

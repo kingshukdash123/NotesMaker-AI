@@ -187,16 +187,24 @@ export default function SettingsModal({ apiStatus = 'healthy', onOpenApiModal })
 
         {/* Status Alerts */}
         {keysError && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-            <span>{keysError}</span>
+          <div className={`mb-4 p-3 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
+            isDark 
+              ? 'bg-red-950/50 border-red-500/40 text-red-200' 
+              : 'bg-red-50 border-red-200 text-red-950'
+          }`}>
+            <AlertCircle className={`w-4 h-4 shrink-0 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
+            <span className="font-semibold">{keysError}</span>
           </div>
         )}
 
         {keysSuccess && (
-          <div className="mb-4 p-3 rounded-lg bg-orange-950/20 border border-orange-500/30 text-orange-300 text-xs flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-400" />
-            <span>{keysSuccess}</span>
+          <div className={`mb-4 p-3 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
+            isDark 
+              ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' 
+              : 'bg-orange-50 border-orange-300 text-orange-950'
+          }`}>
+            <CheckCircle2 className={`w-4 h-4 shrink-0 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
+            <span className="font-semibold">{keysSuccess}</span>
           </div>
         )}
 

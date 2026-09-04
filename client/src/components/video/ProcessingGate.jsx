@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw, ArrowRight, Radio, Sparkles } from 'lucide-react';
+import { AlertCircle, RefreshCw, ArrowRight, Radio, Cpu } from 'lucide-react';
 import VideoProcessingSkeleton from './VideoProcessingSkeleton';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -110,7 +110,7 @@ export default function ProcessingGate({
       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
         isDark ? 'bg-zinc-900 text-orange-400' : 'bg-orange-100 text-orange-600'
       }`}>
-        <Sparkles className="w-5 h-5" />
+        <Cpu className="w-5 h-5" />
       </div>
 
       <div className="space-y-1">
