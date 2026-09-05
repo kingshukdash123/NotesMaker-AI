@@ -63,9 +63,17 @@ export default function Header({
     }
   };
 
+  const handleLogoClick = () => {
+    resetActiveVideo();
+    setActiveSection('dashboard');
+    const targetUrl = currentUser ? '/dashboard' : '/';
+    if (window.location.pathname !== targetUrl) {
+      window.history.pushState(null, '', targetUrl);
+    }
+  };
+
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-3 transition-colors duration-200 border-b ${isDark ? 'bg-black/80 border-zinc-800/80' : 'bg-white/90 border-orange-200/80 shadow-xs'
-      }`}>
+    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-3 transition-colors duration-200 border-b ${isDark ? 'bg-black/80 border-zinc-800/80' : 'bg-white/90 border-orange-200/80 shadow-xs'}`}>
       <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
         {/* Brand Logo & Name */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
@@ -81,13 +89,17 @@ export default function Header({
           )}
 
           <div
-            className="flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer select-none"
-            onClick={() => {
-              if (currentUser) {
-                resetActiveVideo();
-                setActiveSection('dashboard');
+            role="button"
+            tabIndex={0}
+            aria-label="Go to Home"
+            onClick={handleLogoClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleLogoClick();
               }
             }}
+            className="flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer select-none transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
             <img
               src="/logo2.png"

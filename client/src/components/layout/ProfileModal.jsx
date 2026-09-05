@@ -18,7 +18,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 export default function ProfileModal() {
   const { isDark } = useTheme();
-  const { isProfileOpen, setIsProfileOpen } = useApp();
+  const { isProfileOpen, setIsProfileOpen, setActiveSection, resetActiveVideo } = useApp();
   const { 
     currentUser, 
     userProfile, 
@@ -56,6 +56,9 @@ export default function ProfileModal() {
     setIsProfileOpen(false);
     try {
       await logout();
+      if (resetActiveVideo) resetActiveVideo();
+      if (setActiveSection) setActiveSection('dashboard');
+      window.history.replaceState(null, '', '/');
     } catch (err) {
       console.error('Logout failed:', err);
     }

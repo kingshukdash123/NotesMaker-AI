@@ -1,18 +1,18 @@
 /**
  * SEO, Document Metadata, and Open Graph Constants for Pathshala AI
  */
+import { SITE_URL, SITE_NAME } from './companyConstants.js';
 
-export const SITE_URL = 'https://pathshala-ai.web.app';
-export const SITE_NAME = 'Pathshala AI';
+export { SITE_URL, SITE_NAME };
 export const DEFAULT_IMAGE = `${SITE_URL}/logo2.png`;
 export const DEFAULT_ROBOTS = 'index, follow';
 export const DEFAULT_TWITTER_CARD = 'summary_large_image';
 
 export const SEO_PAGE_CONFIGS = {
   landing: {
-    title: 'Pathshala AI — Autonomous Video Note Generator & Study Companion',
-    description: 'Transform educational YouTube videos into structured study notes, AI summaries, flashcards, and interactive Q&A.',
-    keywords: 'AI notes, YouTube study notes, lecture transcriber, video summarizer, study planner, educational AI',
+    title: 'Pathshala AI — Distraction-Free Study & Productivity Platform',
+    description: 'One platform for distraction-free study and maximum productivity. Focused educational lectures, structured AI notes, smart planner, and personal AI mentorship.',
+    keywords: 'distraction-free study, study productivity, AI study notes, student focus, lecture notes, study planner, educational AI, academic productivity, Guruji AI mentor',
     path: '/',
   },
   dashboard: {
@@ -68,5 +68,43 @@ export const SEO_PAGE_CONFIGS = {
     description: 'Converse with Guruji, your dedicated personal study mentor for real-time explanations, motivation, and conceptual clarity.',
     keywords: 'Guruji, Pathshala AI, personal mentor, AI tutor, study assistant, academic chat',
     path: '/assistant',
+  },
+
+  // --- Legal & Policy Pages ---
+  legal: {
+    title: 'Legal Center — Policies & Terms | Pathshala AI',
+    description: 'Access all Pathshala AI legal documents including Privacy Policy, Terms of Service, AI Disclaimer, Cookie Policy, and Refund & Cancellation Policy.',
+    keywords: 'Pathshala AI legal, privacy policy, terms of service, refund policy, cookie policy, AI disclaimer',
+    path: '/legal',
+  },
+  privacy: {
+    title: 'Privacy Policy | Pathshala AI',
+    description: 'Learn how Pathshala AI collects, uses, and protects your personal data in compliance with GDPR, CCPA, and the India DPDP Act 2023.',
+    keywords: 'Pathshala AI privacy policy, data protection, GDPR, DPDP Act, personal data, privacy-first, secure study platform',
+    path: '/privacy',
+  },
+  terms: {
+    title: 'Terms of Service | Pathshala AI',
+    description: 'Read the Pathshala AI Terms of Service covering acceptable use, account responsibilities, service tiers, intellectual property, and limitation of liability.',
+    keywords: 'Pathshala AI terms of service, user agreement, acceptable use, account terms, educational AI terms',
+    path: '/terms',
+  },
+  disclaimer: {
+    title: 'AI & Academic Integrity Disclaimer | Pathshala AI',
+    description: 'Important disclosures about AI-generated content accuracy, YouTube fair use, and academic integrity guidelines for students using Pathshala AI.',
+    keywords: 'AI disclaimer, academic integrity, AI hallucination, fair use, YouTube disclaimer, educational AI',
+    path: '/disclaimer',
+  },
+  cookies: {
+    title: 'Cookie & Storage Policy | Pathshala AI',
+    description: 'Understand how Pathshala AI uses browser cookies, local storage, and session tokens — with zero invasive advertising trackers.',
+    keywords: 'cookie policy, local storage, session tokens, authentication, browser storage, privacy-first',
+    path: '/cookies',
+  },
+  refund: {
+    title: 'Refund & Cancellation Policy | Pathshala AI',
+    description: 'Pathshala AI refund and cancellation policy covering digital subscription terms, billing cycles, pro-rata refunds, and grievance redressal.',
+    keywords: 'Pathshala AI refund policy, subscription cancellation, digital refund, billing terms, grievance',
+    path: '/refund',
   },
 };

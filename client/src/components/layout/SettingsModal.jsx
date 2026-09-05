@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Key, Save, Loader2, AlertCircle, CheckCircle2, ExternalLink, Sun, Moon, Palette } from 'lucide-react';
+import { X, Key, Save, Loader2, AlertCircle, CheckCircle2, Sun, Moon, Palette, ExternalLink } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';

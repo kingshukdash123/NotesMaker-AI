@@ -10,3 +10,4 @@ export { UserApiKeyModel } from './userApiKeyModel';
 export { UserActivityModel } from './userActivityModel';
 export { SearchCacheModel } from './searchCacheModel';
 export { TranscriptModel } from './transcriptModel';
+export { LegalPolicyModel } from './legalPolicyModel';

@@ -3,10 +3,21 @@
  * Handles parsing deep links, sub-tabs, and YouTube watch URLs (/watch?v=VIDEO_ID).
  */
 
-const VALID_SECTIONS = new Set(['dashboard', 'discover', 'search', 'library', 'planner', 'assistant', 'watch']);
-const VALID_LIBRARY_TABS = new Set(['history', 'notes', 'saved', 'playlists']);
-const VALID_PLANNER_TABS = new Set(['daily', 'monthly']);
-const VALID_VIDEO_TABS = new Set(['notes', 'summary', 'qa']);
+import {
+  VALID_SECTIONS,
+  LEGAL_SECTIONS,
+  VALID_LIBRARY_TABS,
+  VALID_PLANNER_TABS,
+  VALID_VIDEO_TABS,
+} from '../constants';
+
+export {
+  VALID_SECTIONS,
+  LEGAL_SECTIONS,
+  VALID_LIBRARY_TABS,
+  VALID_PLANNER_TABS,
+  VALID_VIDEO_TABS,
+};
 
 /**
  * Extracts an 11-character YouTube video ID from various URL formats or plain ID string.
@@ -182,7 +193,10 @@ export function parseLocation(
 
   // 2. Parse main navigation sections and sub-tabs if not currently watching a video
   if (!videoId) {
-    if (firstPart === 'search') {
+    // Legal/policy routes — available to both authenticated and unauthenticated users
+    if (LEGAL_SECTIONS.has(firstPart)) {
+      section = firstPart;
+    } else if (firstPart === 'search') {
       section = 'discover';
     } else if (VALID_SECTIONS.has(firstPart)) {
       section = firstPart === 'watch' ? 'discover' : firstPart;
@@ -284,6 +298,11 @@ export function buildUrl({
 
   if (section === 'assistant') {
     return '/assistant';
+  }
+
+  // Legal / policy pages — clean direct URLs
+  if (LEGAL_SECTIONS.has(section)) {
+    return `/${section}`;
   }
 
   return `/${section}`;

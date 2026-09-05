@@ -15,6 +15,7 @@ import DiscoverPage from './pages/DiscoverPage';
 import LibraryPage from './pages/LibraryPage';
 import PlannerPage from './pages/PlannerPage';
 import AssistantPage from './pages/AssistantPage';
+import PolicyPage from './pages/PolicyPage';
 
 // Context
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -25,6 +26,7 @@ import { checkServerHealth, subscribeToApiDisconnect } from './services/server/s
 import { logUserActivity } from './services/firebase/activityService';
 import { parseLocation, buildUrl } from './utils/router';
 import { updatePageSEO } from './utils/seo';
+import { LEGAL_SECTIONS, LEGAL_NAV_ITEMS } from './constants';
 
 function MainApp() {
   const { currentUser } = useAuth();
@@ -72,10 +74,17 @@ function MainApp() {
 
   // Handle browser back/forward (popstate) navigation
   useEffect(() => {
-    if (!currentUser) return;
-
     const handlePopState = () => {
       const parsed = parseLocation(window.location.pathname, window.location.search);
+      if (!currentUser) {
+        if (LEGAL_SECTIONS.has(parsed.section)) {
+          setActiveSection(parsed.section);
+        } else {
+          setActiveSection('dashboard');
+        }
+        return;
+      }
+
       if (parsed.videoId) {
         setActiveSection('discover');
         setActiveVideoId(parsed.videoId);
@@ -154,13 +163,34 @@ function MainApp() {
     }
   }, [currentUser]);
 
+  // Detect logout and redirect to home page
+  const prevUserRef = useRef(currentUser);
+  useEffect(() => {
+    if (prevUserRef.current && !currentUser) {
+      resetActiveVideo();
+      setActiveSection('dashboard');
+      window.history.replaceState(null, '', '/');
+      updatePageSEO({ isLoggedIn: false });
+    }
+    prevUserRef.current = currentUser;
+  }, [currentUser, resetActiveVideo, setActiveSection]);
+
   // Sync state back to URL and update SEO metadata
   useEffect(() => {
     if (!currentUser) {
-      if (window.location.pathname !== '/' && window.location.pathname !== '') {
-        window.history.replaceState(null, '', '/');
+      // Allow legal/policy pages to remain accessible and update URL for logged-out visitors
+      if (LEGAL_SECTIONS.has(activeSection)) {
+        const targetUrl = activeSection === 'legal' ? '/privacy' : `/${activeSection}`;
+        if (window.location.pathname !== targetUrl) {
+          window.history.pushState(null, '', targetUrl);
+        }
+        updatePageSEO({ isLoggedIn: false, section: activeSection === 'legal' ? 'privacy' : activeSection });
+      } else {
+        if (window.location.pathname !== '/' && window.location.pathname !== '') {
+          window.history.pushState(null, '', '/');
+        }
+        updatePageSEO({ isLoggedIn: false });
       }
-      updatePageSEO({ isLoggedIn: false });
       return;
     }
 
@@ -281,8 +311,8 @@ function MainApp() {
       />
 
       {/* Settings Modal */}
-      <SettingsModal 
-        apiStatus={apiStatus} 
+      <SettingsModal
+        apiStatus={apiStatus}
         onOpenApiModal={() => {
           setShowDisconnectModal(true);
           checkHealth(true);
@@ -308,14 +338,46 @@ function MainApp() {
           </div>
 
           <div className="flex-1 w-full flex flex-col px-4 sm:px-8 pb-12 pt-20 sm:pt-24 max-w-7xl mx-auto transition-all duration-300 relative z-10">
-            <main className="flex-1 min-w-0 w-full flex items-center justify-center">
-              <HomeSection onOpenAuthModal={handleOpenAuthModal} />
+            <main className={`flex-1 min-w-0 w-full ${LEGAL_SECTIONS.has(activeSection) ? 'flex flex-col' : 'flex items-center justify-center'
+              }`}>
+              {LEGAL_SECTIONS.has(activeSection)
+                ? <PolicyPage slug={activeSection} />
+                : <HomeSection onOpenAuthModal={handleOpenAuthModal} />
+              }
             </main>
           </div>
 
-          <footer className={`relative z-10 border-t py-6 text-center text-xs transition-colors backdrop-blur-sm ${isDark ? 'border-zinc-900 bg-black/80 text-zinc-500' : 'border-orange-200/80 bg-white/75 text-orange-900/70'
+          <footer className={`relative z-10 border-t transition-colors backdrop-blur-sm ${isDark ? 'border-zinc-900 bg-black/80' : 'border-orange-200/80 bg-white/75'
             }`}>
-            <p>Pathshala A<i>I</i> - All Rights Reserved</p>
+            <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+              {/* Brand */}
+              <button
+                type="button"
+                onClick={() => {
+                  resetActiveVideo();
+                  setActiveSection('dashboard');
+                }}
+                className={`text-xs font-medium shrink-0 cursor-pointer hover:underline text-left ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-900/60 hover:text-orange-950'
+                  }`}
+                title="Go to Home"
+              >
+                &copy; {new Date().getFullYear()} Pathshala A<i>I</i> &mdash; All Rights Reserved
+              </button>
+              {/* Legal Links */}
+              <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                {LEGAL_NAV_ITEMS.map(({ slug, shortLabel, label }) => (
+                  <button
+                    key={slug}
+                    type="button"
+                    onClick={() => setActiveSection(slug)}
+                    className={`text-[11px] transition hover:underline underline-offset-2 cursor-pointer ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-orange-900/60 hover:text-orange-600'
+                      }`}
+                  >
+                    {shortLabel || label}
+                  </button>
+                ))}
+              </nav>
+            </div>
           </footer>
         </>
       ) : (
@@ -338,6 +400,7 @@ function MainApp() {
               {activeSection === 'library' && <LibraryPage />}
               {activeSection === 'planner' && <PlannerPage />}
               {activeSection === 'assistant' && <AssistantPage />}
+              {LEGAL_SECTIONS.has(activeSection) && <PolicyPage slug={activeSection} />}
             </div>
           </div>
 

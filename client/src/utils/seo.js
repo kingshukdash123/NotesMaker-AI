@@ -11,7 +11,8 @@ import {
   DEFAULT_ROBOTS,
   DEFAULT_TWITTER_CARD,
   SEO_PAGE_CONFIGS,
-} from '../constants/seoConstants';
+  LEGAL_SECTIONS,
+} from '../constants';
 
 // Re-export constants for backward-compatibility
 export {
@@ -127,6 +128,20 @@ export function updatePageSEO({
       description: `Explore academic lectures, course playlists, and AI study notes for "${cleanQ}" on Pathshala AI.`,
       keywords: `${cleanQ}, online lectures, course playlists, study notes, academic tutorials, ${SITE_NAME}`,
       canonicalUrl: `${SITE_URL}/discover?q=${encodeURIComponent(cleanQ)}`,
+      ogType: 'website',
+      image: DEFAULT_IMAGE,
+    });
+    return;
+  }
+
+  // Legal / policy pages
+  if (LEGAL_SECTIONS.has(section)) {
+    const config = SEO_PAGE_CONFIGS[section] || SEO_PAGE_CONFIGS.legal;
+    applySEO({
+      title: config.title,
+      description: config.description,
+      keywords: config.keywords,
+      canonicalUrl: `${SITE_URL}${config.path}`,
       ogType: 'website',
       image: DEFAULT_IMAGE,
     });

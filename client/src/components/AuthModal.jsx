@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { COMPANY_NAME } from '../constants';
 import { 
   X, 
   LogIn, 
@@ -629,6 +630,33 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
               </p>
             )}
           </div>
+        )}
+
+        {/* Legal Consent Notice (Sign Up step only) */}
+        {step === 'input' && isSignUp && (
+          <p className={`mt-3 text-center text-[10px] leading-relaxed ${
+            isDark ? 'text-zinc-600' : 'text-orange-900/40'
+          }`}>
+            By creating an account, you agree to {COMPANY_NAME}&apos;s{' '}
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-500/70 hover:text-orange-500 underline underline-offset-1 transition"
+            >
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-500/70 hover:text-orange-500 underline underline-offset-1 transition"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
         )}
       </div>
     </div>

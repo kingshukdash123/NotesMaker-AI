@@ -21,7 +21,7 @@ export default function HomeSection({ onOpenAuthModal }) {
           <p className={`text-base sm:text-lg leading-relaxed max-w-2xl mx-auto ${
             isDark ? 'text-zinc-400' : 'text-orange-900/80 font-medium'
           }`}>
-            An intelligent learning environment for students. Understand lectures, generate academic notes, ask questions, and plan your study goals in one unified space.
+            Your all-in-one platform for distraction-free study and maximum productivity. Stream lectures without interruptions, generate structured notes, consult your AI mentor, and plan your study goals in one unified space.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-5 pt-6">

@@ -14,6 +14,8 @@ ALLOWED_ORIGINS = [
     "https://pathshala-ai.web.app",
     "https://notesmaker-ai-56407.web.app",
     "https://notesmaker-ai-56407.firebaseapp.com",
+    "https://pathshalaai.co.in",
+    "https://www.pathshalaai.co.in",
 ]
 
 # Task Execution and Cache

@@ -5,11 +5,13 @@ import {
   Calendar,
   Bot,
   Settings,
+  Scale,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
+import { LEGAL_SECTIONS } from '../../constants';
 
 export default function Sidebar({
   isSidebarMobileOpen,
@@ -54,10 +56,18 @@ export default function Sidebar({
         {/* Toggle Collapse Button for Desktop */}
         <div className={`hidden lg:flex items-center mb-4 px-1.5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isSidebarCollapsed && (
-            <h3 className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-orange-700'
-              }`}>
+            <button
+              type="button"
+              onClick={() => {
+                resetActiveVideo();
+                setActiveSection('dashboard');
+              }}
+              className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-orange-700 hover:text-orange-900'
+                }`}
+              title="Go to Dashboard"
+            >
               Pathshala
-            </h3>
+            </button>
           )}
           <button
             type="button"
@@ -71,10 +81,19 @@ export default function Sidebar({
 
         {/* Mobile Header indicator */}
         <div className="lg:hidden block px-2 mb-4">
-          <h3 className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-orange-700'
-            }`}>
+          <button
+            type="button"
+            onClick={() => {
+              resetActiveVideo();
+              setActiveSection('dashboard');
+              if (setIsSidebarMobileOpen) setIsSidebarMobileOpen(false);
+            }}
+            className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-orange-700 hover:text-orange-900'
+              }`}
+            title="Go to Dashboard"
+          >
             Pathshala
-          </h3>
+          </button>
         </div>
 
         {/* Navigation Links */}
@@ -110,19 +129,49 @@ export default function Sidebar({
           })}
         </nav>
 
-        {/* Footer controls: Settings, Profile & API status */}
-        <div className={`pt-3 border-t space-y-2 ${isDark ? 'border-zinc-900' : 'border-orange-200/80'}`}>
+        {/* Footer controls: Legal, Settings, Profile & API status */}
+        <div className={`pt-3 border-t space-y-1.5 ${isDark ? 'border-zinc-900' : 'border-orange-200/80'}`}>
+          {/* Legal / Policy Tab */}
+          <button
+            type="button"
+            onClick={() => {
+              if (activeVideoId) {
+                resetActiveVideo();
+              }
+              setActiveSection(LEGAL_SECTIONS.has(activeSection) ? activeSection : 'privacy');
+              setIsSidebarMobileOpen(false);
+            }}
+            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
+              isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+            } ${
+              LEGAL_SECTIONS.has(activeSection)
+                ? isDark
+                  ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
+                  : 'bg-orange-100 text-orange-700 border border-orange-300 font-bold shadow-xs'
+                : isDark
+                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent'
+                  : 'text-orange-950/80 hover:text-orange-700 hover:bg-orange-50/80 border border-transparent'
+            }`}
+            title="Legal & Policies"
+          >
+            <Scale className="w-4 h-4 shrink-0" />
+            <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>Legal &amp; Policies</span>
+          </button>
+
           {/* Settings Trigger */}
           <button
+            type="button"
             onClick={() => {
               setIsSettingsOpen(true);
               setIsSidebarMobileOpen(false);
             }}
-            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
-              } ${isDark
+            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
+              isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+            } ${
+              isDark
                 ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
                 : 'text-orange-950/80 hover:text-orange-700 hover:bg-orange-50/80'
-              }`}
+            }`}
             title="Configure Settings"
           >
             <Settings className="w-4 h-4 shrink-0" />
