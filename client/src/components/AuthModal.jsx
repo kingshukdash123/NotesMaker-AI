@@ -109,8 +109,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
       return 'SMS limit reached. Please try again later.';
     } else if (code.includes('captcha-check-failed')) {
       return 'Security verification failed. Please try again.';
-    } else if (code.includes('operation-not-allowed')) {
-      return 'SMS service is currently unavailable for this number. Please try again later.';
+    } else if (code.includes('operation-not-allowed') || code.includes('billing-not-enabled')) {
+      return 'SMS verification service is currently unavailable. Please try again shortly.';
+    } else if (code.includes('network-request-failed')) {
+      return 'Network connection issue. Please check your internet and try again.';
     } else {
       return 'Something went wrong. Please try again.';
     }
