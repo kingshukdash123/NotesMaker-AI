@@ -24,6 +24,10 @@ import {
   GRIEVANCE_EMAIL,
   COMPANY_NAME,
 } from '../constants';
+import DocSectionCard from '../components/common/DocSectionCard';
+import StickyToc from '../components/common/StickyToc';
+import TabPillSwitcher from '../components/common/TabPillSwitcher';
+import DocPageHeader from '../components/common/DocPageHeader';
 
 // ─── Icon Map ───────────────────────────────────────────────────────────────
 const ICON_MAP = {
@@ -209,9 +213,11 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
     <div className={`flex-1 min-h-full overflow-y-auto custom-scrollbar ${bg}`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6">
 
-        {/* ── Breadcrumb / Back to Home (Visible only when not logged in) ── */}
-        {!currentUser && (
-          <div>
+        {/* ── Page Header using Reusable DocPageHeader ── */}
+        <DocPageHeader
+          title="Legal Center"
+          subtitle={`All ${COMPANY_NAME} legal documents, policies, and terms — always up to date.`}
+          backAction={!currentUser && (
             <button
               type="button"
               onClick={() => {
@@ -225,40 +231,19 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Home</span>
             </button>
-          </div>
-        )}
+          )}
+        />
 
-        {/* ── Page Title ── */}
-        <div className="space-y-1">
-          <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${textPrimary}`}>
-            Legal Center
-          </h1>
-          <p className={`text-sm ${textSecondary}`}>
-            All {COMPANY_NAME} legal documents, policies, and terms — always up to date.
-          </p>
-        </div>
-
-        {/* ── Tab Switcher (Horizontal scroll for all devices) ── */}
-        <div className="flex items-center gap-2 overflow-x-auto py-1.5 px-0.5 custom-scrollbar text-xs scroll-smooth flex-nowrap w-full">
-          {LEGAL_POLICY_SLUGS.map((slug) => {
-            const IconComp = ICON_MAP[LEGAL_POLICY_ICONS[slug]];
-            const isActive = slug === activeSlug;
-            return (
-              <button
-                key={slug}
-                type="button"
-                onClick={() => handleTabChange(slug)}
-                className={`px-4 py-2 !rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 cursor-pointer whitespace-nowrap ${isActive ? 'btn-primary' : 'btn-secondary'
-                  }`}
-              >
-                {IconComp && (
-                  <IconComp className={`w-3.5 h-3.5 ${isActive ? 'text-current' : isDark ? 'text-zinc-400' : 'text-orange-700'}`} />
-                )}
-                <span>{LEGAL_POLICY_LABELS[slug]}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* ── Tab Switcher using Reusable TabPillSwitcher ── */}
+        <TabPillSwitcher
+          tabs={LEGAL_POLICY_SLUGS.map((slug) => ({
+            id: slug,
+            label: LEGAL_POLICY_LABELS[slug],
+            icon: ICON_MAP[LEGAL_POLICY_ICONS[slug]],
+          }))}
+          activeTab={activeSlug}
+          onTabChange={handleTabChange}
+        />
 
         {/* ── Effective Date & Search Row ── */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -281,7 +266,7 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="btn-icon absolute right-2 top-1/2 -translate-y-1/2 !p-1"
+                className="btn-icon absolute right-2 top-1/2 -translate-y-1/2 !p-1 cursor-pointer"
                 title="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -294,35 +279,13 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
         <div className="flex gap-6 items-start">
 
           {/* Left: Sticky Table of Contents (Desktop only) */}
-          <aside className="hidden lg:flex flex-col w-56 shrink-0 sticky top-20 max-h-[calc(100vh-12rem)] overflow-y-auto custom-scrollbar">
-            <div className={`rounded-xl border p-4 space-y-1 ${cardBg}`}>
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-3 ${textMuted}`}>
-                Contents
-              </p>
-              {loading
-                ? Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className={`h-3 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-orange-100'}`} style={{ width: `${55 + (i % 3) * 20}%` }} />
-                ))
-                : filteredSections.map((sec) => (
-                  <button
-                    key={sec.id}
-                    type="button"
-                    title={sec.heading}
-                    onClick={() => {
-                      setActiveSectionId(sec.id);
-                      document.getElementById(`section-${sec.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }}
-                    className={`w-full text-left text-xs py-1.5 px-2 rounded-lg transition cursor-pointer truncate block ${activeSectionId === sec.id
-                        ? 'bg-orange-500/10 text-orange-500 font-semibold'
-                        : `${textSecondary} hover:text-orange-500 hover:bg-orange-500/5`
-                      }`}
-                  >
-                    {sec.heading}
-                  </button>
-                ))
-              }
-            </div>
-          </aside>
+          <StickyToc
+            sections={filteredSections.map((s) => ({ id: s.id, title: s.heading }))}
+            activeSectionId={activeSectionId}
+            onSelectSection={setActiveSectionId}
+            title="Contents"
+            isLoading={loading}
+          />
 
           {/* Right: Policy Content */}
           <div ref={contentRef} className="flex-1 min-w-0 space-y-4">
@@ -348,7 +311,7 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="btn-secondary mt-3 px-3 py-1.5 text-xs font-semibold"
+                    className="btn-secondary mt-3 px-3 py-1.5 text-xs font-semibold cursor-pointer"
                   >
                     Clear search
                   </button>
@@ -356,21 +319,17 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
               </div>
             ) : (
               filteredSections.map((sec) => (
-                <div
+                <DocSectionCard
                   key={sec.id}
-                  id={`section-${sec.id}`}
-                  className={`rounded-xl border p-6 space-y-4 scroll-mt-20 transition-all ${cardBg} ${activeSectionId === sec.id ? 'ring-1 ring-orange-500/30' : ''
-                    }`}
+                  id={sec.id}
+                  title={sec.heading}
+                  isActive={activeSectionId === sec.id}
                   onClick={() => setActiveSectionId(sec.id)}
                 >
-                  <h2 className={`text-base font-bold flex items-center gap-2 ${textPrimary}`}>
-                    <span className="w-1 h-4 rounded-full bg-orange-500 shrink-0" />
-                    {sec.heading}
-                  </h2>
                   <div className={textSecondary}>
                     <PolicyBody body={sec.body} />
                   </div>
-                </div>
+                </DocSectionCard>
               ))
             )}
 

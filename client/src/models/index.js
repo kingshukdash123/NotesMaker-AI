@@ -11,3 +11,12 @@ export { UserActivityModel } from './userActivityModel';
 export { SearchCacheModel } from './searchCacheModel';
 export { TranscriptModel } from './transcriptModel';
 export { LegalPolicyModel } from './legalPolicyModel';
+export { 
+  UserModel, 
+  DEFAULT_STUDENT_PREFERENCES, 
+  EDUCATION_LEVELS, 
+  FIELDS_OF_STUDY, 
+  TARGET_GOALS, 
+  EXPLANATION_STYLES, 
+  MENTOR_TONES 
+} from './userModel';

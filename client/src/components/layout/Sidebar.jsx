@@ -162,15 +162,22 @@ export default function Sidebar({
           <button
             type="button"
             onClick={() => {
-              setIsSettingsOpen(true);
+              if (activeVideoId) {
+                resetActiveVideo();
+              }
+              setActiveSection('settings');
               setIsSidebarMobileOpen(false);
             }}
             className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
               isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
             } ${
-              isDark
-                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-                : 'text-orange-950/80 hover:text-orange-700 hover:bg-orange-50/80'
+              activeSection === 'settings'
+                ? isDark
+                  ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
+                  : 'bg-orange-100 text-orange-700 border border-orange-300 font-bold shadow-xs'
+                : isDark
+                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent'
+                  : 'text-orange-950/80 hover:text-orange-700 hover:bg-orange-50/80 border border-transparent'
             }`}
             title="Configure Settings"
           >

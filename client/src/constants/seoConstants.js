@@ -69,6 +69,12 @@ export const SEO_PAGE_CONFIGS = {
     keywords: 'Guruji, Pathshala AI, personal mentor, AI tutor, study assistant, academic chat',
     path: '/assistant',
   },
+  settings: {
+    title: 'Settings — Mentor Profile, API Keys & Theme | Pathshala AI',
+    description: 'Configure your personalized Guruji study mentor parameters, custom Google Gemini and Groq API keys, and theme mode.',
+    keywords: 'Pathshala AI settings, Guruji preferences, API keys, student profile, theme settings',
+    path: '/settings',
+  },
 
   // --- Legal & Policy Pages ---
   legal: {

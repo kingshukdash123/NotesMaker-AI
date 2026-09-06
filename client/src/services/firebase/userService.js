@@ -10,32 +10,35 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { UserModel, DEFAULT_STUDENT_PREFERENCES } from '../../models/userModel';
+
+export { DEFAULT_STUDENT_PREFERENCES };
 
 /**
- * Creates or overwrites a user profile document in Firestore.
+ * Creates or overwrites a user profile document in Firestore using UserModel.
  * @param {string} uid - Firebase Auth User UID
- * @param {Object} data - Profile details { displayName, phoneNumber, email }
+ * @param {Object} data - Profile details { displayName, phoneNumber, email, preferences, hasCompletedOnboarding }
  * @returns {Promise<Object>} Created user profile data
  */
-export async function createUserProfile(uid, { displayName, phoneNumber, email }) {
+export async function createUserProfile(uid, { displayName, phoneNumber, email, preferences, hasCompletedOnboarding = false }) {
   if (!uid) throw new Error('User UID is required to create a profile.');
 
-  const userRef = doc(db, 'users', uid);
-  const profileData = {
+  const userModel = new UserModel({
     uid,
-    displayName: (displayName || '').trim(),
-    phoneNumber: (phoneNumber || '').trim(),
-    email: email ? email.trim().toLowerCase() : null,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  };
+    displayName,
+    phoneNumber,
+    email,
+    preferences: preferences || DEFAULT_STUDENT_PREFERENCES,
+    hasCompletedOnboarding: Boolean(hasCompletedOnboarding),
+  });
 
-  await setDoc(userRef, profileData, { merge: true });
-  return profileData;
+  const userRef = doc(db, 'users', uid);
+  await setDoc(userRef, userModel.toFirestore({ isNew: true }), { merge: true });
+  return userModel.toPlainObject();
 }
 
 /**
- * Retrieves a user profile by Firebase UID.
+ * Retrieves a user profile by Firebase UID using UserModel.fromFirestore.
  * @param {string} uid - Firebase Auth User UID
  * @returns {Promise<Object|null>} User profile data or null if not found
  */
@@ -47,7 +50,8 @@ export async function getUserProfile(uid) {
     const docSnap = await getDoc(userRef);
 
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+      const userModel = UserModel.fromFirestore(docSnap);
+      return userModel ? userModel.toPlainObject() : null;
     }
     return null;
   } catch (error) {
@@ -105,4 +109,32 @@ export async function updateUserProfile(uid, updates) {
     ...updates,
     updatedAt: serverTimestamp(),
   }, { merge: true });
+}
+
+/**
+ * Updates user learning/mentor preferences in Firestore.
+ * @param {string} uid - Firebase Auth User UID
+ * @param {Object} preferences - Student academic preferences
+ * @param {boolean} hasCompletedOnboarding - Flag indicating onboarding status
+ */
+export async function updateUserPreferences(uid, preferences, hasCompletedOnboarding = true) {
+  if (!uid) throw new Error('User UID is required to update preferences.');
+
+  const userRef = doc(db, 'users', uid);
+  const updatedData = {
+    preferences: UserModel.normalizePreferences(preferences),
+    hasCompletedOnboarding: Boolean(hasCompletedOnboarding),
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(userRef, updatedData, { merge: true });
+  return updatedData;
+}
+
+/**
+ * Marks onboarding as skipped and persists default student preferences.
+ * @param {string} uid - Firebase Auth User UID
+ */
+export async function skipOnboarding(uid) {
+  return updateUserPreferences(uid, DEFAULT_STUDENT_PREFERENCES, true);
 }

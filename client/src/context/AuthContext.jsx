@@ -11,7 +11,10 @@ import {
   createUserProfile, 
   getUserProfile, 
   checkPhoneRegistered,
-  updateUserProfile 
+  updateUserProfile,
+  updateUserPreferences,
+  skipOnboarding,
+  DEFAULT_STUDENT_PREFERENCES
 } from '../services/firebase/userService';
 
 const AuthContext = createContext(null);
@@ -176,6 +179,36 @@ export function AuthProvider({ children }) {
     return { displayName: cleanName, email: cleanEmail };
   };
 
+  /**
+   * Updates student learning / mentor preferences in Firestore and updates local state.
+   */
+  const savePreferences = async (newPreferences) => {
+    if (!currentUser) throw new Error('No user is currently logged in.');
+
+    const result = await updateUserPreferences(currentUser.uid, newPreferences, true);
+    setUserProfile((prev) => ({
+      ...(prev || {}),
+      preferences: result.preferences,
+      hasCompletedOnboarding: true,
+    }));
+    return result.preferences;
+  };
+
+  /**
+   * Skips the onboarding flow and stores default student preferences.
+   */
+  const skipUserOnboarding = async () => {
+    if (!currentUser) return;
+
+    const result = await skipOnboarding(currentUser.uid);
+    setUserProfile((prev) => ({
+      ...(prev || {}),
+      preferences: result.preferences,
+      hasCompletedOnboarding: true,
+    }));
+    return result.preferences;
+  };
+
   const logout = () => {
     setUserProfile(null);
     clearRecaptcha();
@@ -234,7 +267,10 @@ export function AuthProvider({ children }) {
     setupRecaptcha,
     clearRecaptcha,
     setUserProfile,
-    updateProfileDetails
+    updateProfileDetails,
+    savePreferences,
+    skipUserOnboarding,
+    DEFAULT_STUDENT_PREFERENCES
   };
 
   return (

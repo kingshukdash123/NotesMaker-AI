@@ -4,6 +4,7 @@ import Sidebar from './components/layout/Sidebar';
 import SettingsModal from './components/layout/SettingsModal';
 import ProfileModal from './components/layout/ProfileModal';
 import CustomDialogModal from './components/layout/CustomDialogModal';
+import OnboardingModal from './components/layout/OnboardingModal';
 import AuthModal from './components/AuthModal';
 import ApiDisconnectModal from './components/ApiDisconnectModal';
 import RightAssistantSidebar from './components/chat/RightAssistantSidebar';
@@ -16,6 +17,7 @@ import LibraryPage from './pages/LibraryPage';
 import PlannerPage from './pages/PlannerPage';
 import AssistantPage from './pages/AssistantPage';
 import PolicyPage from './pages/PolicyPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Context
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -29,8 +31,15 @@ import { updatePageSEO } from './utils/seo';
 import { LEGAL_SECTIONS, LEGAL_NAV_ITEMS } from './constants';
 
 function MainApp() {
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const { isDark } = useTheme();
+  const [isOnboardingDismissed, setIsOnboardingDismissed] = useState(false);
+  const showOnboarding = Boolean(
+    currentUser && 
+    userProfile && 
+    userProfile.hasCompletedOnboarding !== true && 
+    !isOnboardingDismissed
+  );
   const {
     activeSection,
     setActiveSection,
@@ -322,6 +331,12 @@ function MainApp() {
       {/* Profile Modal */}
       <ProfileModal />
 
+      {/* Onboarding Wizard Modal */}
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setIsOnboardingDismissed(true)}
+      />
+
       {/* Custom Dialog Modal (Confirm/Alert) */}
       <CustomDialogModal />
 
@@ -400,6 +415,7 @@ function MainApp() {
               {activeSection === 'library' && <LibraryPage />}
               {activeSection === 'planner' && <PlannerPage />}
               {activeSection === 'assistant' && <AssistantPage />}
+              {activeSection === 'settings' && <SettingsPage />}
               {LEGAL_SECTIONS.has(activeSection) && <PolicyPage slug={activeSection} />}
             </div>
           </div>

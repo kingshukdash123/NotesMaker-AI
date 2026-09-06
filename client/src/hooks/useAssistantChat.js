@@ -7,8 +7,10 @@ import {
   getAssistantMessages
 } from '../services/firebase/assistantService';
 import { streamAssistantChat } from '../services/server/assistantApi';
+import { useAuth } from '../context/AuthContext';
 
 export function useAssistantChat(currentUser) {
+  const { userProfile } = useAuth() || {};
   const [threads, setThreads] = useState([]);
   const [activeThreadId, setActiveThreadId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -203,6 +205,7 @@ export function useAssistantChat(currentUser) {
         : '';
       // Only send the last 4 messages (excluding the placeholder) for context
       const recentMessages = [...cleanHistory, userMessage].slice(-4);
+      const studentProfile = userProfile?.preferences || null;
 
       await streamAssistantChat(
         recentMessages,
@@ -229,7 +232,8 @@ export function useAssistantChat(currentUser) {
         (err) => {
           throw err;
         },
-        userName
+        userName,
+        studentProfile
       );
 
       // Streaming completed successfully
