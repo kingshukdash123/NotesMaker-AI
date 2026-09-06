@@ -10,8 +10,7 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Lock,
-  Loader2,
-  GraduationCap
+  Loader2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
@@ -203,33 +202,6 @@ export default function ProfileModal() {
                 }`} title={currentEmail || 'Not provided'}>
                   {currentEmail || 'Not provided'}
                 </span>
-              </div>
-            </div>
-
-            {/* Guruji Mentor Profile Card */}
-            <div className={`border rounded-xl p-3.5 space-y-2 text-xs ${
-              isDark ? 'bg-orange-950/15 border-orange-900/30' : 'bg-orange-50/80 border-orange-200'
-            }`}>
-              <div className="flex items-center justify-between">
-                <span className="font-bold flex items-center gap-1.5 text-orange-500">
-                  <GraduationCap className="w-3.5 h-3.5" />
-                  Guruji Mentor Profile
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    if (resetActiveVideo) resetActiveVideo();
-                    setActiveSection('settings');
-                  }}
-                  className="text-[11px] font-semibold text-orange-500 hover:underline cursor-pointer"
-                >
-                  Edit in Settings
-                </button>
-              </div>
-              <div className={`text-[11px] space-y-1 ${isDark ? 'text-zinc-400' : 'text-orange-900/80'}`}>
-                <p><span className={isDark ? 'text-zinc-500' : 'text-orange-800/60'}>Stage:</span> {userProfile?.preferences?.educationLevel || 'College / Undergraduate'}</p>
-                <p><span className={isDark ? 'text-zinc-500' : 'text-orange-800/60'}>Goal:</span> {userProfile?.preferences?.targetGoal || 'Semester Exams & Concept Mastery'}</p>
               </div>
             </div>
 
