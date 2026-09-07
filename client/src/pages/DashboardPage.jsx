@@ -1,70 +1,175 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import { getUserNotes } from '../services/firebase/notesService';
 import { getUserActivity } from '../services/firebase/activityService';
+import { getUserWatchHistory } from '../services/firebase/historyService';
+import { getTasksByDate, getTasksByMonth, toggleTaskStatus } from '../services/firebase/plannerService';
 import { useStreak } from '../hooks/useStreak';
 
 // Components
 import StreakCard from '../components/dashboard/StreakCard';
 import StatsGrid from '../components/dashboard/StatsGrid';
-import ActivityHeatmap from '../components/dashboard/ActivityHeatmap';
 import MotivationalQuote from '../components/dashboard/MotivationalQuote';
+import TodayPlanWidget from '../components/dashboard/TodayPlanWidget';
+import RecentActivityWidget from '../components/dashboard/RecentActivityWidget';
 import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
 
 // Icons
-import { Award, PlayCircle, BookOpen, ArrowRight } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
 
 export default function DashboardPage() {
   const { currentUser, getUserDisplayName } = useAuth();
-  const { loadVideo } = useApp();
+  const { 
+    loadVideo, 
+    setActiveSection, 
+    setLibraryTab, 
+    setPlannerTab 
+  } = useApp();
   const { isDark } = useTheme();
+
   const [notesHistory, setNotesHistory] = useState([]);
   const [activityHistory, setActivityHistory] = useState([]);
+  const [watchHistory, setWatchHistory] = useState([]);
+  const [todayTasks, setTodayTasks] = useState([]);
+  const [monthTasks, setMonthTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!currentUser) return;
-      setIsLoading(true);
-      try {
-        const [notesData, activityData] = await Promise.all([
-          getUserNotes(currentUser.uid),
-          getUserActivity(currentUser.uid)
-        ]);
-        setNotesHistory(notesData);
-        setActivityHistory(activityData);
-      } catch (err) {
-        console.error('Error fetching dashboard history:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchDashboardData();
-  }, [currentUser]);
+  // Live ticking date and time with seconds
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
-  // Combine note processing events and login activity events for streak & heatmap calculations
-  const combinedHistory = useMemo(() => {
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const { timeHoursMinutes, timeSeconds, timePeriod, fullDateString } = useMemo(() => {
+    let hours = currentTime.getHours();
+    const minutes = String(currentTime.getMinutes()).padStart(2, '0');
+    const seconds = String(currentTime.getSeconds()).padStart(2, '0');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const hoursStr = String(hours).padStart(2, '0');
+
+    const fullDate = currentTime.toLocaleDateString([], {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return {
+      timeHoursMinutes: `${hoursStr}:${minutes}`,
+      timeSeconds: seconds,
+      timePeriod: period,
+      fullDateString: fullDate
+    };
+  }, [currentTime]);
+
+  // Helper for today's local date string
+  const todayStr = useMemo(() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    const todayStr = `${year}-${month}-${day}`;
+    return `${year}-${month}-${day}`;
+  }, []);
 
-    return [
-      ...notesHistory.map(n => ({ createdAt: n.createdAt })),
-      ...activityHistory.map(a => ({ date: a.date })),
-      { date: todayStr }
-    ];
-  }, [notesHistory, activityHistory]);
+  // 6-month range for planner tasks
+  const sixMonthsAgoStr = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
 
+  // Fetch all dashboard data concurrently
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!currentUser) {
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const [notesData, activityData, watchData, tasksTodayData, tasksRangeData] = await Promise.all([
+          getUserNotes(currentUser.uid),
+          getUserActivity(currentUser.uid),
+          getUserWatchHistory(currentUser.uid),
+          getTasksByDate(currentUser.uid, todayStr),
+          getTasksByMonth(currentUser.uid, sixMonthsAgoStr, todayStr)
+        ]);
+        setNotesHistory(notesData || []);
+        setActivityHistory(activityData || []);
+        setWatchHistory(watchData || []);
+        setTodayTasks(tasksTodayData || []);
+        setMonthTasks(tasksRangeData || []);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [currentUser, todayStr, sixMonthsAgoStr]);
+
+  // Compute Streak and Dual-Factor Heatmap Depth Data
   const {
     currentStreak,
     longestStreak,
     weeklyActivity,
-    heatmapData
-  } = useStreak(combinedHistory);
+    heatmapData,
+    dayMetrics
+  } = useStreak({
+    notesHistory,
+    watchHistory,
+    plannerTasks: monthTasks,
+    activityHistory
+  });
+
+  // Task check/uncheck toggle handler
+  const handleToggleTask = useCallback(async (taskId, currentStatus) => {
+    try {
+      await toggleTaskStatus(taskId, currentStatus);
+      setTodayTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !currentStatus } : t));
+      setMonthTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !currentStatus } : t));
+    } catch (err) {
+      console.error('Failed to toggle task status:', err);
+    }
+  }, []);
+
+  // Cross-page navigation handlers
+  const handleNavigateToDiscover = useCallback(() => {
+    setActiveSection('discover');
+  }, [setActiveSection]);
+
+  const handleNavigateToPlanner = useCallback(() => {
+    setPlannerTab('daily');
+    setActiveSection('planner');
+  }, [setPlannerTab, setActiveSection]);
+
+  const handleNavigateToHistory = useCallback(() => {
+    setLibraryTab('history');
+    setActiveSection('library');
+  }, [setLibraryTab, setActiveSection]);
+
+  const handleNavigateToNotes = useCallback(() => {
+    setLibraryTab('notes');
+    setActiveSection('library');
+  }, [setLibraryTab, setActiveSection]);
+
+  const handleOpenVideo = useCallback((item) => {
+    const videoId = item.videoId || item.metadata?.video_id || '';
+    const videoUrl = item.videoUrl || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : '');
+    loadVideo(videoId, videoUrl, item.metadata, item.id, item.result);
+  }, [loadVideo]);
 
   const displayName = getUserDisplayName(currentUser);
 
@@ -72,151 +177,100 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  // Get last 4 processed videos for "Recent Activity" list
-  const recentSessions = notesHistory.slice(0, 4);
-
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="max-w-5xl mx-auto p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
+      <div className="w-full p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-5 md:space-y-6 animate-in fade-in duration-300">
         
-        {/* Top Header Block */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div>
-            <h2 className={`text-lg sm:text-2xl font-black tracking-tight ${
-              isDark ? 'text-zinc-50' : 'text-orange-950'
-            }`}>
-              Welcome back, {displayName} 👋
-            </h2>
-            <p className={`text-xs mt-1 ${isDark ? 'text-zinc-450' : 'text-orange-800'}`}>
-              {notesHistory.length > 0 
-                ? `You've studied ${notesHistory.length} educational videos. Let's keep learning!`
-                : "Ready to start your learning journey? Head over to the Discover tab to find your first video."}
-            </p>
-          </div>
-          
-          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold w-fit shrink-0 select-none border ${
-            isDark 
-              ? 'bg-orange-950/20 border-orange-900/30 text-orange-400 shadow-sm shadow-orange-500/5' 
-              : 'bg-orange-100 border-orange-300 text-orange-700 shadow-xs'
-          }`}>
-            <Award className="w-4 h-4 animate-bounce" />
-            <span>Streak: {currentStreak} Days</span>
-          </div>
-        </div>
-
-        {/* Quotes Board */}
-        <MotivationalQuote />
-
-        {/* Performance Grid: Streak + Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <div className="md:col-span-1">
-            <StreakCard 
-              currentStreak={currentStreak} 
-              longestStreak={longestStreak} 
-              weeklyActivity={weeklyActivity} 
-            />
-          </div>
-          
-          <div className="md:col-span-2 flex flex-col gap-4 sm:gap-6">
-            <StatsGrid 
-              notesHistory={notesHistory} 
-              heatmapData={heatmapData} 
-            />
-            
+        {/* ── TOP HERO: 1ST COL (GREETING & QUOTE - 2/3) | 2ND COL (TIME & DATE - 1/3) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5 lg:gap-6 items-stretch w-full">
+          {/* 1st Column: Greetings & Motivational Quote (2/3 width) */}
+          <div className="md:col-span-2 flex flex-col justify-between space-y-3 h-full">
             <div>
-              <ActivityHeatmap heatmapData={heatmapData} />
+              <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-2 ${
+                isDark ? 'text-zinc-50' : 'text-orange-950'
+              }`}>
+                Welcome back, {displayName} 👋
+              </h2>
+              <p className={`text-xs sm:text-sm md:text-base mt-1 sm:mt-1.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-orange-800'}`}>
+                {notesHistory.length > 0 || watchHistory.length > 0 
+                  ? `You've engaged with ${Math.max(notesHistory.length, watchHistory.length)} educational lectures. Let's make today productive!`
+                  : "Ready to start your learning journey? Explore educational videos or set daily study targets."}
+              </p>
             </div>
-          </div>
-        </div>
 
-        {/* Recent Study Sessions */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className={`text-xs font-mono font-bold tracking-wider uppercase flex items-center gap-1.5 ${
-              isDark ? 'text-zinc-500' : 'text-orange-700'
-            }`}>
-              <PlayCircle className="w-4 h-4 text-orange-500" />
-              RECENT STUDY SESSIONS
-            </h3>
+            <MotivationalQuote className="w-full mt-auto" />
           </div>
-
-          {recentSessions.length === 0 ? (
-            <div className={`rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-3 border ${
-              isDark 
-                ? 'border-zinc-900 bg-zinc-950/20' 
-                : 'border-orange-200/90 bg-orange-50/60 shadow-xs'
+          
+          {/* 2nd Column: Date and Time Widget (1/3 width) */}
+          <div className="md:col-span-1 flex flex-col justify-center">
+            <div className={`h-full rounded-2xl p-3.5 sm:p-4 md:p-5 flex flex-col justify-center items-center text-center select-none backdrop-blur-sm ${
+              isDark ? 'bg-zinc-900/30 text-zinc-100' : 'bg-orange-50/50 text-orange-950'
             }`}>
-              <BookOpen className={`w-10 h-10 ${isDark ? 'text-zinc-700' : 'text-orange-400'}`} />
-              <div className="space-y-1">
-                <p className={`text-xs font-bold ${isDark ? 'text-zinc-400' : 'text-orange-900'}`}>No study sessions recorded yet</p>
-                <p className={`text-[10px] max-w-xs mx-auto ${isDark ? 'text-zinc-650' : 'text-orange-700'}`}>
-                  Find some educational videos on the Discover page to generate summaries and take structured notes.
-                </p>
+              {/* Clock Display with Seconds */}
+              <div className="flex items-baseline justify-center font-mono">
+                <span className={`text-3xl sm:text-4xl md:text-3xl lg:text-5xl font-black tracking-tight leading-none ${
+                  isDark ? 'text-zinc-100' : 'text-orange-950'
+                }`}>
+                  {timeHoursMinutes}
+                </span>
+                <span className="text-xl sm:text-2xl md:text-xl lg:text-3xl font-black text-orange-500 leading-none">
+                  :{timeSeconds}
+                </span>
+                <span className={`text-[10px] sm:text-xs md:text-[11px] lg:text-sm font-bold uppercase tracking-wider ml-1 sm:ml-1.5 leading-none ${
+                  isDark ? 'text-orange-400' : 'text-orange-600'
+                }`}>
+                  {timePeriod}
+                </span>
+              </div>
+
+              {/* Full Calendar Date */}
+              <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-xs lg:text-sm font-medium mt-2.5 sm:mt-3 ${
+                isDark ? 'text-zinc-400' : 'text-orange-800'
+              }`}>
+                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 shrink-0" />
+                <span>{fullDateString}</span>
               </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recentSessions.map((session) => {
-                const videoId = session.metadata?.video_id || '';
-                return (
-                  <div
-                    key={session.id}
-                    onClick={() => loadVideo(videoId, session.videoUrl, session.metadata, session.id, session.result)}
-                    className={`group rounded-xl p-3.5 cursor-pointer flex gap-3.5 transition duration-300 min-w-0 border ${
-                      isDark 
-                        ? 'border-zinc-900 hover:border-zinc-800 bg-zinc-950/40 hover:bg-zinc-900/40' 
-                        : 'border-orange-200/90 hover:border-orange-300 bg-white hover:bg-orange-50/70 shadow-xs'
-                    }`}
-                  >
-                    {/* Thumbnail */}
-                    <div className={`relative shrink-0 w-24 aspect-video rounded-lg overflow-hidden border ${
-                      isDark ? 'bg-zinc-900 border-zinc-850' : 'bg-orange-100 border-orange-200'
-                    }`}>
-                      {session.metadata?.thumbnail ? (
-                        <img 
-                          src={session.metadata.thumbnail} 
-                          alt="" 
-                          className="w-full h-full object-cover group-hover:scale-[1.03] transition duration-300"
-                        />
-                      ) : (
-                        <div className={`w-full h-full flex items-center justify-center ${
-                          isDark ? 'bg-zinc-950 text-zinc-600' : 'bg-orange-100 text-orange-400'
-                        }`}>
-                          <PlayCircle className="w-5 h-5" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Text content */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-between">
-                      <div className="space-y-1 min-w-0">
-                        <h4 className={`text-xs font-bold line-clamp-2 leading-tight transition min-w-0 ${
-                          isDark 
-                            ? 'text-zinc-200 group-hover:text-orange-400' 
-                            : 'text-orange-950 group-hover:text-orange-600'
-                        }`}>
-                          {session.metadata?.title || 'Academic Study Session'}
-                        </h4>
-                        <p className={`text-[10px] truncate font-semibold ${
-                          isDark ? 'text-zinc-550' : 'text-orange-700'
-                        }`}>
-                          {session.metadata?.channel || 'YouTube Video'}
-                        </p>
-                      </div>
-                      
-                      <div className={`flex items-center justify-between text-[9px] font-semibold pt-1 ${
-                        isDark ? 'text-zinc-600' : 'text-orange-600'
-                      }`}>
-                        <span>Notes Generated</span>
-                        <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-orange-500 shrink-0" />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          </div>
         </div>
+
+        {/* ── WEEKLY METRICS STATS RIBBON (FULL WIDTH) ── */}
+        <StatsGrid 
+          notesHistory={notesHistory} 
+          watchHistory={watchHistory} 
+          heatmapData={heatmapData} 
+          dayMetrics={dayMetrics}
+          onNavigateToDiscover={handleNavigateToDiscover}
+          onNavigateToNotes={handleNavigateToNotes}
+          onNavigateToPlanner={handleNavigateToPlanner}
+        />
+
+        {/* ── STATUS STREAK (FULL WIDTH) ── */}
+        <StreakCard 
+          currentStreak={currentStreak} 
+          longestStreak={longestStreak} 
+          weeklyActivity={weeklyActivity} 
+          heatmapData={heatmapData} 
+          dayMetrics={dayMetrics} 
+        />
+
+        {/* ── STUDY PLANNER: 7-DAY COMPLETION RATE GRAPH | TODAY'S PLANS (ROW LAYOUT) ── */}
+        <TodayPlanWidget 
+          tasks={todayTasks} 
+          monthTasks={monthTasks}
+          onToggleTask={handleToggleTask} 
+          onNavigateToPlanner={handleNavigateToPlanner} 
+        />
+
+        {/* ── RECENT ACTIVITY: WATCH HISTORY | GENERATED NOTES (FULL WIDTH) ── */}
+        <RecentActivityWidget 
+          watchHistory={watchHistory} 
+          notesHistory={notesHistory} 
+          onOpenVideo={handleOpenVideo} 
+          onNavigateToHistory={handleNavigateToHistory} 
+          onNavigateToNotes={handleNavigateToNotes} 
+        />
+
       </div>
     </div>
   );

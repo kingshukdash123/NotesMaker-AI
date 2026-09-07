@@ -1,211 +1,375 @@
 import Skeleton from '../common/Skeleton';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function DashboardSkeleton() {
-  const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const { isDark } = useTheme();
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300">
+      <div className="w-full p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-5 md:space-y-6 animate-in fade-in duration-300">
         
-        {/* 1. Top Header Block */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <Skeleton className="h-7 sm:h-8 w-56 sm:w-72 rounded-lg bg-zinc-900/80" />
-            <Skeleton className="h-3.5 w-64 sm:w-96 rounded bg-zinc-900/50 mt-1" />
-          </div>
-          
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-950/20 border border-orange-900/30 w-fit shrink-0">
-            <Skeleton className="w-4 h-4 rounded-full bg-orange-500/30" />
-            <Skeleton className="h-3.5 w-24 rounded bg-orange-500/20" />
-          </div>
-        </div>
+        {/* ── 1. TOP HERO: 1ST COL (GREETING & QUOTE - 2/3) | 2ND COL (TIME & DATE - 1/3) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5 lg:gap-6 items-stretch w-full">
+          {/* 1st Column: Greetings & Motivational Quote (2/3 width) */}
+          <div className="md:col-span-2 flex flex-col justify-between space-y-3 h-full">
+            <div>
+              <Skeleton className="h-7 sm:h-8 md:h-9 w-56 sm:w-72 md:w-80 rounded-xl" />
+              <Skeleton className="h-3.5 sm:h-4 w-4/5 sm:w-5/6 rounded-md mt-2" />
+            </div>
 
-        {/* 2. Motivational Quotes Board */}
-        <div className="glass-panel border border-zinc-800 rounded-2xl p-5 relative overflow-hidden flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-orange-950/20 border border-orange-900/30 flex items-center justify-center shrink-0 mt-0.5">
-            <Skeleton className="w-4 h-4 rounded bg-orange-500/30" />
-          </div>
-          <div className="space-y-2 flex-1 min-w-0 pr-6">
-            <Skeleton className="h-4 w-11/12 rounded bg-zinc-900/80" />
-            <Skeleton className="h-3 w-32 rounded bg-zinc-900/40" />
-          </div>
-        </div>
-
-        {/* 3. Performance Grid: Streak + Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* 3a. StreakCard (Left Column: md:col-span-1) */}
-          <div className="md:col-span-1">
-            <div className="glass-panel border border-zinc-800 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between h-full space-y-6">
-              {/* Background Glow placeholder */}
-              <div className="space-y-6">
-                {/* Card Title & Icon */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-500">
-                    STREAK STATUS
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-orange-950/25 border border-orange-900/35 flex items-center justify-center">
-                    <Skeleton className="w-4.5 h-4.5 rounded-full bg-orange-500/30" />
-                  </div>
-                </div>
-
-                {/* Big Numbers */}
-                <div className="space-y-1.5">
-                  <div className="flex items-baseline gap-2">
-                    <Skeleton className="h-9 w-14 rounded-lg bg-zinc-900/90" />
-                    <Skeleton className="h-3.5 w-28 rounded bg-zinc-900/60" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Skeleton className="w-3.5 h-3.5 rounded-full bg-zinc-900/60" />
-                    <Skeleton className="h-3 w-36 rounded bg-zinc-900/40" />
-                  </div>
-                </div>
-
-                {/* Weekly Consistency Visualizer */}
-                <div className="space-y-2 pt-2 border-t border-zinc-900/60">
-                  <h4 className="text-[10px] font-mono font-bold text-zinc-400 flex items-center gap-1.5">
-                    <Skeleton className="w-3.5 h-3.5 rounded bg-zinc-900/60" />
-                    WEEKLY CONSISTENCY
-                  </h4>
-                  <div className="flex justify-between items-center gap-1 py-1">
-                    {daysOfWeek.map((label, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-1.5 flex-1">
-                        <div className="w-full aspect-square max-w-[28px] rounded-lg border border-zinc-800 bg-zinc-900/40 flex items-center justify-center text-[10px] font-bold text-zinc-650">
-                          {label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            {/* Motivational Quote Card Skeleton */}
+            <div className={`rounded-xl p-3 sm:p-3.5 md:p-4 mt-auto flex items-start gap-2.5 sm:gap-3.5 ${
+              isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            }`}>
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                isDark ? 'bg-orange-950/40' : 'bg-orange-100'
+              }`}>
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm bg-orange-500/30" />
+              </div>
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <Skeleton className="h-3.5 w-11/12 rounded" />
+                <Skeleton className="h-3 w-32 rounded" />
               </div>
             </div>
           </div>
           
-          {/* 3b. Right Column: StatsGrid + ActivityHeatmap (md:col-span-2 flex flex-col gap-6) */}
-          <div className="md:col-span-2 flex flex-col gap-6">
-            {/* StatsGrid: 4 metric cards (grid grid-cols-2 md:grid-cols-4 gap-4) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { title: 'VIDEOS LEARNED', sub: 'videos processed' },
-                { title: 'NOTES GENERATED', sub: 'academic outlines' },
-                { title: 'TOTAL STUDY DAYS', sub: 'days with study activity' },
-                { title: 'WEEKLY AVERAGE', sub: 'videos per active week' }
-              ].map((stat, i) => (
-                <div key={i} className="glass-panel border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-mono font-bold tracking-wider text-zinc-500 uppercase">
-                      {stat.title}
-                    </span>
-                    <div className="p-1.5 rounded-lg border border-orange-900/30 bg-orange-950/20 text-orange-500">
-                      <Skeleton className="w-3.5 h-3.5 rounded bg-orange-500/30" />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <Skeleton className="h-6 w-12 rounded bg-zinc-900/90" />
-                    <span className="text-[9px] text-zinc-600 font-semibold block truncate">
-                      {stat.sub}
-                    </span>
-                  </div>
-                </div>
-              ))}
+          {/* 2nd Column: Date and Time Widget (1/3 width) */}
+          <div className="md:col-span-1 flex flex-col justify-center">
+            <div className={`h-full rounded-2xl p-3.5 sm:p-4 md:p-5 flex flex-col justify-center items-center text-center backdrop-blur-sm ${
+              isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            }`}>
+              {/* Clock Display Skeleton */}
+              <div className="flex items-baseline justify-center gap-1 sm:gap-1.5">
+                <Skeleton className="h-8 sm:h-10 md:h-8 lg:h-12 w-24 sm:w-32 md:w-24 lg:w-40 rounded-xl" />
+                <Skeleton className="h-6 sm:h-7 md:h-6 lg:h-9 w-10 sm:w-12 rounded-lg bg-orange-500/30" />
+                <Skeleton className="h-3.5 sm:h-4 w-6 sm:w-8 rounded ml-1" />
+              </div>
+
+              {/* Full Calendar Date Skeleton */}
+              <div className="flex items-center gap-1.5 sm:gap-2 mt-2.5 sm:mt-3">
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-orange-500/30 shrink-0" />
+                <Skeleton className="h-3.5 sm:h-4 w-36 sm:w-44 rounded" />
+              </div>
             </div>
-            
-            {/* ActivityHeatmap */}
-            <div>
-              <div className="glass-panel border border-zinc-800 rounded-2xl p-5 space-y-4">
-                <div>
-                  <h4 className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-500">
-                    STUDY CONSISTENCY HEATMAP
-                  </h4>
-                  <Skeleton className="h-3 w-48 rounded bg-zinc-900/40 mt-1" />
+          </div>
+        </div>
+
+        {/* ── 2. WEEKLY METRICS STATS RIBBON (FULL WIDTH) ── */}
+        <div className={`rounded-2xl p-4 sm:p-5 md:p-6 space-y-3.5 sm:space-y-4 ${
+          isDark ? 'bg-zinc-950/40' : 'bg-white/80 shadow-xs'
+        }`}>
+          {/* Section Header */}
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b ${
+            isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+          }`}>
+            <div className="flex items-center gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                isDark ? 'bg-orange-950/25' : 'bg-orange-100'
+              }`}>
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-4 sm:h-5 w-40 sm:w-48 rounded" />
+                <Skeleton className="h-3 w-52 sm:w-64 rounded" />
+              </div>
+            </div>
+            {/* Week / Month Filter Toggle */}
+            <Skeleton className="h-6 sm:h-7 w-24 sm:w-28 rounded-xl shrink-0 self-start sm:self-auto" />
+          </div>
+
+          {/* 4-Metric Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 lg:gap-4 w-full pt-0.5">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`rounded-xl p-3 sm:p-3.5 md:p-4 flex flex-col justify-between min-h-[105px] sm:min-h-[118px] md:min-h-[126px] ${
+                  isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <Skeleton className="h-3 w-16 sm:w-20 rounded" />
+                  <Skeleton className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl" />
                 </div>
+                <div className="my-0.5 sm:my-1">
+                  <Skeleton className="h-7 sm:h-8 md:h-9 w-12 sm:w-16 rounded-lg" />
+                </div>
+                <div className="flex items-center justify-between gap-1 pt-0.5">
+                  <Skeleton className="h-2.5 sm:h-3 w-16 sm:w-24 rounded" />
+                  <Skeleton className="h-3.5 sm:h-4 w-10 sm:w-14 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-                {/* Heatmap 12 weeks of 7-day columns */}
-                <div className="overflow-x-auto pb-2 custom-scrollbar">
-                  <div className="inline-flex gap-2">
-                    {/* Day-of-week labels */}
-                    <div className="flex flex-col gap-1.5 pt-4 text-[9px] font-mono font-bold text-zinc-600 select-none">
-                      <span className="h-3 leading-3">Sun</span>
-                      <span className="h-3 leading-3">Mon</span>
-                      <span className="h-3 leading-3">Tue</span>
-                      <span className="h-3 leading-3">Wed</span>
-                      <span className="h-3 leading-3">Thu</span>
-                      <span className="h-3 leading-3">Fri</span>
-                      <span className="h-3 leading-3">Sat</span>
-                    </div>
+        {/* ── 3. STATUS STREAK (FULL WIDTH) ── */}
+        <div className={`rounded-2xl p-4 sm:p-4.5 space-y-3.5 ${
+          isDark ? 'bg-zinc-950/60 shadow-sm' : 'bg-white/90 shadow-xs'
+        }`}>
+          {/* Common Header */}
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b ${
+            isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+          }`}>
+            <div className="flex items-center gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                isDark ? 'bg-orange-950/25' : 'bg-orange-100'
+              }`}>
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-4 sm:h-5 w-44 sm:w-56 rounded" />
+                <Skeleton className="h-3 w-56 sm:w-72 rounded" />
+              </div>
+            </div>
+          </div>
 
-                    {/* 12 Week Columns */}
-                    <div className="flex gap-1.5">
-                      {Array.from({ length: 12 }).map((_, weekIdx) => (
-                        <div key={weekIdx} className="flex flex-col gap-1.5">
-                          <span className="text-[9px] font-mono font-bold text-zinc-650 h-3 leading-3 text-center">
-                            {weekIdx % 3 === 0 ? 'W' + (weekIdx + 1) : ''}
-                          </span>
-                          <div className="flex flex-col gap-1.5">
-                            {Array.from({ length: 7 }).map((_, dayIdx) => (
-                              <Skeleton 
-                                key={dayIdx} 
-                                className="w-3.5 h-3.5 rounded-sm bg-zinc-900/70 border-0" 
-                              />
+          {/* Responsive Grid: Streak Status | Heatmap | Score Velocity */}
+          <div className="w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-12 lg:grid-cols-12 gap-3.5 lg:gap-4 items-stretch">
+              
+              {/* 1. Streak Status Column (Phone: Full | Tablet: 5 cols Row 1 | Desktop: 2 cols) */}
+              <div className={`col-span-1 sm:col-span-5 lg:col-span-2 sm:order-1 lg:order-1 flex flex-col justify-between p-3 sm:p-3.5 rounded-xl ${
+                isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+              }`}>
+                <Skeleton className="h-3 w-20 rounded" />
+                <div className="flex-1 flex flex-row sm:flex-col justify-around sm:justify-center items-center text-center space-y-0 sm:space-y-2 py-2 gap-3 sm:gap-0">
+                  <div className="flex flex-col items-center gap-1">
+                    <Skeleton className="h-10 sm:h-12 w-12 rounded-xl" />
+                    <Skeleton className="h-3 w-16 rounded" />
+                  </div>
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </div>
+              </div>
+
+              {/* 2. Heatmap Column (Phone: Full | Tablet: 12 cols Row 2 | Desktop: 6 cols Row 1) */}
+              <div className={`col-span-1 sm:col-span-12 lg:col-span-6 sm:order-3 lg:order-2 flex flex-col justify-between p-3 sm:p-3.5 rounded-xl ${
+                isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+              }`}>
+                <Skeleton className="h-3 w-36 rounded" />
+                <div className="w-full flex-1 flex flex-col justify-center items-center py-1">
+                  <div className="w-full overflow-x-auto custom-scrollbar flex justify-start min-[480px]:justify-center py-1">
+                    <div className="flex items-start gap-2 sm:gap-2.5 min-w-max px-0.5">
+                      {Array.from({ length: 6 }).map((_, mIdx) => (
+                        <div key={mIdx} className="flex flex-col items-center">
+                          <div className="flex items-center gap-[2.5px] sm:gap-[3px]">
+                            {Array.from({ length: 3 }).map((_, w) => (
+                              <div key={w} className="flex flex-col gap-[2.5px] sm:gap-[3px]">
+                                {Array.from({ length: 7 }).map((_, d) => (
+                                  <div 
+                                    key={d} 
+                                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2.5px] sm:rounded-[3px] ${
+                                      isDark ? 'bg-zinc-800/60' : 'bg-orange-100/70'
+                                    }`} 
+                                  />
+                                ))}
+                              </div>
                             ))}
                           </div>
+                          <Skeleton className="h-2.5 w-6 rounded mt-1.5" />
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Heatmap Legend */}
-                <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-2 border-t border-zinc-900/80">
-                  <Skeleton className="h-3 w-28 rounded bg-zinc-900/50" />
+              {/* 3. Daily Score Graph Column (Phone: Full | Tablet: 7 cols Row 1 | Desktop: 4 cols Row 1) */}
+              <div className={`col-span-1 sm:col-span-7 lg:col-span-4 sm:order-2 lg:order-3 flex flex-col justify-between p-3 sm:p-3.5 rounded-xl ${
+                isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+              }`}>
+                <div className="flex items-center justify-between gap-2">
+                  <Skeleton className="h-3 w-28 rounded" />
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] font-mono">Less</span>
-                    <div className="flex gap-1">
-                      <div className="w-2.5 h-2.5 rounded-sm bg-zinc-900 border border-zinc-800" />
-                      <div className="w-2.5 h-2.5 rounded-sm bg-orange-500/20 border border-orange-500/10" />
-                      <div className="w-2.5 h-2.5 rounded-sm bg-orange-500/50 border border-orange-500/30" />
-                      <div className="w-2.5 h-2.5 rounded-sm bg-orange-500 border border-orange-400" />
-                    </div>
-                    <span className="text-[9px] font-mono">More</span>
+                    <Skeleton className="h-4 w-16 rounded-md" />
+                    <Skeleton className="h-4 w-12 rounded-md" />
                   </div>
                 </div>
+                <div className="w-full flex-1 flex flex-col justify-center items-center py-1">
+                  <div className={`w-full h-20 sm:h-22 rounded-xl ${
+                    isDark ? 'bg-zinc-900/40' : 'bg-orange-100/40'
+                  }`} />
+                </div>
               </div>
+
             </div>
           </div>
         </div>
 
-        {/* 4. Recent Study Sessions (grid grid-cols-1 sm:grid-cols-2 gap-4) */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-mono font-bold tracking-wider uppercase text-zinc-500 flex items-center gap-1.5">
-              <Skeleton className="w-4 h-4 rounded bg-orange-500/30" />
-              RECENT STUDY SESSIONS
-            </h3>
+        {/* ── 4. STUDY PLANNER: 7-DAY COMPLETION RATE GRAPH | TODAY'S PLANS (ROW LAYOUT) ── */}
+        <div className={`rounded-2xl p-4 sm:p-5 md:p-6 space-y-3.5 sm:space-y-4 ${
+          isDark ? 'bg-zinc-950/40' : 'bg-white/80 shadow-xs'
+        }`}>
+          {/* Section Header */}
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3.5 border-b ${
+            isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+          }`}>
+            <div className="flex items-center gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                isDark ? 'bg-orange-950/25' : 'bg-orange-100'
+              }`}>
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-4 sm:h-5 w-44 sm:w-52 rounded" />
+                <Skeleton className="h-3 w-56 sm:w-72 rounded" />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="border border-zinc-900 rounded-xl p-3.5 bg-zinc-950/40 flex gap-3.5 min-w-0"
-              >
-                {/* Horizontal thumbnail skeleton (w-24 aspect-video) */}
-                <div className="relative shrink-0 w-24 aspect-video rounded-lg overflow-hidden bg-zinc-900/70 border border-zinc-800/40">
-                  <Skeleton className="w-full h-full rounded-none border-0" />
-                </div>
-
-                {/* Text content skeleton */}
-                <div className="flex-1 min-w-0 flex flex-col justify-between space-y-2">
-                  <div className="space-y-1.5 min-w-0">
-                    <Skeleton className="h-3.5 w-full rounded bg-zinc-900/80" />
-                    <Skeleton className="h-3 w-2/3 rounded bg-zinc-900/50" />
-                  </div>
-                  
-                  <div className="flex items-center justify-between pt-1">
-                    <Skeleton className="h-2.5 w-20 rounded bg-zinc-900/40" />
-                  </div>
+          {/* 2-Column Row: Left (Target History 7D) | Right (Today's Targets) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 lg:gap-6 items-stretch pt-1">
+            
+            {/* Left Column: Target History (7D) - lg:col-span-6 */}
+            <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+              isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            }`}>
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-orange-500/10">
+                <Skeleton className="h-3.5 w-32 rounded" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-2.5 w-8 rounded" />
+                  <Skeleton className="h-2.5 w-8 rounded" />
+                  <Skeleton className="h-2.5 w-8 rounded" />
                 </div>
               </div>
-            ))}
+              
+              {/* 7-Day Stacked Bars Skeleton */}
+              <div className="py-3 sm:py-4 flex-1 flex flex-col justify-center">
+                <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3 items-end h-28 sm:h-32 md:h-36">
+                  {Array.from({ length: 7 }).map((_, dIdx) => (
+                    <div key={dIdx} className="flex flex-col items-center h-full justify-end">
+                      <Skeleton className="h-2.5 w-5 rounded mb-1 sm:mb-1.5" />
+                      <div className={`w-full max-w-[22px] sm:max-w-[26px] h-20 sm:h-24 md:h-28 rounded-lg p-0.5 border ${
+                        dIdx === 6 
+                          ? isDark ? 'border-orange-500/50 bg-zinc-900/60' : 'border-orange-400 bg-orange-50/70'
+                          : isDark ? 'border-orange-500/10 bg-zinc-900/30' : 'border-orange-200/50 bg-orange-50/50'
+                      }`}>
+                        <Skeleton className="w-full h-full rounded-md" />
+                      </div>
+                      <Skeleton className="h-2.5 w-6 rounded mt-1 sm:mt-1.5" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Today's Targets - lg:col-span-6 */}
+            <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+              isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            }`}>
+              <div className="flex items-center justify-between pb-2.5 border-b border-orange-500/10">
+                <Skeleton className="h-3.5 w-28 rounded" />
+                <Skeleton className="h-3 w-16 rounded" />
+              </div>
+              
+              {/* Targets List */}
+              <div className="flex-1 flex flex-col justify-start py-2.5 space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`min-h-[44px] px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl flex items-center justify-between gap-2.5 ${
+                      isDark ? 'bg-zinc-900/30' : 'bg-white/70 shadow-xs'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <Skeleton className="w-4 h-4 rounded-full shrink-0" />
+                      <Skeleton className="h-3.5 w-3/4 rounded" />
+                    </div>
+                    <Skeleton className="h-4 w-10 rounded shrink-0" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer Button Link */}
+              <div className="pt-2 border-t border-orange-500/10">
+                <Skeleton className="h-8 w-full rounded-xl" />
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── 5. RECENT ACTIVITY: WATCH HISTORY | GENERATED NOTES (FULL WIDTH) ── */}
+        <div className={`rounded-2xl p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-5 ${
+          isDark ? 'bg-zinc-950/40' : 'bg-white/80 shadow-xs'
+        }`}>
+          {/* Section Header */}
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b ${
+            isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+          }`}>
+            <div className="flex items-center gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                isDark ? 'bg-orange-950/25' : 'bg-orange-100'
+              }`}>
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-4 sm:h-5 w-32 sm:w-36 rounded" />
+                <Skeleton className="h-3 w-48 sm:w-64 rounded" />
+              </div>
+            </div>
+          </div>
+
+          {/* 2 Columns: Col 1 (Watch History) | Col 2 (Generated Notes) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 items-stretch">
+            
+            {/* Col 1: Watch History */}
+            <div className={`flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+              isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            }`}>
+              <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-orange-500/10">
+                <Skeleton className="h-3.5 w-28 rounded" />
+                <Skeleton className="h-3 w-14 rounded" />
+              </div>
+              <div className="space-y-2 py-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`min-h-[48px] p-2 sm:p-2.5 rounded-xl flex items-center gap-2.5 sm:gap-3 ${
+                      isDark ? 'bg-zinc-950/30' : 'bg-white/70 shadow-xs'
+                    }`}
+                  >
+                    <Skeleton className="w-16 sm:w-20 aspect-video rounded-lg shrink-0" />
+                    <div className="flex-1 space-y-1.5 min-w-0">
+                      <Skeleton className="h-3.5 w-4/5 rounded" />
+                      <Skeleton className="h-2.5 w-1/2 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="pt-2 border-t border-orange-500/10">
+                <Skeleton className="h-8 w-full rounded-xl" />
+              </div>
+            </div>
+
+            {/* Col 2: Generated Notes */}
+            <div className={`flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+              isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            }`}>
+              <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-orange-500/10">
+                <Skeleton className="h-3.5 w-28 rounded" />
+                <Skeleton className="h-3 w-20 rounded" />
+              </div>
+              <div className="space-y-2 py-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`min-h-[48px] p-2 sm:p-2.5 rounded-xl flex items-center gap-2.5 sm:gap-3 ${
+                      isDark ? 'bg-zinc-950/30' : 'bg-white/70 shadow-xs'
+                    }`}
+                  >
+                    <Skeleton className="w-16 sm:w-20 aspect-video rounded-lg shrink-0" />
+                    <div className="flex-1 space-y-1.5 min-w-0">
+                      <Skeleton className="h-3.5 w-4/5 rounded" />
+                      <Skeleton className="h-2.5 w-1/2 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="pt-2 border-t border-orange-500/10">
+                <Skeleton className="h-8 w-full rounded-xl" />
+              </div>
+            </div>
+
           </div>
         </div>
 
