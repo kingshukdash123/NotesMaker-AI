@@ -8,6 +8,7 @@ export default function PlaylistBrowserDrawer({
   isOpen,
   playlistId,
   playlistSummary = null,
+  userPlaylists = [],
   onClose,
   onVideoSelect,
   onSaveToLibrary
@@ -93,12 +94,41 @@ export default function PlaylistBrowserDrawer({
   const displayTitle = playlist?.title || playlistSummary?.title || 'Course Playlist';
   const displayChannel = playlist?.channel || playlistSummary?.channel || 'YouTube Creator';
 
+  // Check if this playlist is already saved in the user's library
+  const isAlreadyInLibrary = Boolean(
+    userPlaylists && userPlaylists.some((pl) => {
+      // 1. YouTube / Source Playlist ID match
+      if (playlistId && (pl.sourcePlaylistId === playlistId || pl.youtubePlaylistId === playlistId || pl.id === playlistId)) {
+        return true;
+      }
+
+      // 2. Exact Title match (case-insensitive)
+      const plName = (pl.name || '').trim().toLowerCase();
+      const targetTitle = displayTitle.trim().toLowerCase();
+      if (plName && targetTitle && plName === targetTitle) {
+        return true;
+      }
+
+      // 3. Video ID overlap: if this playlist's first video matches a video in pl.videos
+      if (Array.isArray(pl.videos) && pl.videos.length > 0 && Array.isArray(videos) && videos.length > 0) {
+        const firstVideoId = videos[0]?.videoId || videos[0]?.id;
+        if (firstVideoId && pl.videos.some((v) => (v.videoId || v.id) === firstVideoId)) {
+          return true;
+        }
+      }
+
+      return false;
+    })
+  );
+
+  const isPlaylistSaved = isSaved || isAlreadyInLibrary;
+
   const handleSave = async () => {
-    if (!onSaveToLibrary || isSaved || isSaving) return;
+    if (!onSaveToLibrary || isPlaylistSaved || isSaving) return;
     setIsSaving(true);
     try {
       await onSaveToLibrary(
-        { ...(playlist || {}), ...(playlistSummary || {}), title: displayTitle, channel: displayChannel },
+        { ...(playlist || {}), ...(playlistSummary || {}), title: displayTitle, channel: displayChannel, playlistId },
         videos
       );
       setIsSaved(true);
@@ -187,18 +217,20 @@ export default function PlaylistBrowserDrawer({
             <button
               type="button"
               onClick={handleSave}
-              disabled={isSaved || isSaving || isLoading}
-              className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition shrink-0 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed ${
-                isSaved
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-lg'
+              disabled={isPlaylistSaved || isSaving || isLoading}
+              className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
+                isPlaylistSaved
+                  ? isDark
+                    ? 'bg-green-950/80 text-green-400 border border-green-800/40 rounded-lg opacity-90 cursor-default'
+                    : 'bg-green-100 text-green-800 border border-green-200 rounded-lg opacity-90 cursor-default'
                   : isSaving
-                    ? 'btn-secondary !rounded-lg opacity-80'
-                    : 'btn-primary !rounded-lg'
+                    ? 'btn-secondary !rounded-lg opacity-80 cursor-wait'
+                    : 'btn-primary !rounded-lg cursor-pointer'
               }`}
             >
-              {isSaved ? (
+              {isPlaylistSaved ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <Check className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-700'}`} />
                   <span>Saved to Library</span>
                 </>
               ) : isSaving ? (

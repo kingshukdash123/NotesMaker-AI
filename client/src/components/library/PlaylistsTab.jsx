@@ -2,7 +2,24 @@ import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
 import LibraryVideoCard from './LibraryVideoCard';
-import { Folder, FolderOpen, Plus, Trash2, BookOpen, ListVideo, ArrowLeft } from 'lucide-react';
+import { 
+  Folder, 
+  FolderOpen, 
+  Plus, 
+  Trash2, 
+  BookOpen, 
+  ListVideo, 
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  CheckCheck,
+  RotateCcw,
+  CircleDot,
+  MoreVertical,
+  Pencil,
+  X,
+  Loader2
+} from 'lucide-react';
 
 export default function PlaylistsTab({ 
   playlists = [], 
@@ -13,7 +30,10 @@ export default function PlaylistsTab({
   onRemoveVideo,
   onTogglePlaylistAssociation,
   onCreatePlaylist,
-  onToggleSave
+  onToggleSave,
+  onToggleVideoWatched,
+  onSetAllVideosWatched,
+  onRenamePlaylist
 }) {
   const { isDark } = useTheme();
   const { showConfirm } = useApp();
@@ -27,6 +47,17 @@ export default function PlaylistsTab({
     (typeof window !== 'undefined' && window.innerWidth >= 768) ? (playlists[0]?.id || null) : null
   );
   const [mobileView, setMobileView] = useState('list'); // 'list' | 'videos'
+  const [filter, setFilter] = useState('all'); // 'all' | 'unwatched' | 'watched'
+
+  // Dropdown menu & rename modal state
+  const [menuOpenPlaylistId, setMenuOpenPlaylistId] = useState(null);
+  const [playlistToRename, setPlaylistToRename] = useState(null);
+  const [renameInput, setRenameInput] = useState('');
+  const [isRenaming, setIsRenaming] = useState(false);
+
+  // Loading states for async watched status updates (no immediate optimistic update)
+  const [togglingVideoIds, setTogglingVideoIds] = useState(() => new Set());
+  const [isBulkLoading, setIsBulkLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,6 +72,18 @@ export default function PlaylistsTab({
     return () => window.removeEventListener('resize', handleResize);
   }, [selectedPlaylistId, playlists]);
 
+  // Reset filter when switching playlists
+  useEffect(() => {
+    setFilter('all');
+  }, [selectedPlaylistId]);
+
+  // Close 3-dot dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setMenuOpenPlaylistId(null);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
+
   // On desktop: fallback to first playlist if valid. On phone: respect null (no default selection)
   const activePlaylistId = selectedPlaylistId && playlists.some(pl => pl.id === selectedPlaylistId)
     ? selectedPlaylistId
@@ -50,6 +93,21 @@ export default function PlaylistsTab({
 
   // Directly use the videos array belonging to the active playlist
   const playlistVideos = activePlaylist?.videos || [];
+
+  // Computed metrics for active playlist
+  const totalCount = playlistVideos.length;
+  const watchedCount = playlistVideos.filter((v) => Boolean(v.watched)).length;
+  const remainingCount = Math.max(0, totalCount - watchedCount);
+  const progressPercent = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
+  const isCompleted = totalCount > 0 && watchedCount === totalCount;
+  const isInProgress = watchedCount > 0 && watchedCount < totalCount;
+
+  // Filtered videos for grid display
+  const displayedVideos = playlistVideos.filter((v) => {
+    if (filter === 'watched') return Boolean(v.watched);
+    if (filter === 'unwatched') return !v.watched;
+    return true;
+  });
 
   const handleDeletePlaylist = async (id, e) => {
     if (e) e.stopPropagation();
@@ -61,6 +119,52 @@ export default function PlaylistsTab({
         setSelectedPlaylistId(isDesktop ? (remaining[0]?.id || null) : null);
         setMobileView('list');
       }
+    }
+  };
+
+  const handleOpenRename = (pl) => {
+    setPlaylistToRename(pl);
+    setRenameInput(pl.name);
+  };
+
+  const handleSaveRename = async (e) => {
+    e.preventDefault();
+    if (!playlistToRename || !renameInput.trim() || isRenaming) return;
+    setIsRenaming(true);
+    try {
+      if (onRenamePlaylist) {
+        await onRenamePlaylist(playlistToRename.id, renameInput.trim());
+      }
+      setPlaylistToRename(null);
+      setRenameInput('');
+    } catch (err) {
+      console.error('Failed to rename playlist:', err);
+    } finally {
+      setIsRenaming(false);
+    }
+  };
+
+  const handleVideoWatchedToggle = async (video) => {
+    if (togglingVideoIds.has(video.videoId) || !activePlaylist) return;
+    setTogglingVideoIds((prev) => new Set(prev).add(video.videoId));
+    try {
+      await onToggleVideoWatched?.(activePlaylist.id, video.videoId, !video.watched);
+    } finally {
+      setTogglingVideoIds((prev) => {
+        const next = new Set(prev);
+        next.delete(video.videoId);
+        return next;
+      });
+    }
+  };
+
+  const handleBulkToggle = async (isWatched) => {
+    if (isBulkLoading || !activePlaylist) return;
+    setIsBulkLoading(true);
+    try {
+      await onSetAllVideosWatched?.(activePlaylist.id, isWatched);
+    } finally {
+      setIsBulkLoading(false);
     }
   };
 
@@ -77,15 +181,15 @@ export default function PlaylistsTab({
   return (
     <div className="flex-1 flex flex-col md:flex-row gap-5 lg:gap-6 items-stretch min-h-0 h-full overflow-hidden animate-in fade-in duration-300">
       
-      {/* Playlists Left Navigation Sidebar Panel (Separately Scrollable & Toggled on Mobile) */}
-      <div className={`w-full md:w-64 lg:w-72 shrink-0 flex flex-col min-h-0 h-full rounded-2xl border transition-colors ${
+      {/* Playlists Left Navigation Sidebar Panel (Border removed) */}
+      <div className={`w-full md:w-64 lg:w-72 shrink-0 flex flex-col min-h-0 h-full rounded-2xl transition-colors ${
         mobileView === 'videos' ? 'hidden md:flex' : 'flex'
       } ${
-        isDark ? 'bg-zinc-950/80 border-zinc-800/80 shadow-inner' : 'bg-white border-orange-200 shadow-xs'
+        isDark ? 'bg-zinc-950/80 shadow-inner' : 'bg-white shadow-xs'
       }`}>
         {/* Pinned Header */}
-        <div className={`flex items-center justify-between p-3.5 pb-2.5 border-b shrink-0 ${
-          isDark ? 'border-zinc-800/60' : 'border-orange-100'
+        <div className={`flex items-center justify-between p-3.5 pb-2.5 shrink-0 ${
+          isDark ? 'border-b border-zinc-800/60' : 'border-b border-orange-100'
         }`}>
           <div className="flex items-center gap-2">
             <ListVideo className="w-4 h-4 text-orange-500 shrink-0" />
@@ -93,11 +197,6 @@ export default function PlaylistsTab({
               isDark ? 'text-zinc-300' : 'text-orange-950'
             }`}>
               Playlists
-            </span>
-            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
-              isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-orange-100 text-orange-800'
-            }`}>
-              {playlists.length}
             </span>
           </div>
 
@@ -112,11 +211,11 @@ export default function PlaylistsTab({
           </button>
         </div>
 
-        {/* Separately Scrollable Playlist List */}
+        {/* Separately Scrollable Playlist List (No borders on items) */}
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2 space-y-1">
           {playlists.length === 0 ? (
-            <div className={`text-center py-8 px-3 rounded-xl border border-dashed text-xs space-y-1 ${
-              isDark ? 'border-zinc-800 text-zinc-500' : 'border-orange-200 text-orange-900/60'
+            <div className={`text-center py-8 px-3 rounded-xl text-xs space-y-1 ${
+              isDark ? 'text-zinc-500' : 'text-orange-900/60'
             }`}>
               <Folder className="w-6 h-6 mx-auto opacity-40 mb-1" />
               <p className="font-semibold">No playlists created yet</p>
@@ -125,7 +224,7 @@ export default function PlaylistsTab({
           ) : (
             playlists.map((pl) => {
               const isActive = activePlaylistId === pl.id;
-              const count = pl.videos?.length ?? pl.videoCount ?? 0;
+
               return (
                 <div
                   key={pl.id}
@@ -134,11 +233,11 @@ export default function PlaylistsTab({
                   className={`group relative flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer shrink-0 transition-all duration-150 ${
                     isActive 
                       ? isDark 
-                        ? 'bg-zinc-900/90 text-zinc-100 font-bold border border-zinc-700/80 shadow-xs' 
-                        : 'bg-orange-100/90 text-orange-950 font-bold border border-orange-300 shadow-2xs'
+                        ? 'bg-zinc-900 text-zinc-100 font-bold shadow-xs' 
+                        : 'bg-orange-100 text-orange-950 font-bold shadow-2xs'
                       : isDark
-                        ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 border border-transparent'
-                        : 'text-orange-950/80 hover:text-orange-950 hover:bg-orange-50/80 border border-transparent'
+                        ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                        : 'text-orange-950/80 hover:text-orange-950 hover:bg-orange-50/80'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -154,31 +253,64 @@ export default function PlaylistsTab({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition ${
-                      isActive
-                        ? isDark
-                          ? 'bg-zinc-800 text-zinc-200 border border-zinc-700/80'
-                          : 'bg-orange-200/90 text-orange-900'
-                        : isDark
-                          ? 'bg-zinc-900 text-zinc-500 group-hover:text-zinc-300'
-                          : 'bg-orange-100/60 text-orange-800/80 group-hover:bg-orange-100'
-                    }`}>
-                      {count}
-                    </span>
-
+                  {/* 3-Dot Menu Dropdown (Rename & Delete) */}
+                  <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
-                      onClick={(e) => handleDeletePlaylist(pl.id, e)}
-                      className={`p-1 rounded-md transition shrink-0 ${
-                        isActive
-                          ? 'text-zinc-400 hover:text-red-400 hover:bg-red-500/10'
-                          : 'opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-red-400 hover:bg-red-500/10'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenPlaylistId(menuOpenPlaylistId === pl.id ? null : pl.id);
+                      }}
+                      className={`p-1.5 rounded-lg transition cursor-pointer ${
+                        menuOpenPlaylistId === pl.id
+                          ? isDark ? 'text-zinc-100 bg-zinc-800' : 'text-orange-950 bg-orange-200/80'
+                          : isActive
+                            ? isDark ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800' : 'text-orange-900 hover:text-orange-950 hover:bg-orange-200/60'
+                            : isDark ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80' : 'text-orange-950/60 hover:text-orange-950 hover:bg-orange-100'
                       }`}
-                      title="Delete Playlist"
+                      title="Playlist options"
+                      aria-label="Playlist options"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <MoreVertical className="w-3.5 h-3.5" />
                     </button>
+
+                    {/* Popover Dropdown */}
+                    {menuOpenPlaylistId === pl.id && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className={`absolute right-0 top-full mt-1 w-32 rounded-xl shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 border ${
+                          isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-orange-200 text-orange-950 shadow-md'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpenPlaylistId(null);
+                            handleOpenRename(pl);
+                          }}
+                          className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                            isDark ? 'hover:bg-zinc-800 text-zinc-200' : 'hover:bg-orange-50 text-orange-950'
+                          }`}
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-zinc-400" />
+                          <span>Rename</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpenPlaylistId(null);
+                            handleDeletePlaylist(pl.id, e);
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-red-400 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -193,38 +325,207 @@ export default function PlaylistsTab({
       }`}>
         {activePlaylist ? (
           <>
-            {/* Active Playlist Header (Pinned / Non-scrollable - Only Playlist Name + Mobile Back Button) */}
-            <div className={`px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl flex items-center gap-3 shrink-0 transition-colors ${
-              isDark ? 'bg-zinc-950/80' : 'bg-white shadow-xs'
+            {/* Active Playlist Header & Completion Tracker Panel (Border removed) */}
+            <div className={`px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl flex flex-col gap-3 shrink-0 transition-colors ${
+              isDark ? 'bg-zinc-950/90 shadow-inner' : 'bg-white shadow-xs'
             }`}>
-              {/* Mobile Back Button to choose another playlist */}
-              <button
-                type="button"
-                onClick={handleBackToPlaylists}
-                className={`md:hidden p-1.5 -ml-1 rounded-xl transition flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer ${
-                  isDark
-                    ? 'text-zinc-300 hover:text-white'
-                    : 'text-orange-950 hover:text-orange-800'
-                }`}
-                title="Back to playlists"
-                aria-label="Back to playlists list"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-orange-500" />
-              </button>
+              {/* Top Row: Title, Status Badge (with count & without border), Bulk Toggle */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  {/* Mobile Back Button to choose another playlist */}
+                  <button
+                    type="button"
+                    onClick={handleBackToPlaylists}
+                    className={`md:hidden p-1.5 -ml-1 rounded-xl transition flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer ${
+                      isDark
+                        ? 'text-zinc-300 hover:text-white'
+                        : 'text-orange-950 hover:text-orange-800'
+                    }`}
+                    title="Back to playlists"
+                    aria-label="Back to playlists list"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-orange-500" />
+                  </button>
 
-              {/* Only show the playlist name here */}
-              <h2 className={`text-base sm:text-lg font-bold truncate leading-snug flex-1 min-w-0 ${
-                isDark ? 'text-zinc-100' : 'text-orange-950'
-              }`} title={activePlaylist.name}>
-                {activePlaylist.name}
-              </h2>
+                  <h2 className={`text-base sm:text-lg font-bold truncate leading-snug ${
+                    isDark ? 'text-zinc-100' : 'text-orange-950'
+                  }`} title={activePlaylist.name}>
+                    {activePlaylist.name}
+                  </h2>
+
+                  {/* Status Badge: video count & watched count inside, WITHOUT border */}
+                  {totalCount === 0 ? (
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${
+                      isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-orange-100/60 text-orange-800/80'
+                    }`}>
+                      Empty
+                    </span>
+                  ) : isCompleted ? (
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 flex items-center gap-1.5 ${
+                      isDark ? 'bg-green-950/80 text-green-400' : 'bg-green-100 text-green-800'
+                    }`}>
+                      <CheckCircle2 className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-700'}`} />
+                      <span>Completed</span>
+                    </span>
+                  ) : isInProgress ? (
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 flex items-center gap-1.5 ${
+                      isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      <Clock className={`w-3.5 h-3.5 ${isDark ? 'text-amber-500' : 'text-amber-700'}`} />
+                      <span>In Progress</span>
+                    </span>
+                  ) : (
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 flex items-center gap-1.5 ${
+                      isDark ? 'bg-zinc-800/80 text-zinc-400' : 'bg-zinc-100 text-zinc-600'
+                    }`}>
+                      <CircleDot className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>Not Started</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Bulk Action Button */}
+                {totalCount > 0 && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!isCompleted ? (
+                      <button
+                        type="button"
+                        disabled={isBulkLoading}
+                        onClick={() => handleBulkToggle(true)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                          isDark
+                            ? 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 hover:text-zinc-100'
+                            : 'bg-orange-50 hover:bg-orange-100 text-orange-950'
+                        }`}
+                        title="Mark all videos as watched"
+                      >
+                        {isBulkLoading ? (
+                          <Loader2 className={`w-3.5 h-3.5 animate-spin ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                        ) : (
+                          <CheckCheck className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                        )}
+                        <span className="hidden sm:inline">
+                          {isBulkLoading ? 'Updating...' : 'Mark All Watched'}
+                        </span>
+                        <span className="sm:hidden">
+                          {isBulkLoading ? 'Updating...' : 'All Done'}
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isBulkLoading}
+                        onClick={() => handleBulkToggle(false)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                          isDark
+                            ? 'bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-zinc-200'
+                            : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700'
+                        }`}
+                        title="Reset watched status for this playlist"
+                      >
+                        {isBulkLoading ? (
+                          <Loader2 className="w-3 h-3 animate-spin text-zinc-400" />
+                        ) : (
+                          <RotateCcw className="w-3 h-3" />
+                        )}
+                        <span>{isBulkLoading ? 'Resetting...' : 'Reset Progress'}</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Second Row: Progress Bar & Filter Tabs */}
+              {totalCount > 0 && (
+                <div className="space-y-2 pt-0.5">
+                  {/* Slim Animated Progress Bar */}
+                  <div className={`w-full h-1.5 rounded-full overflow-hidden ${
+                    isDark ? 'bg-zinc-900' : 'bg-orange-100/80'
+                  }`}>
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        isCompleted
+                          ? 'bg-gradient-to-r from-green-700 via-green-600 to-emerald-600 shadow-xs shadow-green-700/30'
+                          : 'bg-gradient-to-r from-orange-500 to-amber-500'
+                      }`}
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+
+                  {/* Clean Bottom Row: Progress percentage on left, Filter tabs on right */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className={`font-medium ${isDark ? 'text-zinc-400' : 'text-orange-950/70'}`}>
+                      {isCompleted ? (
+                        <span className={`font-semibold flex items-center gap-1 ${
+                          isDark ? 'text-green-400' : 'text-green-800'
+                        }`}>
+                          <CheckCircle2 className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-700'}`} /> All lectures completed
+                        </span>
+                      ) : (
+                        <span>{progressPercent}% completed</span>
+                      )}
+                    </span>
+
+                    {/* Filter Tabs: All, Unwatched, Watched */}
+                    <div className={`flex items-center p-0.5 rounded-lg border text-[11px] font-bold ${
+                      isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-orange-50/80 border-orange-200'
+                    }`}>
+                      <button
+                        type="button"
+                        onClick={() => setFilter('all')}
+                        className={`px-2.5 py-0.5 rounded-md transition cursor-pointer ${
+                          filter === 'all'
+                            ? isDark
+                              ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+                              : 'bg-white text-orange-950 shadow-xs'
+                            : isDark
+                              ? 'text-zinc-500 hover:text-zinc-300'
+                              : 'text-orange-900/60 hover:text-orange-950'
+                        }`}
+                      >
+                        All ({totalCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFilter('unwatched')}
+                        className={`px-2.5 py-0.5 rounded-md transition cursor-pointer ${
+                          filter === 'unwatched'
+                            ? isDark
+                              ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+                              : 'bg-white text-orange-950 shadow-xs'
+                            : isDark
+                              ? 'text-zinc-500 hover:text-zinc-300'
+                              : 'text-orange-900/60 hover:text-orange-950'
+                        }`}
+                      >
+                        Unwatched ({remainingCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFilter('watched')}
+                        className={`px-2.5 py-0.5 rounded-md transition cursor-pointer ${
+                          filter === 'watched'
+                            ? isDark
+                              ? 'bg-zinc-800 text-zinc-100 shadow-xs'
+                              : 'bg-white text-orange-950 shadow-xs'
+                            : isDark
+                              ? 'text-zinc-500 hover:text-zinc-300'
+                              : 'text-orange-900/60 hover:text-orange-950'
+                        }`}
+                      >
+                        Watched ({watchedCount})
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Only Video Grid is Scrollable! */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
               {playlistVideos.length === 0 ? (
-                <div className={`text-center py-16 border rounded-2xl flex flex-col items-center justify-center gap-2.5 p-6 ${
-                  isDark ? 'border-zinc-800/80 bg-zinc-950/40 text-zinc-400' : 'border-orange-200 bg-white text-orange-900 shadow-xs'
+                <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2.5 p-6 ${
+                  isDark ? 'bg-zinc-950/40 text-zinc-400' : 'bg-white text-orange-900 shadow-xs'
                 }`}>
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                     isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-orange-50 text-orange-400'
@@ -240,9 +541,38 @@ export default function PlaylistsTab({
                     </p>
                   </div>
                 </div>
+              ) : displayedVideos.length === 0 ? (
+                <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2.5 p-6 ${
+                  isDark ? 'bg-zinc-950/40 text-zinc-400' : 'bg-white text-orange-900 shadow-xs'
+                }`}>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                    isDark ? 'bg-zinc-900 text-green-400' : 'bg-green-50 text-green-700'
+                  }`}>
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1 max-w-sm">
+                    <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
+                      No {filter} lectures found
+                    </p>
+                    <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+                      {filter === 'unwatched'
+                        ? 'Congratulations! You have completed all lectures in this playlist.'
+                        : 'No lectures have been marked as watched yet. Click the checkbox on any video to mark it watched.'}
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setFilter('all')}
+                        className="btn-secondary text-xs px-3 py-1 cursor-pointer"
+                      >
+                        Show All Lectures ({totalCount})
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-                  {playlistVideos.map((video) => (
+                  {displayedVideos.map((video) => (
                     <LibraryVideoCard
                       key={video.videoId}
                       video={video}
@@ -253,6 +583,10 @@ export default function PlaylistsTab({
                       onCreatePlaylist={onCreatePlaylist}
                       onSave={() => onToggleSave(video)}
                       isSaved={savedVideos.some(v => v.videoId === video.videoId)}
+                      showCheckbox={true}
+                      isWatched={Boolean(video.watched)}
+                      isLoadingWatched={togglingVideoIds.has(video.videoId)}
+                      onToggleWatched={() => handleVideoWatchedToggle(video)}
                     />
                   ))}
                 </div>
@@ -260,8 +594,8 @@ export default function PlaylistsTab({
             </div>
           </>
         ) : (
-          <div className={`text-center py-16 border rounded-2xl flex flex-col items-center justify-center gap-2 p-6 ${
-            isDark ? 'border-zinc-800/80 bg-zinc-950/40 text-zinc-400' : 'border-orange-200 bg-white text-orange-900 shadow-xs'
+          <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2 p-6 ${
+            isDark ? 'bg-zinc-950/40 text-zinc-400' : 'bg-white text-orange-900 shadow-xs'
           }`}>
             <FolderOpen className="w-8 h-8 text-orange-500 opacity-60" />
             <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
@@ -273,6 +607,84 @@ export default function PlaylistsTab({
           </div>
         )}
       </div>
+
+      {/* Rename Playlist Modal */}
+      {playlistToRename && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-[160] flex items-center justify-center p-4">
+          <div className={`relative max-w-sm w-full rounded-2xl p-5 shadow-2xl border ${
+            isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-orange-200 text-orange-950'
+          }`}>
+            <button
+              type="button"
+              onClick={() => setPlaylistToRename(null)}
+              className={`absolute right-4 top-4 p-1.5 rounded-lg transition cursor-pointer ${
+                isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900' : 'text-orange-800 hover:text-orange-950 hover:bg-orange-100'
+              }`}
+              title="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className={`space-y-1 pb-3 border-b mb-4 ${isDark ? 'border-zinc-800/80' : 'border-orange-100'}`}>
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-orange-500" />
+                Rename Playlist
+              </h3>
+              <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-orange-900/60'}`}>
+                Enter a new name for your playlist.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveRename} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className={`block text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+                  Playlist Name
+                </label>
+                <input
+                  type="text"
+                  value={renameInput}
+                  onChange={(e) => setRenameInput(e.target.value)}
+                  placeholder="e.g. Web Development, Physics"
+                  className={`w-full rounded-xl px-3 py-2 text-xs transition focus:outline-none ${
+                    isDark
+                      ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 focus:border-orange-500'
+                      : 'bg-orange-50/50 border border-orange-200 text-orange-950 focus:border-orange-500'
+                  }`}
+                  required
+                  maxLength={40}
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setPlaylistToRename(null)}
+                  className="btn-secondary text-xs px-3 py-1.5 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!renameInput.trim() || isRenaming}
+                  className="btn-primary text-xs px-4 py-1.5 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {isRenaming ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Save Name</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+

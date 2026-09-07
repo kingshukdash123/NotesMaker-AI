@@ -216,7 +216,7 @@ export default function DiscoverPage() {
     }
 
     const playlistTitle = playlistData.title || selectedPlaylistSummary?.title || 'Course Playlist';
-    const created = await createPlaylistWithVideos(currentUser.uid, playlistTitle, orderedVideos);
+    const created = await createPlaylistWithVideos(currentUser.uid, playlistTitle, orderedVideos, targetPlaylistId);
 
     setPlaylists(prev => [
       {
@@ -225,7 +225,8 @@ export default function DiscoverPage() {
         videoCount: created.videoCount,
         userId: currentUser.uid,
         createdAt: new Date(),
-        videos: created.videos
+        videos: created.videos,
+        sourcePlaylistId: targetPlaylistId,
       },
       ...prev
     ]);
@@ -413,6 +414,7 @@ export default function DiscoverPage() {
         isOpen={isPlaylistDrawerOpen}
         playlistId={selectedPlaylistId}
         playlistSummary={selectedPlaylistSummary}
+        userPlaylists={playlists}
         onClose={handleClosePlaylistDrawer}
         onVideoSelect={handleDrawerVideoSelect}
         onSaveToLibrary={handleSavePlaylistToLibrary}

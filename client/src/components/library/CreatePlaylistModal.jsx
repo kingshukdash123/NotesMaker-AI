@@ -1,24 +1,32 @@
 import { useState } from 'react';
-import { X, FolderPlus } from 'lucide-react';
+import { X, FolderPlus, Loader2 } from 'lucide-react';
 
 export default function CreatePlaylistModal({ isOpen, onClose, onCreate }) {
   const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    if (onCreate) {
-      onCreate(name.trim());
+    if (!name.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      if (onCreate) {
+        await onCreate(name.trim());
+      }
+      setName('');
+      onClose();
+    } catch (err) {
+      console.error('Failed to create playlist:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-    setName('');
-    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[160] flex items-center justify-center p-4">
-      <div className="relative max-w-sm w-full bg-zinc-950/90 border border-zinc-800 rounded-2xl p-5 shadow-2xl glass-panel animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div className="relative max-w-sm w-full bg-zinc-950/90 border border-zinc-800 rounded-2xl p-5 shadow-2xl glass-panel max-h-[90vh] overflow-y-auto custom-scrollbar">
         
         {/* Close Button */}
         <button
@@ -59,10 +67,17 @@ export default function CreatePlaylistModal({ isOpen, onClose, onCreate }) {
 
           <button
             type="submit"
-            disabled={!name.trim()}
-            className="btn-primary w-full py-2.5 px-4 text-xs font-bold"
+            disabled={!name.trim() || isSubmitting}
+            className="btn-primary w-full py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
           >
-            <span>Create Playlist</span>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Creating Playlist...</span>
+              </>
+            ) : (
+              <span>Create Playlist</span>
+            )}
           </button>
         </form>
       </div>

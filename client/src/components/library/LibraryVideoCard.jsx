@@ -1,6 +1,6 @@
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FileCheck2 } from 'lucide-react';
+import { FileCheck2, Square, CheckSquare, Loader2 } from 'lucide-react';
 import VideoActionButtons from '../common/VideoActionButtons';
 import { formatTimeAgo, getChannelInitial } from '../../utils/formatters';
 
@@ -12,7 +12,11 @@ export default function LibraryVideoCard({
   playlists = [],
   onSave,
   isSaved,
-  onCreatePlaylist
+  onCreatePlaylist,
+  showCheckbox = false,
+  isWatched = false,
+  isLoadingWatched = false,
+  onToggleWatched,
 }) {
   const { isDark } = useTheme();
   const { processedVideoIds } = useApp();
@@ -24,11 +28,13 @@ export default function LibraryVideoCard({
   const timeAgoText = formatTimeAgo(metadata.publishedAt || video.publishedAt);
 
   return (
-    <div className="group flex flex-col h-full cursor-pointer transition duration-150 rounded-xl select-none">
+    <div className={`group flex flex-col h-full cursor-pointer transition duration-150 rounded-xl select-none ${
+      isWatched ? 'opacity-85 hover:opacity-100' : ''
+    }`}>
       {/* 16:9 Clean YouTube Thumbnail */}
       <div
         onClick={onOpen}
-        className={`relative w-full aspect-video rounded-xl overflow-hidden shrink-0 border shadow-xs ${
+        className={`relative w-full aspect-video rounded-xl overflow-hidden shrink-0 border shadow-xs transition-colors duration-150 ${
           isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100'
         }`}
       >
@@ -47,7 +53,7 @@ export default function LibraryVideoCard({
           </div>
         )}
 
-        {/* Live Broadcast Badges (Bottom Right / Top Left) */}
+        {/* Live Broadcast Badges (Bottom Right) */}
         {(video.isLive || video.mediaType === 'live') ? (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-md tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
@@ -118,20 +124,57 @@ export default function LibraryVideoCard({
         <div className={`mt-auto pt-2 flex items-center justify-between border-t min-h-[32px] ${
           isDark ? 'border-zinc-800/60' : 'border-orange-100'
         }`}>
-          {/* Action Buttons first */}
-          <VideoActionButtons
-            video={video}
-            playlists={playlists}
-            isSaved={isSaved}
-            onSave={onSave}
-            onAddToPlaylist={onAddToPlaylist}
-            onCreatePlaylist={onCreatePlaylist}
-            onDelete={onDelete}
-            popoverPlacement="top"
-            popoverAlign="left"
-          />
+          {/* Action Buttons: Bookmark, Add to Playlist, Delete + Watched Checkbox */}
+          <div className="flex items-center gap-1 shrink-0">
+            <VideoActionButtons
+              video={video}
+              playlists={playlists}
+              isSaved={isSaved}
+              onSave={onSave}
+              onAddToPlaylist={onAddToPlaylist}
+              onCreatePlaylist={onCreatePlaylist}
+              onDelete={onDelete}
+              popoverPlacement="top"
+              popoverAlign="left"
+            />
 
-          {/* Notes generated icon in last */}
+            {/* Checkbox at the action button */}
+            {showCheckbox && (
+              <button
+                type="button"
+                disabled={isLoadingWatched}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleWatched?.(video);
+                }}
+                className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-not-allowed ${
+                  isWatched
+                    ? isDark
+                      ? 'text-green-400 bg-green-950/60 hover:bg-green-900/60'
+                      : 'text-green-800 bg-green-100 hover:bg-green-200'
+                    : isDark
+                      ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                      : 'text-orange-950/60 hover:text-orange-950 hover:bg-orange-100'
+                }`}
+                title={isLoadingWatched ? 'Updating status...' : isWatched ? 'Mark as unwatched' : 'Mark as watched'}
+                aria-label={isLoadingWatched ? 'Updating status...' : isWatched ? 'Mark as unwatched' : 'Mark as watched'}
+              >
+                {isLoadingWatched ? (
+                  <Loader2 className={`w-3.5 h-3.5 animate-spin ${
+                    isWatched 
+                      ? isDark ? 'text-green-400' : 'text-green-700'
+                      : isDark ? 'text-zinc-300' : 'text-orange-600'
+                  }`} />
+                ) : isWatched ? (
+                  <CheckSquare className="w-3.5 h-3.5" />
+                ) : (
+                  <Square className="w-3.5 h-3.5" />
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Right side: Notes generated icon */}
           {isProcessed ? (
             <span
               title="Notes generated & ready"
@@ -149,3 +192,4 @@ export default function LibraryVideoCard({
     </div>
   );
 }
+

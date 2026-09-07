@@ -5,7 +5,9 @@ import {
   FolderPlus,
   Trash2,
   Plus,
-  X
+  X,
+  Check,
+  Loader2
 } from 'lucide-react';
 
 export default function VideoActionButtons({
@@ -23,19 +25,74 @@ export default function VideoActionButtons({
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [loadingPlaylistIds, setLoadingPlaylistIds] = useState(() => new Set());
   const popoverRef = useRef(null);
 
-  // Close playlist popover when clicking outside
+  const handleSave = async (e) => {
+    e.stopPropagation();
+    if (isSaving || !onSave) return;
+    setIsSaving(true);
+    try {
+      await onSave();
+    } catch (err) {
+      console.error('Error saving video:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (isDeleting || !onDelete) return;
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } catch (err) {
+      console.error('Error deleting video:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleTogglePlaylist = async (e, pl, isInPlaylist) => {
+    e.stopPropagation();
+    if (loadingPlaylistIds.has(pl.id)) return;
+    setLoadingPlaylistIds((prev) => new Set(prev).add(pl.id));
+    try {
+      await onAddToPlaylist?.(video.videoId, pl.id, isInPlaylist, video);
+    } catch (err) {
+      console.error('Error toggling playlist video:', err);
+    } finally {
+      setLoadingPlaylistIds((prev) => {
+        const next = new Set(prev);
+        next.delete(pl.id);
+        return next;
+      });
+    }
+  };
+
+  // Close playlist popover when clicking outside or pressing Escape
   useEffect(() => {
+    if (!isPlaylistOpen) return;
+
     const handleClickOutside = (event) => {
       if (popoverRef.current && !popoverRef.current.contains(event.target)) {
         setIsPlaylistOpen(false);
       }
     };
-    if (isPlaylistOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsPlaylistOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isPlaylistOpen]);
 
   return (
@@ -47,34 +104,37 @@ export default function VideoActionButtons({
       {onSave && (
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSave();
-          }}
-          className={`p-1.5 rounded-lg transition cursor-pointer ${
+          disabled={isSaving}
+          onClick={handleSave}
+          className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-wait ${
             isSaved
               ? 'text-orange-500 bg-orange-500/15 hover:bg-orange-500/25'
               : isDark
                 ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
                 : 'text-orange-950/60 hover:text-orange-950 hover:bg-orange-100'
           }`}
-          title={isSaved ? 'Saved in Library' : 'Save to Library'}
+          title={isSaving ? 'Saving...' : isSaved ? 'Saved in Library' : 'Save to Library'}
           aria-label={isSaved ? 'Remove from saved' : 'Save video'}
         >
-          <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+          {isSaving ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+          ) : (
+            <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+          )}
         </button>
       )}
 
       {/* 2. Direct Add to Playlist Button with Popover */}
       {onAddToPlaylist && (
-        <div ref={popoverRef} className="relative">
+        <div ref={popoverRef} className={`relative ${isPlaylistOpen ? 'z-50' : ''}`}>
           <button
             type="button"
+            disabled={loadingPlaylistIds.size > 0}
             onClick={(e) => {
               e.stopPropagation();
               setIsPlaylistOpen((prev) => !prev);
             }}
-            className={`p-1.5 rounded-lg transition cursor-pointer ${
+            className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-wait ${
               isPlaylistOpen
                 ? 'text-orange-500 bg-orange-500/15'
                 : isDark
@@ -84,19 +144,25 @@ export default function VideoActionButtons({
             title="Add to Playlist"
             aria-label="Add to playlist"
           >
-            <FolderPlus className="w-3.5 h-3.5" />
+            {loadingPlaylistIds.size > 0 ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+            ) : (
+              <FolderPlus className="w-3.5 h-3.5" />
+            )}
           </button>
 
-          {/* Compact Playlist Selection Popover */}
+          {/* Compact Playlist Selection Popover directly anchored to button */}
           {isPlaylistOpen && (
             <div
               onClick={(e) => e.stopPropagation()}
-              className={`absolute ${popoverAlign === 'left' ? 'left-0' : 'right-0'} ${
+              className={`absolute ${
                 popoverPlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-              } w-52 sm:w-60 border shadow-2xl rounded-2xl p-2 z-[80] animate-in fade-in slide-in-from-bottom-1 duration-150 ${
+              } ${
+                popoverAlign === 'left' ? 'left-0' : 'right-0'
+              } w-56 border shadow-2xl rounded-2xl p-2.5 z-50 ${
                 isDark
-                  ? 'bg-zinc-950 border-zinc-800 text-zinc-200'
-                  : 'bg-white border-orange-200 text-orange-950'
+                  ? 'bg-zinc-950 border-zinc-800 text-zinc-200 shadow-black/90'
+                  : 'bg-white border-orange-200 text-orange-950 shadow-orange-950/15'
               }`}
             >
               <div className={`flex items-center justify-between pb-1.5 mb-1 border-b px-1 text-xs font-bold ${
@@ -106,7 +172,7 @@ export default function VideoActionButtons({
                 <button
                   type="button"
                   onClick={() => setIsPlaylistOpen(false)}
-                  className={`p-0.5 rounded transition cursor-pointer ${
+                  className={`p-0.5 rounded-md transition cursor-pointer ${
                     isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-orange-100 text-orange-800'
                   }`}
                   aria-label="Close"
@@ -115,31 +181,33 @@ export default function VideoActionButtons({
                 </button>
               </div>
 
-              {/* Playlists scrollable list */}
-              <div className="space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar my-1 pr-0.5">
+              {/* Playlists scrollable list: exactly 3 playlists visible, after that use scroll */}
+              <div className="space-y-1 max-h-[105px] overflow-y-auto custom-scrollbar my-1 pr-1">
                 {playlists.length > 0 ? (
                   playlists.map((pl) => {
                     const isInPlaylist =
                       pl.videos?.some((v) => v.videoId === video.videoId) ||
                       video.playlistIds?.includes(pl.id);
+                    const isLoadingThis = loadingPlaylistIds.has(pl.id);
+
                     return (
                       <button
                         key={pl.id}
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddToPlaylist(video.videoId, pl.id, isInPlaylist, video);
-                        }}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition cursor-pointer ${
-                          isInPlaylist
-                            ? 'text-orange-500 bg-orange-500/15 font-semibold'
-                            : isDark
-                              ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-900'
-                              : 'text-orange-950 hover:bg-orange-50'
+                        disabled={isLoadingThis}
+                        onClick={(e) => handleTogglePlaylist(e, pl, isInPlaylist)}
+                        className={`w-full h-8 flex items-center justify-between px-2.5 rounded-lg text-xs font-medium text-left transition cursor-pointer disabled:cursor-wait ${
+                          isDark
+                            ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-900'
+                            : 'text-orange-950 hover:bg-orange-100/70'
                         }`}
                       >
                         <span className="truncate pr-2">{pl.name}</span>
-                        <span className="font-bold text-xs shrink-0">{isInPlaylist ? '✓' : '+'}</span>
+                        {isLoadingThis ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500 shrink-0" />
+                        ) : isInPlaylist ? (
+                          <Check className="w-3.5 h-3.5 text-orange-500 shrink-0 stroke-[2.5]" />
+                        ) : null}
                       </button>
                     );
                   })
@@ -191,7 +259,11 @@ export default function VideoActionButtons({
                     className="btn-primary p-1.5 !rounded-lg text-xs font-bold shrink-0 cursor-pointer disabled:opacity-40"
                     title="Create Playlist"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    {isCreating ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5" />
+                    )}
                   </button>
                 </form>
               )}
@@ -204,19 +276,21 @@ export default function VideoActionButtons({
       {onDelete && (
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className={`p-1.5 rounded-lg transition cursor-pointer ${
+          disabled={isDeleting}
+          onClick={handleDelete}
+          className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-wait ${
             isDark
               ? 'text-zinc-500 hover:text-red-400 hover:bg-red-500/10'
               : 'text-orange-900/50 hover:text-red-600 hover:bg-red-50'
           }`}
-          title="Remove"
+          title={isDeleting ? 'Removing...' : 'Remove'}
           aria-label="Remove video"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          {isDeleting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" />
+          ) : (
+            <Trash2 className="w-3.5 h-3.5" />
+          )}
         </button>
       )}
     </div>

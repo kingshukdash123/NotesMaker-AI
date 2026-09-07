@@ -38,7 +38,7 @@ export async function createPlaylist(userId, name) {
  * @param {Array} videos - Complete array of video objects in sequence
  * @returns {Promise<{ id: string, name: string, videoCount: number, videos: Array }>}
  */
-export async function createPlaylistWithVideos(userId, name, videos = []) {
+export async function createPlaylistWithVideos(userId, name, videos = [], sourcePlaylistId = '') {
   if (!userId) throw new Error('User ID is required');
 
   const formattedVideos = (videos || []).map((v, idx) => ({
@@ -50,13 +50,16 @@ export async function createPlaylistWithVideos(userId, name, videos = []) {
       thumbnail: v.metadata?.thumbnail || v.thumbnail || (v.videoId ? `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg` : ''),
     },
     position: typeof v.position === 'number' ? v.position : idx,
-    addedAt: new Date().toISOString(),
+    addedAt: v.addedAt || new Date().toISOString(),
+    watched: Boolean(v.watched),
+    watchedAt: v.watchedAt || (v.watched ? new Date().toISOString() : null),
   }));
 
   const model = new PlaylistModel({
     userId,
     name: name || 'Saved Course',
     videos: formattedVideos,
+    sourcePlaylistId: sourcePlaylistId || '',
   });
 
   const playlistRef = collection(db, 'playlists');
@@ -67,6 +70,7 @@ export async function createPlaylistWithVideos(userId, name, videos = []) {
     name: model.name,
     videoCount: formattedVideos.length,
     videos: formattedVideos,
+    sourcePlaylistId: model.sourcePlaylistId,
   };
 }
 
@@ -120,6 +124,30 @@ export async function deletePlaylist(userId, playlistId) {
 }
 
 /**
+ * Renames a playlist if it belongs to the authenticated user.
+ * @param {string} userId - Auth user ID (UID)
+ * @param {string} playlistId - Firestore document ID
+ * @param {string} newName - New name for the playlist
+ * @returns {Promise<void>}
+ */
+export async function renamePlaylist(userId, playlistId, newName) {
+  if (!userId || !playlistId || !newName?.trim()) return;
+  const docRef = doc(db, 'playlists', playlistId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) return;
+
+  const playlist = PlaylistModel.fromFirestore(docSnap);
+  if (playlist?.userId !== userId) {
+    throw new Error('Unauthorized: You do not have permission to rename this playlist.');
+  }
+
+  await updateDoc(docRef, {
+    name: newName.trim(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
  * Adds a video directly into a playlist's videos array.
  * Does NOT touch saved_videos.
  */
@@ -146,7 +174,9 @@ export async function addVideoToPlaylist(userId, videoId, playlistId, videoData 
       channel: videoData?.metadata?.channel || videoData?.channel || 'Unknown Creator',
       thumbnail: videoData?.metadata?.thumbnail || videoData?.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : ''),
     },
-    addedAt: new Date().toISOString(),
+    addedAt: videoData?.addedAt || new Date().toISOString(),
+    watched: Boolean(videoData?.watched),
+    watchedAt: videoData?.watchedAt || (videoData?.watched ? new Date().toISOString() : null),
   };
 
   // Avoid duplicates in playlist
@@ -178,6 +208,73 @@ export async function removeVideoFromPlaylist(userId, videoId, playlistId) {
   }
 
   const updatedVideos = (playlist.videos || []).filter(v => v.videoId !== videoId);
+
+  await updateDoc(playlistDocRef, {
+    videos: updatedVideos,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Toggles or updates watched status of a video in a playlist.
+ * @param {string} userId - Auth user ID
+ * @param {string} playlistId - Firestore document ID
+ * @param {string} videoId - YouTube video ID
+ * @param {boolean} watched - Watched state
+ */
+export async function togglePlaylistVideoWatched(userId, playlistId, videoId, watched) {
+  if (!userId || !playlistId || !videoId) return;
+
+  const playlistDocRef = doc(db, 'playlists', playlistId);
+  const playlistSnap = await getDoc(playlistDocRef);
+  if (!playlistSnap.exists()) return;
+
+  const playlist = PlaylistModel.fromFirestore(playlistSnap);
+  if (playlist.userId !== userId) {
+    throw new Error('Unauthorized: You do not own this playlist.');
+  }
+
+  const updatedVideos = (playlist.videos || []).map((v) => {
+    if (v.videoId === videoId) {
+      return {
+        ...v,
+        watched: Boolean(watched),
+        watchedAt: watched ? new Date().toISOString() : null,
+      };
+    }
+    return v;
+  });
+
+  await updateDoc(playlistDocRef, {
+    videos: updatedVideos,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Bulk updates watched status for all videos in a playlist.
+ * @param {string} userId - Auth user ID
+ * @param {string} playlistId - Firestore document ID
+ * @param {boolean} watched - Watched state to set for all videos
+ */
+export async function setAllPlaylistVideosWatched(userId, playlistId, watched) {
+  if (!userId || !playlistId) return;
+
+  const playlistDocRef = doc(db, 'playlists', playlistId);
+  const playlistSnap = await getDoc(playlistDocRef);
+  if (!playlistSnap.exists()) return;
+
+  const playlist = PlaylistModel.fromFirestore(playlistSnap);
+  if (playlist.userId !== userId) {
+    throw new Error('Unauthorized: You do not own this playlist.');
+  }
+
+  const nowIso = new Date().toISOString();
+  const updatedVideos = (playlist.videos || []).map((v) => ({
+    ...v,
+    watched: Boolean(watched),
+    watchedAt: watched ? (v.watchedAt || nowIso) : null,
+  }));
 
   await updateDoc(playlistDocRef, {
     videos: updatedVideos,

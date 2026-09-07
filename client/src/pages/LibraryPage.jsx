@@ -10,7 +10,10 @@ import {
   removeVideoFromLibrary,
   saveVideoToLibrary,
   addVideoToPlaylist,
-  removeVideoFromPlaylist
+  removeVideoFromPlaylist,
+  togglePlaylistVideoWatched,
+  setAllPlaylistVideosWatched,
+  renamePlaylist
 } from '../services/firebase/libraryService';
 
 // Sub-components
@@ -85,6 +88,16 @@ export default function LibraryPage() {
       setPlaylists(prev => prev.filter(p => p.id !== playlistId));
     } catch (err) {
       console.error('Error deleting playlist:', err);
+    }
+  };
+
+  const handleRenamePlaylist = async (playlistId, newName) => {
+    if (!currentUser || !newName?.trim()) return;
+    try {
+      await renamePlaylist(currentUser.uid, playlistId, newName.trim());
+      setPlaylists(prev => prev.map(p => p.id === playlistId ? { ...p, name: newName.trim() } : p));
+    } catch (err) {
+      console.error('Error renaming playlist:', err);
     }
   };
 
@@ -170,6 +183,58 @@ export default function LibraryPage() {
       }
     } catch (err) {
       console.error('Error toggling playlist association:', err);
+    }
+  };
+
+  const handleTogglePlaylistVideoWatched = async (playlistId, videoId, isWatched) => {
+    if (!currentUser) return;
+    try {
+      // Persist to Firestore first (strictly within playlist, NO watch history)
+      await togglePlaylistVideoWatched(currentUser.uid, playlistId, videoId, isWatched);
+
+      // Only update UI after successful write
+      setPlaylists((prev) =>
+        prev.map((pl) => {
+          if (pl.id !== playlistId) return pl;
+          const updatedVideos = (pl.videos || []).map((v) => {
+            if (v.videoId === videoId) {
+              return {
+                ...v,
+                watched: Boolean(isWatched),
+                watchedAt: isWatched ? new Date().toISOString() : null,
+              };
+            }
+            return v;
+          });
+          return { ...pl, videos: updatedVideos };
+        })
+      );
+    } catch (err) {
+      console.error('Error toggling playlist video watched status:', err);
+    }
+  };
+
+  const handleSetAllPlaylistVideosWatched = async (playlistId, isWatched) => {
+    if (!currentUser) return;
+    try {
+      // Persist to Firestore first
+      await setAllPlaylistVideosWatched(currentUser.uid, playlistId, isWatched);
+
+      // Only update UI after successful write
+      const nowIso = new Date().toISOString();
+      setPlaylists((prev) =>
+        prev.map((pl) => {
+          if (pl.id !== playlistId) return pl;
+          const updatedVideos = (pl.videos || []).map((v) => ({
+            ...v,
+            watched: Boolean(isWatched),
+            watchedAt: isWatched ? (v.watchedAt || nowIso) : null,
+          }));
+          return { ...pl, videos: updatedVideos };
+        })
+      );
+    } catch (err) {
+      console.error('Error updating all playlist videos watched status:', err);
     }
   };
 
@@ -290,6 +355,9 @@ export default function LibraryPage() {
               onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
               onCreatePlaylist={handleCreatePlaylist}
               onToggleSave={handleToggleSaveVideo}
+              onToggleVideoWatched={handleTogglePlaylistVideoWatched}
+              onSetAllVideosWatched={handleSetAllPlaylistVideosWatched}
+              onRenamePlaylist={handleRenamePlaylist}
             />
           )}
         </div>

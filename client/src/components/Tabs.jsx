@@ -243,7 +243,7 @@ export default function Tabs({
             <button
               type="button"
               onClick={() => setIsPlaylistOpen(!isPlaylistOpen)}
-              disabled={Boolean(addingPlaylistId)}
+              disabled={Boolean(addingPlaylistId) || loadingPlaylists}
               title="Add to Playlist"
               aria-label="Add to Playlist"
               className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center select-none ${
@@ -256,7 +256,7 @@ export default function Tabs({
                     : 'text-orange-950/60 hover:text-orange-600 hover:bg-orange-100/60'
               }`}
             >
-              {loadingPlaylists && !isPlaylistOpen ? (
+              {loadingPlaylists || Boolean(addingPlaylistId) ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
               ) : (
                 <FolderPlus className="w-3.5 h-3.5" />
@@ -269,7 +269,7 @@ export default function Tabs({
                 isVertical 
                   ? 'bottom-full mb-2 right-0 lg:bottom-auto lg:top-0 lg:left-full lg:ml-3 lg:right-auto' 
                   : 'bottom-full mb-2 right-0'
-              } w-52 max-w-[calc(100vw-3rem)] p-2.5 rounded-xl border shadow-2xl z-[100] animate-in fade-in duration-100 ${
+              } w-52 max-w-[calc(100vw-3rem)] p-2.5 rounded-xl border shadow-2xl z-[100] ${
                 isDark 
                   ? 'bg-zinc-950 border-zinc-800 text-zinc-200 shadow-black/90' 
                   : 'bg-white border-orange-200 text-orange-950 shadow-orange-500/15'

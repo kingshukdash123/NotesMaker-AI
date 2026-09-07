@@ -397,7 +397,7 @@ export default function TodayPlanWidget({
             {totalTasks > 0 && (
               <span className={`text-xs sm:text-[13px] font-mono font-bold ${
                 isAllCompleted 
-                  ? 'text-emerald-500' 
+                  ? isDark ? 'text-green-400' : 'text-green-700'
                   : isDark ? 'text-orange-400' : 'text-orange-700'
               }`}>
                 {percentComplete}% Completed
