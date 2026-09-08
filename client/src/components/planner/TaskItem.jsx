@@ -26,10 +26,10 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
       }
     } else {
       switch (priority) {
-        case 'high': return 'bg-red-50 text-red-600 border-red-200';
+        case 'high': return 'bg-red-50 text-red-700 border-red-200';
         case 'medium': return 'bg-amber-50 text-amber-700 border-amber-200';
         case 'low': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-        default: return 'bg-orange-50 text-orange-700 border-orange-200';
+        default: return 'bg-zinc-100 text-zinc-700 border-zinc-200';
       }
     }
   };
@@ -47,7 +47,7 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
     <div className={`group flex items-center justify-between gap-3 p-3.5 border rounded-xl transition duration-200 ${
       isDark 
         ? 'bg-zinc-950/40 border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900/20' 
-        : 'bg-white border-orange-200 hover:border-orange-300 shadow-xs'
+        : 'bg-white border-zinc-200 hover:border-zinc-300 shadow-xs'
     }`}>
       {isEditing ? (
         /* Edit Mode */
@@ -59,7 +59,7 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
             className={`flex-1 rounded-lg px-2.5 py-1 text-xs outline-none border transition ${
               isDark 
                 ? 'bg-zinc-900 border-zinc-800 text-zinc-100 focus:border-zinc-700' 
-                : 'bg-orange-50/50 border-orange-200 text-orange-950 focus:border-orange-500'
+                : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-400 focus:bg-white'
             }`}
             required
             autoFocus
@@ -71,7 +71,7 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
               className={`rounded-lg px-2 py-1 text-[10px] sm:text-xs font-semibold outline-none border ${
                 isDark 
                   ? 'bg-zinc-900 border-zinc-800 text-zinc-300' 
-                  : 'bg-white border-orange-200 text-orange-950'
+                  : 'bg-white border-zinc-200 text-zinc-900'
               }`}
             >
               <option value="high">🔴 High</option>
@@ -115,7 +115,7 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
                   ? 'bg-orange-500 border-orange-500 text-white'
                   : isDark 
                     ? 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50' 
-                    : 'border-orange-300 hover:border-orange-400 hover:bg-orange-50'
+                    : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'
               }`}
             >
               {task.completed && <Check className="w-3 h-3 stroke-[3]" />}
@@ -124,8 +124,8 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
             {/* Task Title text */}
             <span className={`text-xs sm:text-sm font-medium truncate ${
               task.completed 
-                ? isDark ? 'line-through text-zinc-600' : 'line-through text-orange-900/40'
-                : isDark ? 'text-zinc-200' : 'text-orange-950'
+                ? isDark ? 'line-through text-zinc-600' : 'line-through text-zinc-400'
+                : isDark ? 'text-zinc-200' : 'text-zinc-900'
             }`} title={task.title}>
               {task.title}
             </span>

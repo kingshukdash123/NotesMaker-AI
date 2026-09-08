@@ -226,7 +226,7 @@ export default function StatsGrid({
         className={`inline-flex items-center gap-0.5 sm:gap-1 text-[9.5px] sm:text-[11px] font-mono font-medium px-1.5 sm:px-2 py-0.5 rounded-md shrink-0 ${
           isDark 
             ? 'bg-zinc-800/50 text-zinc-400' 
-            : 'bg-orange-100/60 text-zinc-600'
+            : 'bg-zinc-100 text-zinc-600'
         }`}
       >
         <Minus className="w-2.5 h-2.5 shrink-0" />
@@ -269,27 +269,27 @@ export default function StatsGrid({
   ];
 
   return (
-    <div className={`rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 w-full space-y-3.5 sm:space-y-4 relative overflow-hidden ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 ${
       isDark 
-        ? 'bg-zinc-950/40' 
-        : 'bg-white/80 shadow-xs'
+        ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 relative overflow-hidden' 
+        : ''
     }`}>
       {/* ── COMMON HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b ${
-        isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+        isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
       }`}>
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-100'
+              : 'text-orange-600 bg-orange-500/10'
           }`}>
             <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${
-                isDark ? 'text-zinc-100' : 'text-orange-950'
+                isDark ? 'text-zinc-100' : 'text-zinc-900'
               }`}>
                 {timeframe === 'month' ? 'Monthly Learning Metrics' : 'Weekly Learning Metrics'}
               </h3>
@@ -301,7 +301,7 @@ export default function StatsGrid({
                 <p>• <strong>Learning Score</strong>: Cumulative focus score and activity points earned.</p>
               </InfoPopover>
             </div>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
               {timeframe === 'month' 
                 ? 'Performance over past 30 days vs previous month' 
                 : 'Performance over past 7 days vs previous week'}
@@ -312,7 +312,7 @@ export default function StatsGrid({
         {/* Right side of header: Week / Month Filter Toggle */}
         <div className="flex items-center self-start sm:self-auto shrink-0 pt-0.5 sm:pt-0">
           <div className={`flex items-center p-0.5 rounded-xl ${
-            isDark ? 'bg-zinc-900/80' : 'bg-orange-100/70'
+            isDark ? 'bg-zinc-900/80' : 'bg-zinc-100'
           }`}>
             <CustomButton
               variant={timeframe === 'week' ? 'primary' : 'ghost'}
@@ -344,20 +344,20 @@ export default function StatsGrid({
               className={`rounded-xl p-3 sm:p-3.5 md:p-4 flex flex-col justify-between transition duration-200 relative overflow-hidden group hover:scale-[1.01] min-h-[105px] sm:min-h-[118px] md:min-h-[126px] ${
                 isDark 
                   ? 'bg-zinc-900/30' 
-                  : 'bg-orange-50/50'
+                  : 'bg-zinc-100/70 hover:bg-zinc-100 transition-colors'
               }`}
             >
               {/* Card Top: Title & Category Icon */}
               <div className="flex items-center justify-between gap-1">
                 <span className={`text-[10px] sm:text-xs font-mono font-bold tracking-wider uppercase truncate pr-1 ${
-                  isDark ? 'text-zinc-400' : 'text-orange-700'
+                  isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
                   {stat.title}
                 </span>
                 <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
                   isDark 
                     ? 'text-orange-500 bg-orange-950/25 shadow-xs' 
-                    : 'text-orange-600 bg-orange-100 shadow-xs'
+                    : 'text-orange-600 bg-orange-500/10'
                 }`}>
                   <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                 </div>
@@ -367,13 +367,13 @@ export default function StatsGrid({
               <div className="space-y-0.5 my-0.5 sm:my-1">
                 <div className="flex items-baseline gap-1">
                   <span className={`text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight ${
-                    isDark ? 'text-zinc-100' : 'text-orange-950'
+                    isDark ? 'text-zinc-100' : 'text-zinc-900'
                   }`}>
                     {stat.value}
                   </span>
                   {stat.unit && (
                     <span className={`text-xs sm:text-sm font-semibold ${
-                      isDark ? 'text-zinc-500' : 'text-orange-700'
+                      isDark ? 'text-zinc-500' : 'text-zinc-500'
                     }`}>
                       {stat.unit}
                     </span>
@@ -384,7 +384,7 @@ export default function StatsGrid({
               {/* Card Footer: Subtitle & Comparison Badge */}
               <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between gap-1 pt-0.5">
                 <span className={`text-[11px] sm:text-xs md:text-[13px] leading-tight font-medium truncate ${
-                  isDark ? 'text-zinc-400' : 'text-orange-800'
+                  isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
                   {stat.sub}
                 </span>

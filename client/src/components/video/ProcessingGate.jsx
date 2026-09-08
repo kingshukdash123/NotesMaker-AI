@@ -36,7 +36,7 @@ export default function ProcessingGate({
   if (metadata?.is_live) {
     return (
       <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 border rounded-2xl py-14 gap-4 animate-in fade-in duration-300 max-w-md w-full mx-auto transition ${
-        isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-orange-50/40 border-orange-100'
+        isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'
       }`}>
         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
           isDark ? 'bg-zinc-900 text-red-400' : 'bg-red-50 text-red-500'
@@ -45,11 +45,11 @@ export default function ProcessingGate({
         </div>
 
         <div className="space-y-1">
-          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
             Live stream in progress
           </h3>
           <p className={`text-[10px] sm:text-xs max-w-xs mx-auto leading-relaxed ${
-            isDark ? 'text-zinc-550' : 'text-orange-900/60'
+            isDark ? 'text-zinc-500' : 'text-zinc-500'
           }`}>
             Notes, summaries, and transcripts can only be generated once this livestream has concluded and is archived by YouTube.
           </p>
@@ -74,7 +74,7 @@ export default function ProcessingGate({
   if (status === 'FAILED') {
     return (
       <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 border rounded-2xl py-14 gap-4 animate-in fade-in duration-300 max-w-md w-full mx-auto transition ${
-        isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-orange-50/40 border-orange-100'
+        isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'
       }`}>
         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
           isDark ? 'bg-zinc-900 text-red-400' : 'bg-red-50 text-red-500'
@@ -83,7 +83,7 @@ export default function ProcessingGate({
         </div>
 
         <div className="space-y-1">
-          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
             Processing failed
           </h3>
           <p className="text-[10px] sm:text-xs text-red-400 max-w-xs mx-auto leading-relaxed">
@@ -105,20 +105,20 @@ export default function ProcessingGate({
 
   return (
     <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 border rounded-2xl py-14 gap-4 animate-in fade-in duration-300 max-w-md w-full mx-auto transition ${
-      isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-orange-50/40 border-orange-100'
+      isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'
     }`}>
       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-        isDark ? 'bg-zinc-900 text-orange-400' : 'bg-orange-100 text-orange-600'
+        isDark ? 'bg-zinc-900 text-orange-400' : 'bg-orange-500/10 text-orange-600 border border-orange-500/20'
       }`}>
         <Cpu className="w-5 h-5" />
       </div>
 
       <div className="space-y-1">
-        <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+        <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
           {currentTool.title}
         </h3>
         <p className={`text-[10px] sm:text-xs max-w-xs mx-auto leading-relaxed ${
-          isDark ? 'text-zinc-550' : 'text-orange-900/60'
+          isDark ? 'text-zinc-500' : 'text-zinc-500'
         }`}>
           {currentTool.description}
         </p>

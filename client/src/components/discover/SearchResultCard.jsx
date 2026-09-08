@@ -27,7 +27,7 @@ export default function SearchResultCard({
       className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none border border-transparent ${
         isDark 
           ? 'hover:bg-zinc-900/40 hover:border-zinc-850' 
-          : 'hover:bg-orange-50/60 hover:border-orange-100'
+          : 'hover:bg-zinc-50 hover:border-zinc-200'
       }`}
     >
       {/* 16:9 Thumbnail Column */}
@@ -71,7 +71,7 @@ export default function SearchResultCard({
         {/* Full-width Title */}
         <h3 
           className={`text-sm sm:text-base md:text-lg font-semibold line-clamp-2 leading-snug transition ${
-            isDark ? 'text-zinc-100 group-hover:text-white' : 'text-orange-950 group-hover:text-orange-600'
+            isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
           }`}
           title={metadata.title || ''}
         >
@@ -81,21 +81,21 @@ export default function SearchResultCard({
         {/* Channel Row */}
         <div className="flex items-center gap-2 mt-2">
           <div className={`w-5.5 h-5.5 rounded-full border font-bold flex items-center justify-center shrink-0 text-[10px] uppercase select-none ${
-            isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-orange-100 border-orange-200 text-orange-800'
+            isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-700'
           }`}>
             {channelLetter}
           </div>
 
           <p className={`text-xs font-medium truncate max-w-[200px] sm:max-w-[320px] ${
-            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-orange-800 hover:text-orange-950'
+            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
           }`}>
             {metadata.channel || 'YouTube Creator'}
           </p>
 
           {timeAgoText && (
             <>
-              <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-orange-300'}`}>•</span>
-              <span className={`text-xs font-medium ${isDark ? 'text-zinc-500' : 'text-orange-900/60'}`}>
+              <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
+              <span className={`text-xs font-medium ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                 {timeAgoText}
               </span>
             </>
@@ -104,7 +104,7 @@ export default function SearchResultCard({
 
         {/* Action Bar Below Channel Name: Action Buttons first, Processed Icon last */}
         <div className={`flex items-center gap-8 sm:gap-10 mt-2.5 pt-2 border-t ${
-          isDark ? 'border-zinc-800/60' : 'border-orange-100'
+          isDark ? 'border-zinc-800/60' : 'border-zinc-100'
         }`}>
           {/* Action Buttons Cluster first */}
           <VideoActionButtons

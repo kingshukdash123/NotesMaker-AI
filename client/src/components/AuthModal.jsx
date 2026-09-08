@@ -254,17 +254,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
       <div className={`relative w-full max-w-md border rounded-2xl p-5 sm:p-7 shadow-2xl overflow-x-hidden overflow-y-auto custom-scrollbar max-h-[92vh] transition-colors ${
         isDark 
           ? 'bg-zinc-950 border-zinc-800 text-zinc-100' 
-          : 'bg-white border-orange-200 text-orange-950 shadow-orange-500/10'
+          : 'bg-white border-zinc-200 text-zinc-900 shadow-2xl'
       }`}>
-        {/* Glow ambient background */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Glow ambient background in dark mode only */}
+        {isDark && (
+          <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        )}
 
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
           className={`btn-icon absolute top-4 right-4 ${
-            isDark ? 'text-zinc-400 hover:text-zinc-100' : 'text-orange-700 hover:text-orange-950'
+            isDark ? 'text-zinc-400 hover:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900'
           }`}
           title="Close"
         >
@@ -276,10 +278,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
           <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl border mb-2.5 shadow-inner ${
             isDark 
               ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' 
-              : 'bg-orange-100 border-orange-300 text-orange-600'
+              : 'bg-zinc-100 border-zinc-200 text-zinc-900'
           }`}>
             {step === 'otp' ? (
-              <KeyRound className="w-6 h-6 animate-pulse" />
+              <KeyRound className="w-6 h-6 animate-pulse text-orange-500" />
             ) : isSignUp ? (
               <UserPlus className="w-6 h-6" />
             ) : (
@@ -287,13 +289,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
             )}
           </div>
           
-          <h3 className={`text-xl font-bold tracking-tight ${isDark ? 'text-zinc-50' : 'text-orange-950'}`}>
+          <h3 className={`text-xl font-bold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>
             {step === 'otp' 
               ? 'Verify Phone Number' 
               : isSignUp ? 'Create Your Account' : 'Welcome Back'}
           </h3>
           
-          <p className={`text-xs mt-1 ${isDark ? 'text-zinc-400' : 'text-orange-800/80'}`}>
+          <p className={`text-xs mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
             {step === 'otp'
               ? `We sent a 6-digit verification code to ${getFormattedPhone()}`
               : isSignUp
@@ -305,7 +307,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
         {/* Mode Switcher Tabs (Only visible on Step 1) */}
         {step === 'input' && (
           <div className={`grid grid-cols-2 gap-1 p-1 border rounded-xl mb-5 ${
-            isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-orange-100/60 border-orange-200'
+            isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-100 border-zinc-200'
           }`}>
             <button
               type="button"
@@ -318,11 +320,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
               className={`py-2 text-xs font-semibold rounded-lg transition-all ${
                 !isSignUp
                   ? isDark 
-                    ? 'bg-zinc-800 text-orange-400 shadow-xs' 
-                    : 'bg-white text-orange-600 shadow-xs'
+                    ? 'bg-zinc-800 text-white shadow-xs' 
+                    : 'bg-white text-zinc-900 shadow-xs'
                   : isDark 
                     ? 'text-zinc-400 hover:text-zinc-200' 
-                    : 'text-orange-800/70 hover:text-orange-950'
+                    : 'text-zinc-500 hover:text-zinc-900'
               }`}
             >
               Sign In
@@ -338,11 +340,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
               className={`py-2 text-xs font-semibold rounded-lg transition-all ${
                 isSignUp
                   ? isDark 
-                    ? 'bg-zinc-800 text-orange-400 shadow-xs' 
-                    : 'bg-white text-orange-600 shadow-xs'
+                    ? 'bg-zinc-800 text-white shadow-xs' 
+                    : 'bg-white text-zinc-900 shadow-xs'
                   : isDark 
                     ? 'text-zinc-400 hover:text-zinc-200' 
-                    : 'text-orange-800/70 hover:text-orange-950'
+                    : 'text-zinc-500 hover:text-zinc-900'
               }`}
             >
               Sign Up
@@ -355,9 +357,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
           <div className={`mb-4 p-3 rounded-xl border text-xs flex items-start gap-2.5 animate-fadeIn ${
             isDark 
               ? 'bg-orange-950/40 border-orange-500/40 text-orange-200' 
-              : 'bg-orange-50 border-orange-200 text-orange-950'
+              : 'bg-zinc-50 border-zinc-200 text-zinc-900'
           }`}>
-            <Info className={`w-4 h-4 shrink-0 mt-0.5 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
+            <Info className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
             <span className="leading-relaxed font-medium">{infoNotice}</span>
           </div>
         )}
@@ -374,14 +376,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
           </div>
         )}
 
-        {/* Success Alert - Pure Warm Shades (No Grey) in Light Mode */}
+        {/* Success Alert */}
         {successMsg && (
           <div className={`mb-4 p-3 rounded-xl border text-xs flex items-start gap-2.5 animate-fadeIn shadow-xs ${
             isDark 
               ? 'bg-orange-950/60 border-orange-500/60 text-orange-200' 
-              : 'bg-orange-50 border border-orange-300 text-orange-950'
+              : 'bg-zinc-50 border-zinc-200 text-zinc-900'
           }`}>
-            <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
             <span className="leading-relaxed font-semibold">{successMsg}</span>
           </div>
         )}
@@ -392,11 +394,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
             {/* Full Name Field (Sign Up Only) */}
             {isSignUp && (
               <div className="animate-fadeIn">
-                <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+                <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
                   Full Name <span className="text-orange-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-orange-400'}`} />
+                  <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   <input
                     ref={nameInputRef}
                     type="text"
@@ -407,7 +409,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
                     className={`w-full border rounded-xl pl-9 pr-4 py-2.5 text-sm transition focus:outline-none focus:border-orange-500 ${
                       isDark 
                         ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500' 
-                        : 'bg-orange-50/50 border-orange-200 text-orange-950 placeholder-orange-400'
+                        : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400'
                     }`}
                   />
                 </div>
@@ -416,11 +418,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
 
             {/* Phone Number Field */}
             <div>
-              <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+              <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
                 Phone Number <span className="text-orange-500">*</span>
               </label>
               <div className="relative">
-                <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-orange-400'}`} />
+                <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                 <input
                   type="tel"
                   value={phone}
@@ -430,11 +432,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
                   className={`w-full border rounded-xl pl-9 pr-4 py-2.5 text-sm transition focus:outline-none focus:border-orange-500 ${
                     isDark 
                       ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500' 
-                      : 'bg-orange-50/50 border-orange-200 text-orange-950 placeholder-orange-400'
+                      : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400'
                   }`}
                 />
               </div>
-              <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-orange-800/70'}`}>
+              <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                 We'll send a 6-digit SMS verification code to this number.
               </p>
             </div>
@@ -443,15 +445,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
             {isSignUp && (
               <div className="animate-fadeIn">
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className={`block text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+                  <label className={`block text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
                     Email Address
                   </label>
-                  <span className={`text-[10px] uppercase tracking-wider font-semibold ${isDark ? 'text-zinc-500' : 'text-orange-700/60'}`}>
+                  <span className={`text-[10px] uppercase tracking-wider font-semibold ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                     Optional
                   </span>
                 </div>
                 <div className="relative">
-                  <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-orange-400'}`} />
+                  <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   <input
                     type="email"
                     value={email}
@@ -460,7 +462,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
                     className={`w-full border rounded-xl pl-9 pr-4 py-2.5 text-sm transition focus:outline-none focus:border-orange-500 ${
                       isDark 
                         ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500' 
-                        : 'bg-orange-50/50 border-orange-200 text-orange-950 placeholder-orange-400'
+                        : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400'
                     }`}
                   />
                 </div>
@@ -471,7 +473,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-2.5 px-4 text-sm font-bold flex items-center justify-center gap-2 mt-2 shadow-lg shadow-orange-500/10 cursor-pointer"
+              className="btn-primary w-full py-2.5 px-4 text-sm font-bold flex items-center justify-center gap-2 mt-2 shadow-md cursor-pointer"
             >
               {loading ? (
                 <>
@@ -494,7 +496,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
             <div className={`flex items-center justify-between p-3 rounded-xl border text-xs ${
               isDark 
                 ? 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300' 
-                : 'bg-orange-50/60 border-orange-200 text-orange-950'
+                : 'bg-zinc-50 border-zinc-200 text-zinc-900'
             }`}>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-orange-500" />
@@ -517,11 +519,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
 
             {/* 6-Digit OTP Input */}
             <div>
-              <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+              <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
                 6-Digit Verification Code
               </label>
               <div className="relative">
-                <KeyRound className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-orange-400'}`} />
+                <KeyRound className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                 <input
                   ref={otpInputRef}
                   type="text"
@@ -535,7 +537,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
                   className={`w-full border rounded-xl pl-9 pr-4 py-3 text-center text-lg font-mono tracking-widest transition focus:outline-none focus:border-orange-500 placeholder:opacity-30 ${
                     isDark 
                       ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500' 
-                      : 'bg-orange-50/50 border-orange-200 text-orange-950 placeholder-orange-400'
+                      : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400'
                   }`}
                 />
               </div>
@@ -545,7 +547,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
             <button
               type="submit"
               disabled={loading || otp.length < 6}
-              className="btn-primary w-full py-2.5 px-4 text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/10 disabled:opacity-50 cursor-pointer"
+              className="btn-primary w-full py-2.5 px-4 text-sm font-bold flex items-center justify-center gap-2 shadow-md disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -567,7 +569,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
 
             {/* Resend Code Footer */}
             <div className={`flex items-center justify-between pt-3 border-t text-xs ${
-              isDark ? 'border-zinc-900 text-zinc-400' : 'border-orange-100 text-orange-800/80'
+              isDark ? 'border-zinc-900 text-zinc-400' : 'border-zinc-200 text-zinc-500'
             }`}>
               <span>Didn't get the code?</span>
               <button
@@ -594,7 +596,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
         {/* Modal Switch Footer (Step 1 only) */}
         {step === 'input' && (
           <div className={`mt-5 pt-4 border-t text-center text-xs ${
-            isDark ? 'border-zinc-800/80 text-zinc-400' : 'border-orange-100 text-orange-800/80'
+            isDark ? 'border-zinc-800/80 text-zinc-400' : 'border-zinc-200 text-zinc-500'
           }`}>
             {isSignUp ? (
               <p>
@@ -635,14 +637,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
         {/* Legal Consent Notice (Sign Up step only) */}
         {step === 'input' && isSignUp && (
           <p className={`mt-3 text-center text-[10px] leading-relaxed ${
-            isDark ? 'text-zinc-600' : 'text-orange-900/40'
+            isDark ? 'text-zinc-600' : 'text-zinc-400'
           }`}>
             By creating an account, you agree to {COMPANY_NAME}&apos;s{' '}
             <a
               href="/terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-orange-500/70 hover:text-orange-500 underline underline-offset-1 transition"
+              className="text-orange-500 hover:underline underline-offset-1 transition font-medium"
             >
               Terms of Service
             </a>{' '}
@@ -651,7 +653,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
               href="/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-orange-500/70 hover:text-orange-500 underline underline-offset-1 transition"
+              className="text-orange-500 hover:underline underline-offset-1 transition font-medium"
             >
               Privacy Policy
             </a>

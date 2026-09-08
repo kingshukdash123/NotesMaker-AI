@@ -111,14 +111,14 @@ export default function ProfileModal() {
       <div className={`relative max-w-md w-full border rounded-2xl p-5 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar ${
         isDark 
           ? 'bg-zinc-950/90 border-zinc-800 text-zinc-100 glass-panel' 
-          : 'bg-white border-orange-200 text-orange-950 shadow-orange-500/10'
+          : 'bg-white border-zinc-200 text-zinc-900 shadow-2xl'
       }`}>
         
         {/* Close Button */}
         <button
           type="button"
           onClick={() => setIsProfileOpen(false)}
-          className="btn-icon absolute right-4 top-4 text-zinc-500 hover:text-zinc-300"
+          className={`btn-icon absolute right-4 top-4 ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-900'}`}
           title="Close profile"
         >
           <X className="w-4 h-4" />
@@ -126,20 +126,20 @@ export default function ProfileModal() {
 
         {/* Modal Header */}
         <div className={`flex flex-col items-center text-center space-y-3 pb-5 border-b mb-5 ${
-          isDark ? 'border-zinc-900' : 'border-orange-100'
+          isDark ? 'border-zinc-900' : 'border-zinc-200'
         }`}>
           <div className={`w-16 h-16 rounded-full border flex items-center justify-center text-xl font-black uppercase shadow-inner select-none ${
             isDark 
               ? 'bg-zinc-900 border-zinc-800 text-orange-500' 
-              : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
+              : 'bg-zinc-100 border-zinc-200 text-zinc-900 shadow-xs'
           }`}>
             {firstChar}
           </div>
           <div>
-            <h3 className={`text-lg font-bold ${isDark ? 'text-zinc-50' : 'text-orange-950'}`}>
+            <h3 className={`text-lg font-bold ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>
               {displayName}
             </h3>
-            <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-orange-700'}`}>
+            <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
               {phoneNumber}
             </p>
           </div>
@@ -161,9 +161,9 @@ export default function ProfileModal() {
           <div className={`mb-4 p-3 rounded-xl border text-xs flex items-center gap-2 animate-fadeIn ${
             isDark 
               ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' 
-              : 'bg-orange-50 border-orange-300 text-orange-950'
+              : 'bg-zinc-50 border-zinc-200 text-zinc-900'
           }`}>
-            <CheckCircle2 className={`w-4 h-4 shrink-0 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-500" />
             <span className="font-semibold">{successMsg}</span>
           </div>
         )}
@@ -172,32 +172,32 @@ export default function ProfileModal() {
         {!isEditing ? (
           <div className="space-y-4">
             <div className={`border rounded-xl p-3.5 space-y-3 text-xs ${
-              isDark ? 'bg-zinc-900/30 border-zinc-900' : 'bg-orange-50/50 border-orange-200/80'
+              isDark ? 'bg-zinc-900/30 border-zinc-900' : 'bg-zinc-50 border-zinc-200'
             }`}>
               <div className="flex justify-between items-center">
-                <span className={`flex items-center gap-1.5 ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
-                  <User className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+                <span className={`flex items-center gap-1.5 ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  <User className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   Full Name
                 </span>
-                <span className={`font-semibold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>{displayName}</span>
+                <span className={`font-semibold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>{displayName}</span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className={`flex items-center gap-1.5 ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
-                  <Phone className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+                <span className={`flex items-center gap-1.5 ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  <Phone className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   Phone Number
                 </span>
-                <span className={`font-semibold font-mono ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>{phoneNumber}</span>
+                <span className={`font-semibold font-mono ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>{phoneNumber}</span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className={`flex items-center gap-1.5 ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
-                  <Mail className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+                <span className={`flex items-center gap-1.5 ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  <Mail className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   Email Address
                 </span>
                 <span className={`font-semibold truncate max-w-[200px] ${
                   currentEmail 
-                    ? (isDark ? 'text-zinc-300' : 'text-orange-950')
+                    ? (isDark ? 'text-zinc-300' : 'text-zinc-900')
                     : 'text-zinc-500 italic'
                 }`} title={currentEmail || 'Not provided'}>
                   {currentEmail || 'Not provided'}
@@ -218,10 +218,10 @@ export default function ProfileModal() {
                 className={`w-full py-2.5 px-4 text-xs font-bold rounded-xl border flex items-center justify-center gap-2 transition cursor-pointer ${
                   isDark
                     ? 'bg-zinc-900 border-zinc-800 text-zinc-100 hover:bg-zinc-850 hover:border-zinc-700'
-                    : 'bg-orange-50 border-orange-200 text-orange-950 hover:bg-orange-100'
+                    : 'bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-50 shadow-xs'
                 }`}
               >
-                <Edit3 className="w-3.5 h-3.5 text-orange-400" />
+                <Edit3 className="w-3.5 h-3.5 text-orange-500" />
                 <span>Edit Profile</span>
               </button>
 
@@ -241,18 +241,22 @@ export default function ProfileModal() {
             <div className="space-y-3.5 text-xs">
               {/* Name Field */}
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                  Full Name <span className="text-orange-400">*</span>
+                <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
+                  Full Name <span className="text-orange-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Alex Sharma"
                     required
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition"
+                    className={`w-full rounded-xl pl-9 pr-4 py-2.5 text-sm transition border focus:outline-none focus:border-orange-500 ${
+                      isDark 
+                        ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500' 
+                        : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400'
+                    }`}
                   />
                 </div>
               </div>
@@ -260,21 +264,25 @@ export default function ProfileModal() {
               {/* Phone Field (Read-only) */}
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs font-medium text-zinc-400">
+                  <label className={`block text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
                     Phone Number
                   </label>
-                  <span className="text-[10px] text-zinc-500 flex items-center gap-1">
+                  <span className={`text-[10px] flex items-center gap-1 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                     <Lock className="w-2.5 h-2.5" />
                     Verified & Locked
                   </span>
                 </div>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                  <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-600' : 'text-zinc-400'}`} />
                   <input
                     type="text"
                     value={phoneNumber}
                     disabled
-                    className="w-full bg-zinc-900/50 border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-400 cursor-not-allowed select-none font-mono"
+                    className={`w-full rounded-xl pl-9 pr-4 py-2.5 text-sm cursor-not-allowed select-none font-mono border ${
+                      isDark 
+                        ? 'bg-zinc-900/50 border-zinc-800/80 text-zinc-400' 
+                        : 'bg-zinc-100 border-zinc-200 text-zinc-500'
+                    }`}
                   />
                 </div>
               </div>
@@ -282,21 +290,25 @@ export default function ProfileModal() {
               {/* Email Field (Optional) */}
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs font-medium text-zinc-300">
+                  <label className={`block text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>
                     Email Address
                   </label>
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                  <span className={`text-[10px] uppercase tracking-wider font-semibold ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                     Optional
                   </span>
                 </div>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="alex@example.com"
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition"
+                    className={`w-full rounded-xl pl-9 pr-4 py-2.5 text-sm transition border focus:outline-none focus:border-orange-500 ${
+                      isDark 
+                        ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500' 
+                        : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400'
+                    }`}
                   />
                 </div>
               </div>
@@ -308,11 +320,7 @@ export default function ProfileModal() {
                 type="button"
                 onClick={handleCancelEdit}
                 disabled={isSaving}
-                className={`w-1/2 py-2.5 px-4 text-xs font-bold rounded-xl border transition cursor-pointer ${
-                  isDark
-                    ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800'
-                    : 'bg-zinc-100 border-zinc-200 text-zinc-700 hover:bg-zinc-200'
-                }`}
+                className="btn-secondary w-1/2 py-2.5 px-4 text-xs font-bold"
               >
                 Cancel
               </button>
@@ -320,7 +328,7 @@ export default function ProfileModal() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="btn-primary w-1/2 py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/10 cursor-pointer"
+                className="btn-primary w-1/2 py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
               >
                 {isSaving ? (
                   <>

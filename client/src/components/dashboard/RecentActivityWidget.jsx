@@ -44,30 +44,30 @@ export default function RecentActivityWidget({
   };
 
   return (
-    <div className={`rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 w-full space-y-4 sm:space-y-5 ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 ${
       isDark 
-        ? 'bg-zinc-950/40' 
-        : 'bg-white/80 shadow-xs'
+        ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 relative' 
+        : ''
     }`}>
       {/* ── SECTION HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b ${
-        isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+        isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
       }`}>
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-100'
+              : 'text-orange-600 bg-orange-500/10'
           }`}>
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
           <div className="min-w-0">
             <h3 className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${
-              isDark ? 'text-zinc-100' : 'text-orange-950'
+              isDark ? 'text-zinc-100' : 'text-zinc-900'
             }`}>
               Recent Activity
             </h3>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
               Your latest educational lecture streams and generated study outlines
             </p>
           </div>
@@ -83,19 +83,19 @@ export default function RecentActivityWidget({
         <div className={`flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
           isDark 
             ? 'bg-zinc-900/30' 
-            : 'bg-orange-50/50'
+            : 'bg-zinc-100/70'
         }`}>
           {/* Column Header */}
-          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-orange-500/10 dark:border-orange-500/10">
+          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/60 dark:border-orange-500/10">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-orange-500" />
               <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
-                isDark ? 'text-zinc-200' : 'text-orange-950'
+                isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
                 Watch History
               </span>
             </div>
-            <span className={`text-[11px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-orange-700'}`}>
+            <span className={`text-[11px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               Lectures
             </span>
           </div>
@@ -104,14 +104,14 @@ export default function RecentActivityWidget({
           <div className="flex-1 py-3">
             {recentHistory.length === 0 ? (
               <div className={`text-center py-6 px-4 rounded-xl border border-dashed flex flex-col items-center gap-2 ${
-                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-orange-200 bg-white/60'
+                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
               }`}>
-                <Clock className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-orange-300'}`} />
+                <Clock className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
                 <div className="space-y-0.5">
-                  <p className={`text-xs font-bold ${isDark ? 'text-zinc-400' : 'text-orange-950'}`}>
+                  <p className={`text-xs font-bold ${isDark ? 'text-zinc-400' : 'text-zinc-800'}`}>
                     No watch history yet
                   </p>
-                  <p className={`text-[10px] ${isDark ? 'text-zinc-600' : 'text-orange-700'}`}>
+                  <p className={`text-[10px] ${isDark ? 'text-zinc-600' : 'text-zinc-500'}`}>
                     Watch lectures on Discover to build your study timeline.
                   </p>
                 </div>
@@ -132,12 +132,12 @@ export default function RecentActivityWidget({
                       className={`group min-h-[48px] p-2 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none ${
                         isDark 
                           ? 'bg-zinc-950/30 hover:bg-zinc-900/60' 
-                          : 'bg-white/70 hover:bg-orange-50/90 shadow-xs'
+                          : 'hover:bg-white text-zinc-900'
                       }`}
                     >
                       {/* Thumbnail */}
                       <div className={`relative shrink-0 w-16 sm:w-20 aspect-video rounded-lg overflow-hidden ${
-                        isDark ? 'bg-zinc-900' : 'bg-orange-100'
+                        isDark ? 'bg-zinc-900' : 'bg-zinc-100'
                       }`}>
                         <img 
                           src={thumbnail} 
@@ -153,12 +153,12 @@ export default function RecentActivityWidget({
                       {/* Metadata */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 group-hover:text-orange-500 transition-colors ${
-                          isDark ? 'text-zinc-200' : 'text-orange-950'
+                          isDark ? 'text-zinc-200' : 'text-zinc-900'
                         }`}>
                           {title}
                         </h4>
                         <div className={`flex items-center justify-between text-[11px] sm:text-xs font-medium pt-0.5 ${
-                          isDark ? 'text-zinc-500' : 'text-orange-800/80'
+                          isDark ? 'text-zinc-500' : 'text-zinc-500'
                         }`}>
                           <span className="truncate max-w-[100px] min-[380px]:max-w-[140px]">{channel}</span>
                           <span className="shrink-0">{timeAgo}</span>
@@ -174,7 +174,7 @@ export default function RecentActivityWidget({
           </div>
 
           {/* Footer Action */}
-          <div className="pt-2 border-t border-orange-500/10 dark:border-orange-500/10">
+          <div className="pt-2 border-t border-zinc-200/60 dark:border-orange-500/10">
             <CustomButton
               variant="secondary"
               size="sm"
@@ -193,19 +193,19 @@ export default function RecentActivityWidget({
         <div className={`flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
           isDark 
             ? 'bg-zinc-900/30' 
-            : 'bg-orange-50/50'
+            : 'bg-zinc-100/70'
         }`}>
           {/* Column Header */}
-          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-orange-500/10 dark:border-orange-500/10">
+          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/60 dark:border-orange-500/10">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-orange-500" />
               <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
-                isDark ? 'text-zinc-200' : 'text-orange-950'
+                isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
                 Generated Notes
               </span>
             </div>
-            <span className={`text-[11px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-orange-700'}`}>
+            <span className={`text-[11px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               Academic Outlines
             </span>
           </div>
@@ -214,14 +214,14 @@ export default function RecentActivityWidget({
           <div className="flex-1 py-3">
             {recentNotes.length === 0 ? (
               <div className={`text-center py-6 px-4 rounded-xl border border-dashed flex flex-col items-center gap-2 ${
-                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-orange-200 bg-white/60'
+                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
               }`}>
-                <BookOpen className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-orange-300'}`} />
+                <BookOpen className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
                 <div className="space-y-0.5">
-                  <p className={`text-xs font-bold ${isDark ? 'text-zinc-400' : 'text-orange-950'}`}>
+                  <p className={`text-xs font-bold ${isDark ? 'text-zinc-400' : 'text-zinc-800'}`}>
                     No generated notes yet
                   </p>
-                  <p className={`text-[10px] ${isDark ? 'text-zinc-600' : 'text-orange-700'}`}>
+                  <p className={`text-[10px] ${isDark ? 'text-zinc-600' : 'text-zinc-500'}`}>
                     Summarize and generate academic outlines for any lecture video.
                   </p>
                 </div>
@@ -242,12 +242,12 @@ export default function RecentActivityWidget({
                       className={`group min-h-[48px] p-2 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none ${
                         isDark 
                           ? 'bg-zinc-950/30 hover:bg-zinc-900/60' 
-                          : 'bg-white/70 hover:bg-orange-50/90 shadow-xs'
+                          : 'hover:bg-white text-zinc-900'
                       }`}
                     >
                       {/* Thumbnail */}
                       <div className={`relative shrink-0 w-16 sm:w-20 aspect-video rounded-lg overflow-hidden ${
-                        isDark ? 'bg-zinc-900' : 'bg-orange-100'
+                        isDark ? 'bg-zinc-900' : 'bg-zinc-100'
                       }`}>
                         <img 
                           src={thumbnail} 
@@ -263,12 +263,12 @@ export default function RecentActivityWidget({
                       {/* Metadata */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 group-hover:text-orange-500 transition-colors ${
-                          isDark ? 'text-zinc-200' : 'text-orange-950'
+                          isDark ? 'text-zinc-200' : 'text-zinc-900'
                         }`}>
                           {title}
                         </h4>
                         <div className={`flex items-center justify-between text-[11px] sm:text-xs font-medium pt-0.5 ${
-                          isDark ? 'text-zinc-500' : 'text-orange-800/80'
+                          isDark ? 'text-zinc-500' : 'text-zinc-500'
                         }`}>
                           <span className="truncate max-w-[100px] min-[380px]:max-w-[140px]">{channel}</span>
                           <span className="shrink-0">{timeAgo}</span>
@@ -284,7 +284,7 @@ export default function RecentActivityWidget({
           </div>
 
           {/* Footer Action */}
-          <div className="pt-2 border-t border-orange-500/10 dark:border-orange-500/10">
+          <div className="pt-2 border-t border-zinc-200/60 dark:border-orange-500/10">
             <CustomButton
               variant="secondary"
               size="sm"

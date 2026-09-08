@@ -201,13 +201,13 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
     return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
   };
   // ─── Colours ─────────────────────────────────────────────────────────────
-  const bg = isDark ? 'bg-zinc-950' : 'bg-orange-50/30';
-  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-orange-200/80';
-  const textPrimary = isDark ? 'text-zinc-50' : 'text-orange-950';
-  const textSecondary = isDark ? 'text-zinc-400' : 'text-orange-900/70';
-  const textMuted = isDark ? 'text-zinc-500' : 'text-orange-900/50';
-  const divider = isDark ? 'border-zinc-800/80' : 'border-orange-200/60';
-  const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-white border-orange-200 placeholder-orange-400/60';
+  const bg = isDark ? 'bg-zinc-950' : 'bg-white';
+  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-zinc-200 shadow-xs';
+  const textPrimary = isDark ? 'text-zinc-50' : 'text-zinc-900';
+  const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
+  const textMuted = isDark ? 'text-zinc-500' : 'text-zinc-500';
+  const divider = isDark ? 'border-zinc-800/80' : 'border-zinc-200';
+  const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400';
 
   return (
     <div className={`flex-1 min-h-full overflow-y-auto custom-scrollbar ${bg}`}>
@@ -293,10 +293,10 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
               /* Skeleton loader */
               Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className={`rounded-xl border p-6 space-y-3 ${cardBg}`}>
-                  <div className={`h-5 w-1/3 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-orange-100'}`} />
+                  <div className={`h-5 w-1/3 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`} />
                   <div className="space-y-2">
                     {[80, 95, 70, 88].map((w, j) => (
-                      <div key={j} className={`h-3 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-orange-100'}`} style={{ width: `${w}%` }} />
+                      <div key={j} className={`h-3 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`} style={{ width: `${w}%` }} />
                     ))}
                   </div>
                 </div>
@@ -337,7 +337,7 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
             {!loading && (
               <div className={`rounded-xl border p-6 space-y-3 mt-2 ${isDark
                   ? 'bg-orange-500/5 border-orange-500/20'
-                  : 'bg-orange-50 border-orange-200'
+                  : 'bg-zinc-50 border-zinc-200'
                 }`}>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-orange-500 shrink-0" />

@@ -171,15 +171,15 @@ export default function VideoQa({ videoId, currentUser }) {
     return (
       <div className="max-w-xl mx-auto my-12 px-4">
         <div className={`relative rounded-2xl p-8 sm:p-10 text-center shadow-2xl overflow-hidden flex flex-col items-center border ${
-          isDark ? 'border-zinc-900 bg-zinc-950/30' : 'border-orange-100 bg-orange-50/20'
+          isDark ? 'border-zinc-900 bg-zinc-950/30' : 'border-zinc-200 bg-white shadow-xs'
         }`}>
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${
-            isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-orange-100 text-orange-600'
+            isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-orange-500/10 text-orange-600 border border-orange-500/20'
           }`}>
-            <MessageSquare className="w-6 h-6" />
+            <MessageSquare className="w-6 h-6 text-orange-500" />
           </div>
-          <h3 className={`text-base font-bold mb-2 ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>Q&A Companion Idle</h3>
-          <p className={`text-xs max-w-xs leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
+          <h3 className={`text-base font-bold mb-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Q&A Companion Idle</h3>
+          <p className={`text-xs max-w-xs leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
             Please generate notes or select a study guide from your history to start asking questions about the video.
           </p>
         </div>
@@ -194,29 +194,29 @@ export default function VideoQa({ videoId, currentUser }) {
         {isHistoryLoading ? (
           <div className="space-y-5 animate-pulse">
             <div className="flex items-start gap-3 max-w-[80%] ml-auto flex-row-reverse">
-              <div className={`w-8 h-8 rounded-full shrink-0 ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
+              <div className={`w-8 h-8 rounded-full shrink-0 ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
               <div className="flex flex-col items-end gap-1.5 w-full">
-                <div className={`h-7 w-2/3 rounded-2xl rounded-tr-none ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
+                <div className={`h-7 w-2/3 rounded-2xl rounded-tr-none ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
               </div>
             </div>
 
             <div className="flex items-start gap-3 max-w-[85%] mr-auto">
-              <div className={`w-8 h-8 rounded-full shrink-0 ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
+              <div className={`w-8 h-8 rounded-full shrink-0 ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
               <div className="flex flex-col items-start gap-2 w-full">
-                <div className={`h-6 w-11/12 rounded-2xl rounded-tl-none ${isDark ? 'bg-zinc-900' : 'bg-orange-50'}`} />
-                <div className={`h-4 w-3/4 rounded-xl ${isDark ? 'bg-zinc-900/60' : 'bg-orange-50/60'}`} />
+                <div className={`h-6 w-11/12 rounded-2xl rounded-tl-none ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+                <div className={`h-4 w-3/4 rounded-xl ${isDark ? 'bg-zinc-900/60' : 'bg-zinc-100'}`} />
               </div>
             </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center space-y-3 py-16">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-orange-100 text-orange-600 shadow-xs'
+              isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-orange-500/10 text-orange-600 border border-orange-500/20 shadow-xs'
             }`}>
               <MessageSquare className="w-5 h-5 text-orange-500" />
             </div>
-            <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>How can I help you today?</h4>
-            <p className={`text-[10px] max-w-xs leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
+            <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>How can I help you today?</h4>
+            <p className={`text-[10px] max-w-xs leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
               Ask about definitions, request summaries, or clarify specific parts of the video lecture.
             </p>
           </div>
@@ -236,12 +236,12 @@ export default function VideoQa({ videoId, currentUser }) {
                     isUser
                       ? isDark 
                         ? 'bg-zinc-900 text-zinc-300' 
-                        : 'bg-orange-100 text-orange-700 shadow-xs'
+                        : 'bg-zinc-100 text-zinc-800 border border-zinc-200 shadow-xs'
                       : msg.isError
                         ? 'bg-red-950/20 text-red-400'
                         : isDark
                           ? 'bg-orange-950/30 text-orange-400'
-                          : 'bg-orange-100 text-orange-600 shadow-xs'
+                          : 'bg-orange-500/10 border border-orange-500/20 text-orange-600 shadow-xs'
                   }`}
                   title={isUser ? 'You' : 'Guruji'}
                 >
@@ -255,12 +255,12 @@ export default function VideoQa({ videoId, currentUser }) {
                       isUser
                         ? isDark
                           ? 'bg-zinc-900 text-zinc-100 rounded-tr-xs'
-                          : 'bg-orange-100 text-orange-950 font-medium rounded-tr-xs'
+                          : 'bg-zinc-900 text-white font-medium rounded-tr-xs'
                         : msg.isError
                           ? 'bg-red-950/20 text-red-200 rounded-tl-xs'
                           : isDark
                             ? 'bg-zinc-900/60 text-zinc-100 selection:bg-zinc-800 rounded-tl-xs'
-                            : 'bg-orange-50 text-orange-950 selection:bg-orange-100 rounded-tl-xs'
+                            : 'bg-white border border-zinc-200 shadow-xs text-zinc-900 selection:bg-zinc-200 rounded-tl-xs'
                     }`}
                   >
                     {isUser ? (
@@ -294,7 +294,7 @@ export default function VideoQa({ videoId, currentUser }) {
 
       {/* Input Bar */}
       <form onSubmit={handleSubmit} className={`p-3 sm:p-4 border-t flex gap-2 sm:gap-3 shrink-0 ${
-        isDark ? 'border-zinc-900 bg-zinc-950' : 'border-orange-100 bg-white'
+        isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-white'
       }`}>
         <input
           type="text"
@@ -304,7 +304,7 @@ export default function VideoQa({ videoId, currentUser }) {
           className={`flex-1 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-sm transition disabled:opacity-50 border outline-none ${
             isDark
               ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-zinc-100 placeholder-zinc-500 focus:border-zinc-500'
-              : 'bg-orange-50/50 border-orange-200 text-orange-950 placeholder-orange-400 focus:border-orange-400'
+              : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white'
           }`}
         />
         <button

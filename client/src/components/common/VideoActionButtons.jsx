@@ -111,7 +111,7 @@ export default function VideoActionButtons({
               ? 'text-orange-500 bg-orange-500/15 hover:bg-orange-500/25'
               : isDark
                 ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
-                : 'text-orange-950/60 hover:text-orange-950 hover:bg-orange-100'
+                : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
           }`}
           title={isSaving ? 'Saving...' : isSaved ? 'Saved in Library' : 'Save to Library'}
           aria-label={isSaved ? 'Remove from saved' : 'Save video'}
@@ -139,7 +139,7 @@ export default function VideoActionButtons({
                 ? 'text-orange-500 bg-orange-500/15'
                 : isDark
                   ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
-                  : 'text-orange-950/60 hover:text-orange-950 hover:bg-orange-100'
+                  : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
             title="Add to Playlist"
             aria-label="Add to playlist"
@@ -162,18 +162,18 @@ export default function VideoActionButtons({
               } w-56 border shadow-2xl rounded-2xl p-2.5 z-50 ${
                 isDark
                   ? 'bg-zinc-950 border-zinc-800 text-zinc-200 shadow-black/90'
-                  : 'bg-white border-orange-200 text-orange-950 shadow-orange-950/15'
+                  : 'bg-white border-zinc-200 text-zinc-900 shadow-2xl'
               }`}
             >
               <div className={`flex items-center justify-between pb-1.5 mb-1 border-b px-1 text-xs font-bold ${
-                isDark ? 'border-zinc-800/80' : 'border-orange-100'
+                isDark ? 'border-zinc-800/80' : 'border-zinc-100'
               }`}>
                 <span>Add to playlist</span>
                 <button
                   type="button"
                   onClick={() => setIsPlaylistOpen(false)}
                   className={`p-0.5 rounded-md transition cursor-pointer ${
-                    isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-orange-100 text-orange-800'
+                    isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
                   }`}
                   aria-label="Close"
                 >
@@ -199,7 +199,7 @@ export default function VideoActionButtons({
                         className={`w-full h-8 flex items-center justify-between px-2.5 rounded-lg text-xs font-medium text-left transition cursor-pointer disabled:cursor-wait ${
                           isDark
                             ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-900'
-                            : 'text-orange-950 hover:bg-orange-100/70'
+                            : 'text-zinc-800 hover:bg-zinc-100 hover:text-zinc-900'
                         }`}
                       >
                         <span className="truncate pr-2">{pl.name}</span>
@@ -212,7 +212,7 @@ export default function VideoActionButtons({
                     );
                   })
                 ) : (
-                  <div className={`text-center py-2 text-[10px] ${isDark ? 'text-zinc-500' : 'text-orange-900/60'}`}>
+                  <div className={`text-center py-2 text-[10px] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                     No custom playlists yet
                   </div>
                 )}
@@ -238,7 +238,7 @@ export default function VideoActionButtons({
                   }}
                   onClick={(e) => e.stopPropagation()}
                   className={`flex items-center gap-1.5 mt-1 pt-1.5 border-t ${
-                    isDark ? 'border-zinc-800/60' : 'border-orange-100'
+                    isDark ? 'border-zinc-800/60' : 'border-zinc-100'
                   }`}
                 >
                   <input
@@ -250,7 +250,7 @@ export default function VideoActionButtons({
                     className={`flex-1 px-2.5 py-1 text-xs border rounded-lg outline-none ${
                       isDark
                         ? 'bg-zinc-900 border-zinc-800 text-zinc-200 placeholder-zinc-500 focus:border-zinc-700'
-                        : 'bg-white border-orange-200 text-orange-950 placeholder-orange-900/40 focus:border-orange-400'
+                        : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-orange-500'
                     }`}
                   />
                   <button
@@ -281,7 +281,7 @@ export default function VideoActionButtons({
           className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-wait ${
             isDark
               ? 'text-zinc-500 hover:text-red-400 hover:bg-red-500/10'
-              : 'text-orange-900/50 hover:text-red-600 hover:bg-red-50'
+              : 'text-zinc-400 hover:text-red-600 hover:bg-red-50'
           }`}
           title={isDeleting ? 'Removing...' : 'Remove'}
           aria-label="Remove video"

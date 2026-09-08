@@ -127,7 +127,7 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         onKeyDown={handleKeyDown}
         placeholder="Ask Guruji anything..."
         className={`flex-1 max-h-32 resize-none bg-transparent outline-none border-none py-1.5 text-sm custom-scrollbar font-sans leading-relaxed ${
-          isDark ? 'text-zinc-100 placeholder-zinc-550' : 'text-orange-950 placeholder-orange-400'
+          isDark ? 'text-zinc-100 placeholder-zinc-500' : 'text-zinc-900 placeholder-zinc-400'
         }`}
         disabled={isLoading}
       />

@@ -26,13 +26,13 @@ export default function TabPillSwitcher({
             type="button"
             onClick={() => onTabChange && onTabChange(tab.id)}
             className={`px-4 py-2 !rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 cursor-pointer whitespace-nowrap ${
-              isActive ? 'btn-primary shadow-sm shadow-orange-500/20' : 'btn-secondary'
+              isActive ? (isDark ? 'btn-primary shadow-sm shadow-orange-500/20' : 'btn-primary shadow-xs') : 'btn-secondary'
             }`}
           >
             {IconComp && (
               <IconComp
                 className={`w-3.5 h-3.5 ${
-                  isActive ? 'text-current' : isDark ? 'text-zinc-400' : 'text-orange-700'
+                  isActive ? 'text-current' : isDark ? 'text-zinc-400' : 'text-zinc-600'
                 }`}
               />
             )}
@@ -44,7 +44,7 @@ export default function TabPillSwitcher({
                     ? 'bg-black/20 text-white'
                     : isDark
                       ? 'bg-zinc-800 text-zinc-300'
-                      : 'bg-orange-200/80 text-orange-900'
+                      : 'bg-zinc-100 text-zinc-700 border border-zinc-200'
                 }`}
               >
                 {tab.badge}

@@ -165,28 +165,28 @@ export default function TodayPlanWidget({
   };
 
   return (
-    <div className={`rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 w-full space-y-3.5 sm:space-y-4 ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 ${
       isDark 
-        ? 'bg-zinc-950/40' 
-        : 'bg-white/80 shadow-xs'
+        ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 relative overflow-hidden' 
+        : ''
     }`}>
       
       {/* ── COMMON HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3.5 border-b ${
-        isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+        isDark ? 'pb-3.5 border-b border-orange-500/15' : 'pb-0.5'
       }`}>
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-100'
+              : 'text-orange-600 bg-orange-500/10'
           }`}>
             <CalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${
-                isDark ? 'text-zinc-100' : 'text-orange-950'
+                isDark ? 'text-zinc-100' : 'text-zinc-900'
               }`}>
                 Study Planner & Targets
               </h3>
@@ -195,7 +195,7 @@ export default function TodayPlanWidget({
                 <p>• <strong>Solid vs Translucent</strong>: Solid colored blocks indicate completed tasks; translucent blocks indicate pending tasks.</p>
               </InfoPopover>
             </div>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
               Monitor weekly execution velocity and manage today's planned study targets
             </p>
           </div>
@@ -211,14 +211,14 @@ export default function TodayPlanWidget({
         <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
           isDark 
             ? 'bg-zinc-900/30' 
-            : 'bg-orange-50/50'
+            : 'bg-zinc-100/70'
         }`}>
           {/* Subheader with Priority Legend */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-orange-500/10 dark:border-orange-500/10">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-zinc-200/60 dark:border-orange-500/10">
             <div className="flex items-center gap-2">
               <BarChart2 className="w-4 h-4 text-orange-500" />
               <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
-                isDark ? 'text-zinc-200' : 'text-orange-950'
+                isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
                 Target History (7D)
               </span>
@@ -228,15 +228,15 @@ export default function TodayPlanWidget({
             <div className="flex items-center gap-2 sm:gap-2.5 text-[10px] sm:text-xs font-mono">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-rose-500" />
-                <span className={isDark ? 'text-zinc-400' : 'text-orange-900'}>High</span>
+                <span className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>High</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
-                <span className={isDark ? 'text-zinc-400' : 'text-orange-900'}>Med</span>
+                <span className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>Med</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-sky-500" />
-                <span className={isDark ? 'text-zinc-400' : 'text-orange-900'}>Low</span>
+                <span className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>Low</span>
               </span>
             </div>
           </div>
@@ -273,13 +273,13 @@ export default function TodayPlanWidget({
                           isPerfect 
                             ? 'text-emerald-500 font-extrabold' 
                             : completed > 0 
-                              ? isDark ? 'text-orange-400' : 'text-orange-700'
-                              : isDark ? 'text-zinc-500' : 'text-orange-800/70'
+                              ? isDark ? 'text-orange-400' : 'text-orange-600'
+                              : isDark ? 'text-zinc-500' : 'text-zinc-400'
                         }`}>
                           {completed}/{total}
                         </span>
                       ) : (
-                        <span className={`text-[9.5px] sm:text-[10.5px] md:text-[11px] font-mono ${isDark ? 'text-zinc-650' : 'text-orange-300'}`}>
+                        <span className={`text-[9.5px] sm:text-[10.5px] md:text-[11px] font-mono ${isDark ? 'text-zinc-650' : 'text-zinc-300'}`}>
                           —
                         </span>
                       )}
@@ -289,7 +289,7 @@ export default function TodayPlanWidget({
                     <div className={`w-full max-w-[22px] sm:max-w-[26px] h-20 sm:h-24 md:h-28 rounded-lg overflow-hidden flex flex-col-reverse justify-start p-0.5 border transition-all duration-150 ${
                       day.isToday 
                         ? isDark ? 'border-orange-500/50 bg-zinc-900/60' : 'border-orange-400 bg-orange-50/70'
-                        : isDark ? 'border-orange-500/10 bg-zinc-900/30 group-hover:border-orange-500/30' : 'border-orange-200/50 bg-orange-50/50 group-hover:border-orange-300'
+                        : isDark ? 'border-orange-500/10 bg-zinc-900/30 group-hover:border-orange-500/30' : 'border-zinc-200/80 bg-white group-hover:border-zinc-300'
                     }`}>
                       {hasTasks ? (
                         <div className="w-full h-full flex flex-col-reverse rounded-md overflow-hidden transition-all duration-300 gap-0.5">
@@ -357,7 +357,7 @@ export default function TodayPlanWidget({
                       <span className={`text-[10px] sm:text-[11px] md:text-xs font-mono block ${
                         day.isToday 
                           ? 'text-orange-500 font-bold' 
-                          : isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-orange-800/80 group-hover:text-orange-950'
+                          : isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-500 group-hover:text-zinc-900'
                       }`}>
                         {day.isToday ? 'Today' : day.dayName}
                       </span>
@@ -381,14 +381,14 @@ export default function TodayPlanWidget({
         <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
           isDark 
             ? 'bg-zinc-900/30' 
-            : 'bg-orange-50/50'
+            : 'bg-zinc-100/70'
         }`}>
           {/* Subheader */}
-          <div className="flex items-center justify-between pb-2.5 border-b border-orange-500/10 dark:border-orange-500/10">
+          <div className="flex items-center justify-between pb-2.5 border-b border-zinc-200/60 dark:border-orange-500/10">
             <div className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4 text-orange-500" />
               <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
-                isDark ? 'text-zinc-200' : 'text-orange-950'
+                isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
                 Today's Targets
               </span>
@@ -398,7 +398,7 @@ export default function TodayPlanWidget({
               <span className={`text-xs sm:text-[13px] font-mono font-bold ${
                 isAllCompleted 
                   ? isDark ? 'text-green-400' : 'text-green-700'
-                  : isDark ? 'text-orange-400' : 'text-orange-700'
+                  : isDark ? 'text-orange-400' : 'text-orange-600'
               }`}>
                 {percentComplete}% Completed
               </span>
@@ -409,14 +409,14 @@ export default function TodayPlanWidget({
           <div className="flex-1 flex flex-col justify-start py-2.5 space-y-2 overflow-y-auto max-h-[190px] custom-scrollbar">
             {totalTasks === 0 ? (
               <div className={`text-center py-6 px-4 rounded-xl border border-dashed flex flex-col items-center gap-2 my-auto ${
-                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-orange-200 bg-white/60'
+                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
               }`}>
-                <ClipboardList className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-orange-300'}`} />
+                <ClipboardList className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
                 <div className="space-y-0.5">
-                  <p className={`text-xs font-bold ${isDark ? 'text-zinc-400' : 'text-orange-950'}`}>
+                  <p className={`text-xs font-bold ${isDark ? 'text-zinc-400' : 'text-zinc-800'}`}>
                     No targets planned for today
                   </p>
-                  <p className={`text-[10px] ${isDark ? 'text-zinc-600' : 'text-orange-700'}`}>
+                  <p className={`text-[10px] ${isDark ? 'text-zinc-600' : 'text-zinc-500'}`}>
                     Plan a lecture or revision session to keep your streak burning.
                   </p>
                 </div>
@@ -439,10 +439,10 @@ export default function TodayPlanWidget({
                     task.completed
                       ? isDark 
                         ? 'bg-zinc-950/40 text-zinc-500' 
-                        : 'bg-orange-50/50 text-orange-950/60'
+                        : 'bg-zinc-200/50 text-zinc-400'
                       : isDark
                         ? 'bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-200'
-                        : 'bg-white/70 hover:bg-orange-50/90 text-orange-950 shadow-xs'
+                        : 'bg-white/80 hover:bg-white text-zinc-900'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -454,7 +454,7 @@ export default function TodayPlanWidget({
                       {task.completed ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
                       ) : (
-                        <Circle className="w-4 h-4 text-zinc-600 group-hover:text-orange-500 transition-colors" />
+                        <Circle className="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors" />
                       )}
                     </button>
 
@@ -472,7 +472,7 @@ export default function TodayPlanWidget({
           </div>
 
           {/* Section 2 Footer Link */}
-          <div className="pt-2 border-t border-orange-500/10 dark:border-orange-500/10">
+          <div className="pt-2 border-t border-zinc-200/60 dark:border-orange-500/10">
             <CustomButton
               variant="secondary"
               size="sm"

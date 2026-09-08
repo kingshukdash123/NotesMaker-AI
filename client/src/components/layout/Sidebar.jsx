@@ -50,7 +50,7 @@ export default function Sidebar({
       {/* Left Navigation Sidebar */}
       <aside
         className={`fixed top-[53px] bottom-0 left-0 border-r z-[80] flex flex-col p-3 transition-all duration-300 lg:translate-x-0 overflow-y-auto custom-scrollbar ${isSidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
-          } w-64 ${isSidebarMobileOpen ? 'translate-x-0' : '-translate-x-full'} ${isDark ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-orange-200/90'
+          } w-64 ${isSidebarMobileOpen ? 'translate-x-0' : '-translate-x-full'} ${isDark ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-zinc-200'
           }`}
       >
         {/* Toggle Collapse Button for Desktop */}
@@ -62,7 +62,7 @@ export default function Sidebar({
                 resetActiveVideo();
                 setActiveSection('dashboard');
               }}
-              className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-orange-700 hover:text-orange-900'
+              className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
                 }`}
               title="Go to Dashboard"
             >
@@ -88,7 +88,7 @@ export default function Sidebar({
               setActiveSection('dashboard');
               if (setIsSidebarMobileOpen) setIsSidebarMobileOpen(false);
             }}
-            className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-orange-700 hover:text-orange-900'
+            className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
               }`}
             title="Go to Dashboard"
           >
@@ -114,11 +114,11 @@ export default function Sidebar({
                 className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
                   } ${isActive
                     ? isDark
-                      ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
-                      : 'bg-orange-100 text-orange-700 border border-orange-300 font-bold shadow-xs'
+                      ? 'bg-orange-950/20 text-orange-400 font-bold'
+                      : 'bg-zinc-100 text-zinc-900 font-bold'
                     : isDark
-                      ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent'
-                      : 'text-orange-950/80 hover:text-orange-700 hover:bg-orange-50/80 border border-transparent'
+                      ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                      : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                   }`}
                 title={item.label}
               >
@@ -130,7 +130,7 @@ export default function Sidebar({
         </nav>
 
         {/* Footer controls: Legal, Settings, Profile & API status */}
-        <div className={`pt-3 border-t space-y-1.5 ${isDark ? 'border-zinc-900' : 'border-orange-200/80'}`}>
+        <div className={`pt-3 border-t space-y-1.5 ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
           {/* Legal / Policy Tab */}
           <button
             type="button"
@@ -146,11 +146,11 @@ export default function Sidebar({
             } ${
               LEGAL_SECTIONS.has(activeSection)
                 ? isDark
-                  ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
-                  : 'bg-orange-100 text-orange-700 border border-orange-300 font-bold shadow-xs'
+                  ? 'bg-orange-950/20 text-orange-400 font-bold'
+                  : 'bg-zinc-100 text-zinc-900 font-bold'
                 : isDark
-                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent'
-                  : 'text-orange-950/80 hover:text-orange-700 hover:bg-orange-50/80 border border-transparent'
+                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
             title="Legal & Policies"
           >
@@ -173,11 +173,11 @@ export default function Sidebar({
             } ${
               activeSection === 'settings'
                 ? isDark
-                  ? 'bg-orange-950/20 text-orange-400 border border-orange-900/30 font-bold'
-                  : 'bg-orange-100 text-orange-700 border border-orange-300 font-bold shadow-xs'
+                  ? 'bg-orange-950/20 text-orange-400 font-bold'
+                  : 'bg-zinc-100 text-zinc-900 font-bold'
                 : isDark
-                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent'
-                  : 'text-orange-950/80 hover:text-orange-700 hover:bg-orange-50/80 border border-transparent'
+                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
             title="Configure Settings"
           >

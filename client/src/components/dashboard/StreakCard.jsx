@@ -201,13 +201,21 @@ export default function StreakCard({
   };
 
   const getLevelColorClass = (level, isToday, isSelected) => {
-    const ring = isSelected ? 'ring-2 ring-orange-500 ring-offset-1 ring-offset-zinc-950' : isToday ? 'ring-1 ring-orange-400 ring-offset-1 ring-offset-zinc-950' : '';
+    const ring = isSelected 
+      ? isDark 
+        ? 'ring-2 ring-orange-500 ring-offset-1 ring-offset-zinc-950' 
+        : 'ring-2 ring-orange-500 ring-offset-1 ring-offset-white' 
+      : isToday 
+        ? isDark 
+          ? 'ring-1 ring-orange-400 ring-offset-1 ring-offset-zinc-950' 
+          : 'ring-1 ring-orange-400 ring-offset-1 ring-offset-white' 
+        : '';
     
     if (level === 0) {
       return `${ring} ${
         isDark 
           ? 'bg-zinc-800 border-transparent hover:bg-zinc-700' 
-          : 'bg-orange-100/90 border-transparent hover:bg-orange-200'
+          : 'bg-zinc-200 border border-zinc-300 hover:bg-zinc-300'
       }`;
     }
     if (level === 1) {
@@ -333,27 +341,27 @@ export default function StreakCard({
   const hoveredPoint = hoveredPointIndex !== null ? points[hoveredPointIndex] : null;
 
   return (
-    <div className={`rounded-2xl p-4 sm:p-4.5 transition duration-300 relative space-y-3.5 ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 ${
       isDark 
-        ? 'bg-zinc-950/60 shadow-sm' 
-        : 'bg-white/90 shadow-xs'
+        ? 'bg-zinc-950/60 rounded-2xl p-4 sm:p-4.5 transition duration-300 relative shadow-sm' 
+        : ''
     }`}>
       {/* ── COMMON HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b ${
-        isDark ? 'border-orange-500/15' : 'border-orange-200/70'
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+        isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
       }`}>
         <div className="flex items-center gap-2.5">
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-100'
+              : 'text-orange-600 bg-orange-500/10'
           }`}>
             <Flame className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className={`text-base sm:text-lg font-bold tracking-tight ${
-                isDark ? 'text-zinc-100' : 'text-orange-950'
+                isDark ? 'text-zinc-100' : 'text-zinc-900'
               }`}>
                 Consistency & Streak Tracker
               </h3>
@@ -364,7 +372,7 @@ export default function StreakCard({
                 <p>• <strong>Heatmap Depth</strong>: Notes (+4 pts), Targets (+1 to +3 pts), 100% Target Attainment (+3 pts), Lectures (+2 pts), Login (+1 pt).</p>
               </InfoPopover>
             </div>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
               Track your daily study streaks, 6-month activity heatmap, and 14-day velocity
             </p>
           </div>
@@ -377,12 +385,12 @@ export default function StreakCard({
           
           {/* ── 1. STREAK STATUS COLUMN (Phone: Full | Tablet: 5 cols Row 1 | Desktop: 2 cols) ── */}
           <div className={`col-span-1 sm:col-span-5 lg:col-span-2 sm:order-1 lg:order-1 flex flex-col justify-between p-3 sm:p-3.5 rounded-xl ${
-            isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
           }`}>
             {/* Header (h-6 shrink-0) */}
             <div className="h-6 shrink-0 flex items-center gap-1.5">
               <span className={`text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase ${
-                isDark ? 'text-zinc-400' : 'text-orange-700'
+                isDark ? 'text-zinc-400' : 'text-zinc-500'
               }`}>
                 STREAK STATUS
               </span>
@@ -397,12 +405,12 @@ export default function StreakCard({
             <div className="flex-1 flex flex-row sm:flex-col justify-around sm:justify-center items-center text-center space-y-0 sm:space-y-2 py-2 sm:py-2 gap-3 sm:gap-0">
               <div className="flex flex-col items-center">
                 <span className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-none ${
-                  isDark ? 'text-zinc-100' : 'text-orange-950'
+                  isDark ? 'text-zinc-100' : 'text-zinc-900'
                 }`}>
                   {currentStreak}
                 </span>
                 <span className={`text-xs sm:text-sm font-bold pt-1 ${
-                  isDark ? 'text-orange-400' : 'text-orange-700'
+                  isDark ? 'text-orange-400' : 'text-orange-600'
                 }`}>
                   {currentStreak === 1 ? 'day streak' : 'days streak'}
                 </span>
@@ -410,23 +418,23 @@ export default function StreakCard({
 
               {/* Best Chip */}
               <div className={`w-fit px-2.5 py-1 sm:py-0.5 rounded-md flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-semibold ${
-                isDark ? 'bg-orange-950/25 text-orange-300' : 'bg-orange-50 text-orange-900'
+                isDark ? 'bg-orange-950/25 text-orange-300' : 'bg-zinc-200/80 text-zinc-800'
               }`}>
                 <Award className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                <span>Best: <strong className={isDark ? 'text-orange-400' : 'text-orange-700'}>{longestStreak}d</strong></span>
+                <span>Best: <strong className={isDark ? 'text-orange-400' : 'text-orange-600'}>{longestStreak}d</strong></span>
               </div>
             </div>
           </div>
 
           {/* ── 2. HEATMAP COLUMN (Phone: Full | Tablet: 12 cols Row 2 | Desktop: 6 cols Row 1) ── */}
           <div className={`col-span-1 sm:col-span-12 lg:col-span-6 sm:order-3 lg:order-2 flex flex-col justify-between p-3 sm:p-3.5 rounded-xl ${
-            isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
           }`}>
             {/* Header (h-6 shrink-0) */}
             <div className="h-6 shrink-0 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <span className={`text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase ${
-                  isDark ? 'text-zinc-400' : 'text-orange-700'
+                  isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
                   ACTIVITY HEATMAP (6 Months)
                 </span>
@@ -449,7 +457,7 @@ export default function StreakCard({
                     {/* Columns for this month */}
                     <div className="flex items-center gap-[2.5px] sm:gap-[3px]">
                       {month.weeks.map((week, wIdx) => (
-                        <div key={wIdx} className="flex flex-col gap-[2.5px] sm:gap-[3px]">
+                        <div key={week.map(d => d?.date).join('-') || wIdx} className="flex flex-col gap-[2.5px] sm:gap-[3px]">
                           {week.map((day, dIdx) => {
                             if (!day || day.isFuture) {
                               return <div key={dIdx} className="w-2.5 h-2.5 sm:w-3 sm:h-3" />;
@@ -477,8 +485,8 @@ export default function StreakCard({
                     {/* Month Label below the columns */}
                     <span className={`text-[10px] sm:text-[11px] font-mono mt-1 font-semibold select-none ${
                       month.name === currentMonthName 
-                        ? 'text-orange-400 font-bold' 
-                        : isDark ? 'text-zinc-500' : 'text-orange-800/80'
+                        ? 'text-orange-500 font-bold' 
+                        : isDark ? 'text-zinc-500' : 'text-zinc-400'
                     }`}>
                       {month.name}
                     </span>
@@ -492,13 +500,13 @@ export default function StreakCard({
 
           {/* ── 3. DAILY SCORE GRAPH COLUMN (Phone: Full | Tablet: 7 cols Row 1 | Desktop: 4 cols Row 1) ── */}
           <div className={`col-span-1 sm:col-span-7 lg:col-span-4 sm:order-2 lg:order-3 flex flex-col justify-between p-3 sm:p-3.5 rounded-xl ${
-            isDark ? 'bg-zinc-900/30' : 'bg-orange-50/50'
+            isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
           }`}>
             {/* Header (h-6 shrink-0) */}
             <div className="h-6 shrink-0 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <span className={`text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase ${
-                  isDark ? 'text-zinc-400' : 'text-orange-700'
+                  isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
                   SCORE VELOCITY
                 </span>
@@ -509,12 +517,12 @@ export default function StreakCard({
 
               <div className="flex items-center gap-1.5">
                 <span className={`text-[9.5px] sm:text-[10.5px] font-mono px-1.5 sm:px-2 py-0.5 rounded-md font-semibold ${
-                  isDark ? 'bg-orange-950/30 text-orange-400' : 'bg-orange-100 text-orange-800'
+                  isDark ? 'bg-orange-950/30 text-orange-400' : 'bg-orange-500/10 text-orange-700'
                 }`}>
                   Peak: {maxScoreIn14D} pts
                 </span>
                 <span className={`text-[9.5px] sm:text-[10.5px] font-mono px-1.5 sm:px-2 py-0.5 rounded-md font-semibold ${
-                  isDark ? 'bg-zinc-850/70 text-zinc-300' : 'bg-orange-50 text-orange-900'
+                  isDark ? 'bg-zinc-850/70 text-zinc-300' : 'bg-zinc-200/80 text-zinc-700'
                 }`}>
                   Avg: {avgScoreIn14D}
                 </span>
@@ -546,7 +554,7 @@ export default function StreakCard({
                   y1={graphHeight - paddingY} 
                   x2={graphWidth - paddingX} 
                   y2={graphHeight - paddingY} 
-                  stroke={isDark ? 'rgba(249, 115, 22, 0.18)' : '#fed7aa'} 
+                  stroke={isDark ? 'rgba(249, 115, 22, 0.18)' : '#e4e4e7'} 
                   strokeWidth="1" 
                 />
 
@@ -588,7 +596,7 @@ export default function StreakCard({
                       y={graphHeight - 1} 
                       textAnchor="middle" 
                       fontSize="7" 
-                      fill={pt.isToday ? "#f97316" : isDark ? "#71717a" : "#9a3412"} 
+                      fill={pt.isToday ? "#ea580c" : isDark ? "#71717a" : "#a1a1aa"} 
                       fontWeight={pt.isToday || pt.score > 0 ? "bold" : "normal"}
                       className="font-mono select-none pointer-events-none"
                     >
@@ -667,14 +675,14 @@ export default function StreakCard({
             className={`relative w-full max-w-[calc(100vw-2rem)] sm:max-w-md rounded-2xl p-4 sm:p-5 shadow-2xl animate-in zoom-in-95 duration-150 select-text text-left ${
               isDark 
                 ? 'bg-zinc-950 text-zinc-200 shadow-black/90' 
-                : 'bg-white text-orange-950 shadow-orange-950/20'
+                : 'bg-white text-zinc-900 border border-zinc-200 shadow-xl'
             }`}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between gap-3 pb-2.5 mb-3.5">
+            <div className="flex items-center justify-between gap-3 pb-2.5 mb-3.5 border-b border-zinc-100">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-orange-500 shrink-0" />
-                <h4 className={`text-sm sm:text-base font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-orange-950'}`}>
+                <h4 className={`text-sm sm:text-base font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                   {selectedDay.formattedDate || selectedDay.shortDate}
                 </h4>
                 {selectedDay.isToday && (
@@ -698,15 +706,15 @@ export default function StreakCard({
 
             {/* Activity Level Badge & Score */}
             <div className={`flex items-center justify-between gap-2 mb-3.5 p-2.5 rounded-xl ${
-              isDark ? 'bg-orange-950/25' : 'bg-orange-50'
+              isDark ? 'bg-orange-950/25' : 'bg-white border border-zinc-200 shadow-xs'
             }`}>
-              <span className={`text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-orange-900'}`}>
+              <span className={`text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
                 Activity Status
               </span>
               <span className={`text-[11px] font-mono px-2.5 py-1 rounded-lg font-bold ${
                 isDark 
                   ? 'bg-orange-950/60 text-orange-300 shadow-xs' 
-                  : 'bg-orange-100 text-orange-800'
+                  : 'bg-zinc-100 text-zinc-900 border border-zinc-200'
               }`}>
                 {getLevelLabel(selectedDay.metric?.level || getLevelFromScore(selectedDay.metric?.score || selectedDay.score))} • {selectedDay.metric?.score || selectedDay.score || 0} pts
               </span>
@@ -714,13 +722,13 @@ export default function StreakCard({
 
             {/* Activity Metrics Grid */}
             <div className="space-y-2">
-              <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-400' : 'text-orange-800/80'}`}>
+              <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                 Day Breakdown
               </span>
               <div className="space-y-2 text-xs">
                 {/* Targets */}
                 <div className={`flex items-center justify-between p-2.5 rounded-xl ${
-                  isDark ? 'bg-zinc-900/40' : 'bg-orange-50/70'
+                  isDark ? 'bg-zinc-900/40' : 'bg-white border border-zinc-200 shadow-xs'
                 }`}>
                   <span className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -735,7 +743,7 @@ export default function StreakCard({
 
                 {/* Notes */}
                 <div className={`flex items-center justify-between p-2.5 rounded-xl ${
-                  isDark ? 'bg-zinc-900/40' : 'bg-orange-50/70'
+                  isDark ? 'bg-zinc-900/40' : 'bg-white border border-zinc-200 shadow-xs'
                 }`}>
                   <span className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-orange-500 shrink-0" />
@@ -750,7 +758,7 @@ export default function StreakCard({
 
                 {/* Lectures */}
                 <div className={`flex items-center justify-between p-2.5 rounded-xl ${
-                  isDark ? 'bg-zinc-900/40' : 'bg-orange-50/70'
+                  isDark ? 'bg-zinc-900/40' : 'bg-white border border-zinc-200 shadow-xs'
                 }`}>
                   <span className="flex items-center gap-2">
                     <Video className="w-4 h-4 text-sky-500 shrink-0" />

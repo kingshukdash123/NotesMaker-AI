@@ -185,16 +185,16 @@ export default function PlaylistsTab({
       <div className={`w-full md:w-64 lg:w-72 shrink-0 flex flex-col min-h-0 h-full rounded-2xl transition-colors ${
         mobileView === 'videos' ? 'hidden md:flex' : 'flex'
       } ${
-        isDark ? 'bg-zinc-950/80 shadow-inner' : 'bg-white shadow-xs'
+        isDark ? 'bg-zinc-950/80 shadow-inner' : 'bg-white border border-zinc-200/80 shadow-xs'
       }`}>
         {/* Pinned Header */}
         <div className={`flex items-center justify-between p-3.5 pb-2.5 shrink-0 ${
-          isDark ? 'border-b border-zinc-800/60' : 'border-b border-orange-100'
+          isDark ? 'border-b border-zinc-800/60' : 'border-b border-zinc-100'
         }`}>
           <div className="flex items-center gap-2">
             <ListVideo className="w-4 h-4 text-orange-500 shrink-0" />
             <span className={`text-xs font-bold uppercase tracking-wider ${
-              isDark ? 'text-zinc-300' : 'text-orange-950'
+              isDark ? 'text-zinc-300' : 'text-zinc-800'
             }`}>
               Playlists
             </span>
@@ -215,7 +215,7 @@ export default function PlaylistsTab({
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2 space-y-1">
           {playlists.length === 0 ? (
             <div className={`text-center py-8 px-3 rounded-xl text-xs space-y-1 ${
-              isDark ? 'text-zinc-500' : 'text-orange-900/60'
+              isDark ? 'text-zinc-500' : 'text-zinc-400'
             }`}>
               <Folder className="w-6 h-6 mx-auto opacity-40 mb-1" />
               <p className="font-semibold">No playlists created yet</p>
@@ -234,18 +234,18 @@ export default function PlaylistsTab({
                     isActive 
                       ? isDark 
                         ? 'bg-zinc-900 text-zinc-100 font-bold shadow-xs' 
-                        : 'bg-orange-100 text-orange-950 font-bold shadow-2xs'
+                        : 'bg-zinc-100 text-zinc-900 font-bold shadow-2xs'
                       : isDark
                         ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
-                        : 'text-orange-950/80 hover:text-orange-950 hover:bg-orange-50/80'
+                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     {isActive ? (
-                      <FolderOpen className={`w-4 h-4 shrink-0 ${isDark ? 'text-zinc-200' : 'text-orange-600'}`} />
+                      <FolderOpen className={`w-4 h-4 shrink-0 ${isDark ? 'text-zinc-200' : 'text-orange-500'}`} />
                     ) : (
                       <Folder className={`w-4 h-4 shrink-0 transition ${
-                        isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-orange-400 group-hover:text-orange-600'
+                        isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-400 group-hover:text-orange-500'
                       }`} />
                     )}
                     <span className="truncate flex-1 min-w-0 font-semibold leading-tight">
@@ -263,10 +263,10 @@ export default function PlaylistsTab({
                       }}
                       className={`p-1.5 rounded-lg transition cursor-pointer ${
                         menuOpenPlaylistId === pl.id
-                          ? isDark ? 'text-zinc-100 bg-zinc-800' : 'text-orange-950 bg-orange-200/80'
+                          ? isDark ? 'text-zinc-100 bg-zinc-800' : 'text-zinc-900 bg-zinc-200'
                           : isActive
-                            ? isDark ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800' : 'text-orange-900 hover:text-orange-950 hover:bg-orange-200/60'
-                            : isDark ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80' : 'text-orange-950/60 hover:text-orange-950 hover:bg-orange-100'
+                            ? isDark ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800' : 'text-zinc-700 hover:text-zinc-900 hover:bg-zinc-200/60'
+                            : isDark ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
                       }`}
                       title="Playlist options"
                       aria-label="Playlist options"
@@ -279,7 +279,7 @@ export default function PlaylistsTab({
                       <div
                         onClick={(e) => e.stopPropagation()}
                         className={`absolute right-0 top-full mt-1 w-32 rounded-xl shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 border ${
-                          isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-orange-200 text-orange-950 shadow-md'
+                          isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-zinc-200 text-zinc-900 shadow-md'
                         }`}
                       >
                         <button
@@ -290,7 +290,7 @@ export default function PlaylistsTab({
                             handleOpenRename(pl);
                           }}
                           className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                            isDark ? 'hover:bg-zinc-800 text-zinc-200' : 'hover:bg-orange-50 text-orange-950'
+                            isDark ? 'hover:bg-zinc-800 text-zinc-200' : 'hover:bg-zinc-50 text-zinc-900'
                           }`}
                         >
                           <Pencil className="w-3.5 h-3.5 text-zinc-400" />
@@ -327,7 +327,7 @@ export default function PlaylistsTab({
           <>
             {/* Active Playlist Header & Completion Tracker Panel (Border removed) */}
             <div className={`px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl flex flex-col gap-3 shrink-0 transition-colors ${
-              isDark ? 'bg-zinc-950/90 shadow-inner' : 'bg-white shadow-xs'
+              isDark ? 'bg-zinc-950/90 shadow-inner' : 'bg-white border border-zinc-200/80 shadow-xs'
             }`}>
               {/* Top Row: Title, Status Badge (with count & without border), Bulk Toggle */}
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -339,7 +339,7 @@ export default function PlaylistsTab({
                     className={`md:hidden p-1.5 -ml-1 rounded-xl transition flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer ${
                       isDark
                         ? 'text-zinc-300 hover:text-white'
-                        : 'text-orange-950 hover:text-orange-800'
+                        : 'text-zinc-700 hover:text-zinc-950'
                     }`}
                     title="Back to playlists"
                     aria-label="Back to playlists list"
@@ -348,7 +348,7 @@ export default function PlaylistsTab({
                   </button>
 
                   <h2 className={`text-base sm:text-lg font-bold truncate leading-snug ${
-                    isDark ? 'text-zinc-100' : 'text-orange-950'
+                    isDark ? 'text-zinc-100' : 'text-zinc-900'
                   }`} title={activePlaylist.name}>
                     {activePlaylist.name}
                   </h2>
@@ -356,7 +356,7 @@ export default function PlaylistsTab({
                   {/* Status Badge: video count & watched count inside, WITHOUT border */}
                   {totalCount === 0 ? (
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${
-                      isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-orange-100/60 text-orange-800/80'
+                      isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-zinc-100 text-zinc-600'
                     }`}>
                       Empty
                     </span>
@@ -395,7 +395,7 @@ export default function PlaylistsTab({
                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
                           isDark
                             ? 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 hover:text-zinc-100'
-                            : 'bg-orange-50 hover:bg-orange-100 text-orange-950'
+                            : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800'
                         }`}
                         title="Mark all videos as watched"
                       >
@@ -440,7 +440,7 @@ export default function PlaylistsTab({
                 <div className="space-y-2 pt-0.5">
                   {/* Slim Animated Progress Bar */}
                   <div className={`w-full h-1.5 rounded-full overflow-hidden ${
-                    isDark ? 'bg-zinc-900' : 'bg-orange-100/80'
+                    isDark ? 'bg-zinc-900' : 'bg-zinc-100'
                   }`}>
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
@@ -454,7 +454,7 @@ export default function PlaylistsTab({
 
                   {/* Clean Bottom Row: Progress percentage on left, Filter tabs on right */}
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                    <span className={`font-medium ${isDark ? 'text-zinc-400' : 'text-orange-950/70'}`}>
+                    <span className={`font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                       {isCompleted ? (
                         <span className={`font-semibold flex items-center gap-1 ${
                           isDark ? 'text-green-400' : 'text-green-800'
@@ -468,7 +468,7 @@ export default function PlaylistsTab({
 
                     {/* Filter Tabs: All, Unwatched, Watched */}
                     <div className={`flex items-center p-0.5 rounded-lg border text-[11px] font-bold ${
-                      isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-orange-50/80 border-orange-200'
+                      isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-zinc-100 border-zinc-200/80'
                     }`}>
                       <button
                         type="button"
@@ -477,10 +477,10 @@ export default function PlaylistsTab({
                           filter === 'all'
                             ? isDark
                               ? 'bg-zinc-800 text-zinc-100 shadow-xs'
-                              : 'bg-white text-orange-950 shadow-xs'
+                              : 'bg-white text-zinc-900 shadow-xs'
                             : isDark
                               ? 'text-zinc-500 hover:text-zinc-300'
-                              : 'text-orange-900/60 hover:text-orange-950'
+                              : 'text-zinc-500 hover:text-zinc-900'
                         }`}
                       >
                         All ({totalCount})
@@ -492,10 +492,10 @@ export default function PlaylistsTab({
                           filter === 'unwatched'
                             ? isDark
                               ? 'bg-zinc-800 text-zinc-100 shadow-xs'
-                              : 'bg-white text-orange-950 shadow-xs'
+                              : 'bg-white text-zinc-900 shadow-xs'
                             : isDark
                               ? 'text-zinc-500 hover:text-zinc-300'
-                              : 'text-orange-900/60 hover:text-orange-950'
+                              : 'text-zinc-500 hover:text-zinc-900'
                         }`}
                       >
                         Unwatched ({remainingCount})
@@ -507,10 +507,10 @@ export default function PlaylistsTab({
                           filter === 'watched'
                             ? isDark
                               ? 'bg-zinc-800 text-zinc-100 shadow-xs'
-                              : 'bg-white text-orange-950 shadow-xs'
+                              : 'bg-white text-zinc-900 shadow-xs'
                             : isDark
                               ? 'text-zinc-500 hover:text-zinc-300'
-                              : 'text-orange-900/60 hover:text-orange-950'
+                              : 'text-zinc-500 hover:text-zinc-900'
                         }`}
                       >
                         Watched ({watchedCount})
@@ -524,26 +524,26 @@ export default function PlaylistsTab({
             {/* Only Video Grid is Scrollable! */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
               {playlistVideos.length === 0 ? (
-                <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2.5 p-6 ${
-                  isDark ? 'bg-zinc-950/40 text-zinc-400' : 'bg-white text-orange-900 shadow-xs'
+                <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2.5 p-6 border ${
+                  isDark ? 'bg-zinc-950/40 border-zinc-900 text-zinc-400' : 'bg-white border-zinc-200/80 text-zinc-600 shadow-xs'
                 }`}>
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                    isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-orange-50 text-orange-400'
+                    isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-100 text-zinc-400'
                   }`}>
                     <BookOpen className="w-6 h-6" />
                   </div>
                   <div className="space-y-1 max-w-sm">
-                    <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
+                    <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
                       This playlist is currently empty
                     </p>
-                    <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+                    <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                       Browse lectures in the Discover tab and click the three-dots menu or playlist icon to add videos to "{activePlaylist.name}".
                     </p>
                   </div>
                 </div>
               ) : displayedVideos.length === 0 ? (
-                <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2.5 p-6 ${
-                  isDark ? 'bg-zinc-950/40 text-zinc-400' : 'bg-white text-orange-900 shadow-xs'
+                <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2.5 p-6 border ${
+                  isDark ? 'bg-zinc-950/40 border-zinc-900 text-zinc-400' : 'bg-white border-zinc-200/80 text-zinc-600 shadow-xs'
                 }`}>
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                     isDark ? 'bg-zinc-900 text-green-400' : 'bg-green-50 text-green-700'
@@ -551,10 +551,10 @@ export default function PlaylistsTab({
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <div className="space-y-1 max-w-sm">
-                    <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
+                    <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
                       No {filter} lectures found
                     </p>
-                    <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+                    <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                       {filter === 'unwatched'
                         ? 'Congratulations! You have completed all lectures in this playlist.'
                         : 'No lectures have been marked as watched yet. Click the checkbox on any video to mark it watched.'}
@@ -594,14 +594,14 @@ export default function PlaylistsTab({
             </div>
           </>
         ) : (
-          <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2 p-6 ${
-            isDark ? 'bg-zinc-950/40 text-zinc-400' : 'bg-white text-orange-900 shadow-xs'
+          <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2 p-6 border ${
+            isDark ? 'bg-zinc-950/40 border-zinc-900 text-zinc-400' : 'bg-white border-zinc-200/80 text-zinc-600 shadow-xs'
           }`}>
             <FolderOpen className="w-8 h-8 text-orange-500 opacity-60" />
-            <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
+            <p className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
               No playlist selected
             </p>
-            <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-orange-800/80'}`}>
+            <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
               Select a playlist from the left or create a new one to view and manage its lectures.
             </p>
           </div>
@@ -612,32 +612,32 @@ export default function PlaylistsTab({
       {playlistToRename && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-[160] flex items-center justify-center p-4">
           <div className={`relative max-w-sm w-full rounded-2xl p-5 shadow-2xl border ${
-            isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-orange-200 text-orange-950'
+            isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'
           }`}>
             <button
               type="button"
               onClick={() => setPlaylistToRename(null)}
               className={`absolute right-4 top-4 p-1.5 rounded-lg transition cursor-pointer ${
-                isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900' : 'text-orange-800 hover:text-orange-950 hover:bg-orange-100'
+                isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900' : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
               }`}
               title="Close"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className={`space-y-1 pb-3 border-b mb-4 ${isDark ? 'border-zinc-800/80' : 'border-orange-100'}`}>
+            <div className={`space-y-1 pb-3 border-b mb-4 ${isDark ? 'border-zinc-800/80' : 'border-zinc-100'}`}>
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <Pencil className="w-4 h-4 text-orange-500" />
                 Rename Playlist
               </h3>
-              <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-orange-900/60'}`}>
+              <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                 Enter a new name for your playlist.
               </p>
             </div>
 
             <form onSubmit={handleSaveRename} className="space-y-4">
               <div className="space-y-1.5">
-                <label className={`block text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>
+                <label className={`block text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
                   Playlist Name
                 </label>
                 <input
@@ -648,7 +648,7 @@ export default function PlaylistsTab({
                   className={`w-full rounded-xl px-3 py-2 text-xs transition focus:outline-none ${
                     isDark
                       ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 focus:border-orange-500'
-                      : 'bg-orange-50/50 border border-orange-200 text-orange-950 focus:border-orange-500'
+                      : 'bg-zinc-50 border border-zinc-200 text-zinc-900 focus:border-orange-500'
                   }`}
                   required
                   maxLength={40}

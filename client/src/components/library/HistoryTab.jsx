@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useWatchHistory } from '../../hooks/useWatchHistory';
 import { useApp } from '../../context/AppContext';
+import { useTheme } from '../../context/ThemeContext';
 import LibraryVideoCard from './LibraryVideoCard';
 import VideoGridSkeleton from '../skeletons/VideoGridSkeleton';
 import { Trash2, Clock } from 'lucide-react';
@@ -22,6 +23,7 @@ export default function HistoryTab({
   } = useWatchHistory();
 
   const { showConfirm } = useApp();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     fetchHistory();
@@ -50,13 +52,13 @@ export default function HistoryTab({
 
   if (history.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-zinc-950/20 border border-zinc-900 rounded-2xl py-16 gap-4 animate-in fade-in duration-300">
-        <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-550">
+      <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 ${isDark ? 'bg-zinc-950/20 border border-zinc-900' : 'bg-white border border-zinc-200/80 shadow-xs'} rounded-2xl py-16 gap-4 animate-in fade-in duration-300`}>
+        <div className={`w-12 h-12 rounded-full ${isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-zinc-100 text-zinc-600'} flex items-center justify-center`}>
           <Clock className="w-5 h-5" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-xs sm:text-sm font-bold text-zinc-300 font-sans">No watch history yet</h3>
-          <p className="text-[10px] sm:text-xs text-zinc-550 max-w-xs mx-auto leading-relaxed">
+          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'} font-sans`}>No watch history yet</h3>
+          <p className={`text-[10px] sm:text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-500'} max-w-xs mx-auto leading-relaxed`}>
             Videos you open or process will appear here so you can easily resume studying later.
           </p>
         </div>
@@ -67,8 +69,8 @@ export default function HistoryTab({
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden space-y-3 sm:space-y-4 animate-in fade-in duration-300">
       {/* Tab control bar (Pinned) */}
-      <div className="flex items-center justify-between border-b border-zinc-900/50 pb-2 shrink-0">
-        <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-550">WATCH HISTORY</span>
+      <div className={`flex items-center justify-between border-b ${isDark ? 'border-zinc-900/50' : 'border-zinc-200/80'} pb-2 shrink-0`}>
+        <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>WATCH HISTORY</span>
         <button
           type="button"
           onClick={handleClearAll}

@@ -167,17 +167,17 @@ export default function VideoProcessingSkeleton({
       {/* Clean Borderless Workspace Skeleton */}
       <div
         className={`rounded-xl transition-all duration-300 p-4 sm:p-6 space-y-6 ${
-          isDark ? 'bg-zinc-950/20' : 'bg-orange-50/20'
+          isDark ? 'bg-zinc-950/20' : 'bg-white border border-zinc-200 shadow-xs'
         }`}
       >
         {/* Dynamic Status Text at Starting of Workspace */}
         <div className="space-y-3 pb-2">
           <div className="flex items-center gap-2 animate-pulse opacity-70">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-500/60 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
             <p
               key={activeText}
               className={`text-xs font-medium tracking-tight animate-in fade-in duration-300 ${
-                isDark ? 'text-zinc-400/80' : 'text-orange-900/60'
+                isDark ? 'text-zinc-400/80' : 'text-zinc-500'
               }`}
             >
               {activeText}
@@ -217,7 +217,7 @@ function NotesSkeletonView({ isDark }) {
       {/* Overview / Abstract Block */}
       <div
         className={`rounded-xl p-4 sm:p-5 space-y-3 ${
-          isDark ? 'bg-zinc-900/30' : 'bg-orange-50/60'
+          isDark ? 'bg-zinc-900/30' : 'bg-white border border-zinc-200 shadow-xs'
         }`}
       >
         <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ function NotesSkeletonView({ isDark }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <div
             className={`p-3.5 rounded-xl space-y-2.5 ${
-              isDark ? 'bg-zinc-900/20' : 'bg-orange-50/40'
+              isDark ? 'bg-zinc-900/20' : 'bg-white border border-zinc-200 shadow-xs'
             }`}
           >
             <Skeleton className="h-4 w-2/3 rounded" />
@@ -254,7 +254,7 @@ function NotesSkeletonView({ isDark }) {
 
           <div
             className={`p-3.5 rounded-xl space-y-2.5 ${
-              isDark ? 'bg-zinc-900/20' : 'bg-orange-50/40'
+              isDark ? 'bg-zinc-900/20' : 'bg-white border border-zinc-200 shadow-xs'
             }`}
           >
             <Skeleton className="h-4 w-1/2 rounded" />
@@ -270,7 +270,7 @@ function NotesSkeletonView({ isDark }) {
       {/* Formula & Code Box */}
       <div
         className={`p-4 rounded-xl space-y-2.5 ${
-          isDark ? 'bg-zinc-900/25' : 'bg-orange-50/50'
+          isDark ? 'bg-zinc-900/25' : 'bg-white border border-zinc-200 shadow-xs'
         }`}
       >
         <div className="flex items-center justify-between pb-1">
@@ -306,7 +306,7 @@ function SummarySkeletonView({ isDark }) {
       {/* Executive Abstract Box */}
       <div
         className={`rounded-xl p-4 sm:p-5 space-y-3 ${
-          isDark ? 'bg-zinc-900/30' : 'bg-orange-50/60'
+          isDark ? 'bg-zinc-900/30' : 'bg-white border border-zinc-200 shadow-xs'
         }`}
       >
         <div className="flex items-center gap-2">
@@ -337,7 +337,7 @@ function SummarySkeletonView({ isDark }) {
             <div
               key={item}
               className={`p-4 rounded-xl space-y-2.5 ${
-                isDark ? 'bg-zinc-900/25' : 'bg-orange-50/45'
+                isDark ? 'bg-zinc-900/25' : 'bg-white border border-zinc-200 shadow-xs'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -359,7 +359,7 @@ function SummarySkeletonView({ isDark }) {
         <div className="space-y-4">
           <div
             className={`p-4 rounded-xl space-y-3 ${
-              isDark ? 'bg-zinc-900/25' : 'bg-orange-50/45'
+              isDark ? 'bg-zinc-900/25' : 'bg-white border border-zinc-200 shadow-xs'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -378,7 +378,7 @@ function SummarySkeletonView({ isDark }) {
 
           <div
             className={`p-4 rounded-xl space-y-3 ${
-              isDark ? 'bg-zinc-900/25' : 'bg-orange-50/45'
+              isDark ? 'bg-zinc-900/25' : 'bg-white border border-zinc-200 shadow-xs'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -409,7 +409,7 @@ function QaSkeletonView({ isDark }) {
           <Skeleton className="w-7 h-7 rounded-full bg-orange-500/30 shrink-0 mt-0.5" />
           <div
             className={`p-3.5 rounded-2xl rounded-tl-sm space-y-2 w-full ${
-              isDark ? 'bg-zinc-900/40' : 'bg-orange-50/70'
+              isDark ? 'bg-zinc-900/40' : 'bg-zinc-100 border border-zinc-200'
             }`}
           >
             <Skeleton className="h-3.5 w-3/4 rounded" />
@@ -421,7 +421,7 @@ function QaSkeletonView({ isDark }) {
         <div className="flex items-start justify-end gap-3 pl-8">
           <div
             className={`p-3.5 rounded-2xl rounded-tr-sm space-y-1.5 max-w-[80%] sm:max-w-[70%] w-64 ${
-              isDark ? 'bg-zinc-900/40' : 'bg-orange-100/70'
+              isDark ? 'bg-zinc-900/40' : 'bg-zinc-100 border border-zinc-200'
             }`}
           >
             <Skeleton className="h-3.5 w-full rounded" />
@@ -435,7 +435,7 @@ function QaSkeletonView({ isDark }) {
           <Skeleton className="w-7 h-7 rounded-full shrink-0 mt-0.5" />
           <div
             className={`p-4 rounded-2xl rounded-tl-sm space-y-2.5 w-full ${
-              isDark ? 'bg-zinc-900/40' : 'bg-orange-50/70'
+              isDark ? 'bg-zinc-900/40' : 'bg-zinc-100 border border-zinc-200'
             }`}
           >
             <Skeleton className="h-3.5 w-full rounded" />
@@ -462,7 +462,7 @@ function QaSkeletonView({ isDark }) {
       {/* Interactive Input Bar Skeleton */}
       <div
         className={`p-2.5 rounded-xl flex items-center gap-2.5 ${
-          isDark ? 'bg-zinc-900/40' : 'bg-orange-50/70'
+          isDark ? 'bg-zinc-900/40' : 'bg-white border border-zinc-200 shadow-xs'
         }`}
       >
         <Skeleton className="h-8 flex-1 rounded-lg" />
@@ -471,3 +471,4 @@ function QaSkeletonView({ isDark }) {
     </div>
   );
 }
+

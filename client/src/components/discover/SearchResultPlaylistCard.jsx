@@ -12,12 +12,12 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
       className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none border border-transparent ${
         isDark 
           ? 'hover:bg-zinc-900/40 hover:border-zinc-850' 
-          : 'hover:bg-orange-50/60 hover:border-orange-100'
+          : 'hover:bg-zinc-50 hover:border-zinc-200'
       }`}
     >
       {/* Thumbnail Column with YouTube Playlist Stack Overlay */}
       <div className={`relative w-full sm:w-64 md:w-76 lg:w-88 aspect-video rounded-xl overflow-hidden shrink-0 border shadow-xs ${
-        isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-orange-200/80 bg-orange-50'
+        isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100'
       }`}>
         {playlist.thumbnail ? (
           <img
@@ -28,7 +28,7 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
           />
         ) : (
           <div className={`w-full h-full flex items-center justify-center ${
-            isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-orange-50 text-orange-400'
+            isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-100 text-zinc-400'
           }`}>
             <ListVideo className="w-10 h-10" />
           </div>
@@ -54,7 +54,7 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
       {/* Info Column */}
       <div className="flex-1 flex flex-col min-w-0 justify-start py-0.5">
         <h3 className={`text-sm sm:text-base md:text-lg font-semibold line-clamp-2 leading-snug transition ${
-          isDark ? 'text-zinc-100 group-hover:text-white' : 'text-orange-950 group-hover:text-orange-600'
+          isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
         }`}>
           {playlist.title}
         </h3>
@@ -62,12 +62,12 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
         {/* Channel Row */}
         <div className="flex items-center gap-2 mt-2 sm:mt-2.5">
           <div className={`w-6 h-6 rounded-full border font-bold flex items-center justify-center shrink-0 text-[10px] uppercase select-none ${
-            isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-orange-100 border-orange-200 text-orange-800'
+            isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-700'
           }`}>
             {channelLetter}
           </div>
           <p className={`text-xs font-medium truncate ${
-            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-orange-800 hover:text-orange-950'
+            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
           }`}>
             {playlist.channel}
           </p>
@@ -82,7 +82,7 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
         {/* Description Snippet */}
         {playlist.description && (
           <p className={`mt-2 text-xs line-clamp-1 sm:line-clamp-2 leading-relaxed ${
-            isDark ? 'text-zinc-500' : 'text-orange-900/60'
+            isDark ? 'text-zinc-500' : 'text-zinc-500'
           }`}>
             {playlist.description}
           </p>

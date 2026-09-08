@@ -152,25 +152,27 @@ export default function OnboardingModal({ isOpen, onClose }) {
         className={`relative w-full max-w-xl border rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col max-h-[92vh] ${
           isDark 
             ? 'bg-zinc-950 border-zinc-800 text-zinc-100' 
-            : 'bg-white border-orange-200 text-orange-950 shadow-xl shadow-orange-500/5'
+            : 'bg-white border-zinc-200 text-zinc-900 shadow-2xl'
         }`}
       >
-        {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 right-1/4 w-48 h-48 bg-orange-500/[0.04] rounded-full blur-3xl pointer-events-none"></div>
+        {/* Subtle Ambient Glow in dark mode only */}
+        {isDark && (
+          <div className="absolute top-0 right-1/4 w-48 h-48 bg-orange-500/[0.04] rounded-full blur-3xl pointer-events-none"></div>
+        )}
 
         {/* Top Header & Progress */}
             <div className="mb-6 flex-shrink-0">
               <div className="flex items-center gap-3 mb-2.5">
                 <span className={`p-2 rounded-xl border flex-shrink-0 ${
-                  isDark ? 'bg-zinc-900 border-zinc-800 text-orange-400' : 'bg-orange-100 border-orange-200 text-orange-600'
+                  isDark ? 'bg-zinc-900 border-zinc-800 text-orange-400' : 'bg-zinc-100 border-zinc-200 text-zinc-900'
                 }`}>
-                  <Compass className="w-5 h-5" />
+                  <Compass className="w-5 h-5 text-orange-500" />
                 </span>
                 <div>
-                  <h2 className={`text-lg font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-orange-950'}`}>
+                  <h2 className={`text-lg font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                     Personalize Your AI Mentor
                   </h2>
-                  <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-orange-800/70'}`}>
+                  <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                     Help Guruji understand your academic background to give tailored guidance
                   </p>
                 </div>
@@ -184,16 +186,16 @@ export default function OnboardingModal({ isOpen, onClose }) {
                       className={`h-1 rounded-full transition-all duration-300 ${
                         step <= currentStep 
                           ? 'bg-orange-500' 
-                          : (isDark ? 'bg-zinc-800' : 'bg-orange-100')
+                          : (isDark ? 'bg-zinc-800' : 'bg-zinc-200')
                       }`} 
                     />
                   </div>
                 ))}
               </div>
-              <div className={`flex justify-between text-[11px] font-medium mt-1.5 px-0.5 ${isDark ? 'text-zinc-500' : 'text-orange-800/60'}`}>
-                <span className={currentStep === 1 ? (isDark ? 'text-zinc-200 font-semibold' : 'text-orange-950 font-bold') : ''}>1. Academic Stage</span>
-                <span className={currentStep === 2 ? (isDark ? 'text-zinc-200 font-semibold' : 'text-orange-950 font-bold') : ''}>2. Target Goal</span>
-                <span className={currentStep === 3 ? (isDark ? 'text-zinc-200 font-semibold' : 'text-orange-950 font-bold') : ''}>3. Mentor Style</span>
+              <div className={`flex justify-between text-[11px] font-medium mt-1.5 px-0.5 ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                <span className={currentStep === 1 ? (isDark ? 'text-zinc-200 font-semibold' : 'text-zinc-900 font-bold') : ''}>1. Academic Stage</span>
+                <span className={currentStep === 2 ? (isDark ? 'text-zinc-200 font-semibold' : 'text-zinc-900 font-bold') : ''}>2. Target Goal</span>
+                <span className={currentStep === 3 ? (isDark ? 'text-zinc-200 font-semibold' : 'text-zinc-900 font-bold') : ''}>3. Mentor Style</span>
               </div>
             </div>
 
@@ -203,8 +205,8 @@ export default function OnboardingModal({ isOpen, onClose }) {
               {currentStep === 1 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
                   <div>
-                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
-                      <GraduationCap className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-600'}`} />
+                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
+                      <GraduationCap className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-500'}`} />
                       <span>What stage of education are you in?</span>
                     </label>
                     <div className="space-y-2">
@@ -219,17 +221,17 @@ export default function OnboardingModal({ isOpen, onClose }) {
                               isSelected
                                 ? (isDark 
                                     ? 'border-orange-500 bg-zinc-900/90 text-zinc-100 shadow-sm shadow-orange-500/10' 
-                                    : 'border-orange-500 bg-orange-100/60 text-orange-950 ring-1 ring-orange-500/20 shadow-xs')
+                                    : 'border-orange-500 bg-white text-zinc-900 ring-1 ring-orange-500/30 shadow-xs')
                                 : (isDark 
                                     ? 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700 text-zinc-300 hover:bg-zinc-900/70' 
-                                    : 'border-orange-200/80 bg-orange-50/40 hover:border-orange-300 text-orange-900 hover:bg-orange-50/80')
+                                    : 'border-zinc-200 bg-zinc-50 hover:border-zinc-300 text-zinc-800 hover:bg-zinc-100')
                             }`}
                           >
                             <div>
-                              <p className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-orange-950') : (isDark ? 'text-zinc-300' : 'text-orange-900')}`}>{level.label}</p>
-                              <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-orange-900/70'}`}>{level.desc}</p>
+                              <p className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-zinc-900') : (isDark ? 'text-zinc-300' : 'text-zinc-700')}`}>{level.label}</p>
+                              <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{level.desc}</p>
                             </div>
-                            {isSelected && <Check className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />}
+                            {isSelected && <Check className="w-4 h-4 text-orange-500 flex-shrink-0 ml-2" />}
                           </button>
                         );
                       })}
@@ -237,8 +239,8 @@ export default function OnboardingModal({ isOpen, onClose }) {
                   </div>
 
                   <div>
-                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
-                      <BookOpen className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-600'}`} />
+                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
+                      <BookOpen className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-500'}`} />
                       <span>Primary Subject Stream / Field</span>
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -253,14 +255,14 @@ export default function OnboardingModal({ isOpen, onClose }) {
                               isSelected
                                 ? (isDark 
                                     ? 'border-orange-500 bg-zinc-900/90 text-zinc-100 shadow-sm shadow-orange-500/10' 
-                                    : 'border-orange-500 bg-orange-100/60 text-orange-950 ring-1 ring-orange-500/20 shadow-xs')
+                                    : 'border-orange-500 bg-white text-zinc-900 ring-1 ring-orange-500/30 shadow-xs')
                                 : (isDark 
                                     ? 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700 text-zinc-300 hover:bg-zinc-900/70' 
-                                    : 'border-orange-200/80 bg-orange-50/40 hover:border-orange-300 text-orange-900 hover:bg-orange-50/80')
+                                    : 'border-zinc-200 bg-zinc-50 hover:border-zinc-300 text-zinc-800 hover:bg-zinc-100')
                             }`}
                           >
-                            <span className="text-xs font-semibold">{field.label}</span>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />}
+                            <span className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-zinc-900') : (isDark ? 'text-zinc-300' : 'text-zinc-700')}`}>{field.label}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />}
                           </button>
                         );
                       })}
@@ -273,8 +275,8 @@ export default function OnboardingModal({ isOpen, onClose }) {
               {currentStep === 2 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
                   <div>
-                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
-                      <Target className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-600'}`} />
+                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
+                      <Target className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-500'}`} />
                       <span>What is your current primary academic goal or target exam?</span>
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -289,14 +291,14 @@ export default function OnboardingModal({ isOpen, onClose }) {
                               isSelected
                                 ? (isDark 
                                     ? 'border-orange-500 bg-zinc-900/90 text-zinc-100 shadow-sm shadow-orange-500/10' 
-                                    : 'border-orange-500 bg-orange-100/60 text-orange-950 ring-1 ring-orange-500/20 shadow-xs')
+                                    : 'border-orange-500 bg-white text-zinc-900 ring-1 ring-orange-500/30 shadow-xs')
                                 : (isDark 
                                     ? 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700 text-zinc-300 hover:bg-zinc-900/70' 
-                                    : 'border-orange-200/80 bg-orange-50/40 hover:border-orange-300 text-orange-900 hover:bg-orange-50/80')
+                                    : 'border-zinc-200 bg-zinc-50 hover:border-zinc-300 text-zinc-800 hover:bg-zinc-100')
                             }`}
                           >
-                            <span className="text-xs font-semibold">{goal.label}</span>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />}
+                            <span className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-zinc-900') : (isDark ? 'text-zinc-300' : 'text-zinc-700')}`}>{goal.label}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />}
                           </button>
                         );
                       })}
@@ -305,7 +307,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
 
                   {formData.targetGoal === 'Other' && (
                     <div className="animate-in fade-in duration-150">
-                      <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-400' : 'text-orange-800/80'}`}>
+                      <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
                         Specify Your Goal or Target
                       </label>
                       <input
@@ -316,7 +318,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
                         className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-orange-500 transition ${
                           isDark 
                             ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-600' 
-                            : 'bg-white border-orange-200 text-orange-950 placeholder-orange-400/60'
+                            : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400'
                         }`}
                       />
                     </div>
@@ -328,8 +330,8 @@ export default function OnboardingModal({ isOpen, onClose }) {
               {currentStep === 3 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-200">
                   <div>
-                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
-                      <Lightbulb className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-600'}`} />
+                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
+                      <Lightbulb className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-500'}`} />
                       <span>Preferred Explanation Style</span>
                     </label>
                     <div className="space-y-2">
@@ -344,17 +346,17 @@ export default function OnboardingModal({ isOpen, onClose }) {
                               isSelected
                                 ? (isDark 
                                     ? 'border-orange-500 bg-zinc-900/90 text-zinc-100 shadow-sm shadow-orange-500/10' 
-                                    : 'border-orange-500 bg-orange-100/60 text-orange-950 ring-1 ring-orange-500/20 shadow-xs')
+                                    : 'border-orange-500 bg-white text-zinc-900 ring-1 ring-orange-500/30 shadow-xs')
                                 : (isDark 
                                     ? 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700 text-zinc-300 hover:bg-zinc-900/70' 
-                                    : 'border-orange-200/80 bg-orange-50/40 hover:border-orange-300 text-orange-900 hover:bg-orange-50/80')
+                                    : 'border-zinc-200 bg-zinc-50 hover:border-zinc-300 text-zinc-800 hover:bg-zinc-100')
                             }`}
                           >
                             <div>
-                              <p className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-orange-950') : (isDark ? 'text-zinc-300' : 'text-orange-900')}`}>{style.label}</p>
-                              <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-orange-900/70'}`}>{style.desc}</p>
+                              <p className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-zinc-900') : (isDark ? 'text-zinc-300' : 'text-zinc-700')}`}>{style.label}</p>
+                              <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{style.desc}</p>
                             </div>
-                            {isSelected && <Check className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />}
+                            {isSelected && <Check className="w-4 h-4 text-orange-500 flex-shrink-0 ml-2" />}
                           </button>
                         );
                       })}
@@ -362,8 +364,8 @@ export default function OnboardingModal({ isOpen, onClose }) {
                   </div>
 
                   <div>
-                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
-                      <Compass className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-600'}`} />
+                    <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
+                      <Compass className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-500'}`} />
                       <span>Guruji&apos;s Mentor Persona & Tone</span>
                     </label>
                     <div className="space-y-2">
@@ -378,17 +380,17 @@ export default function OnboardingModal({ isOpen, onClose }) {
                               isSelected
                                 ? (isDark 
                                     ? 'border-orange-500 bg-zinc-900/90 text-zinc-100 shadow-sm shadow-orange-500/10' 
-                                    : 'border-orange-500 bg-orange-100/60 text-orange-950 ring-1 ring-orange-500/20 shadow-xs')
+                                    : 'border-orange-500 bg-white text-zinc-900 ring-1 ring-orange-500/30 shadow-xs')
                                 : (isDark 
                                     ? 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700 text-zinc-300 hover:bg-zinc-900/70' 
-                                    : 'border-orange-200/80 bg-orange-50/40 hover:border-orange-300 text-orange-900 hover:bg-orange-50/80')
+                                    : 'border-zinc-200 bg-zinc-50 hover:border-zinc-300 text-zinc-800 hover:bg-zinc-100')
                             }`}
                           >
                             <div>
-                              <p className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-orange-950') : (isDark ? 'text-zinc-300' : 'text-orange-900')}`}>{tone.label}</p>
-                              <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-orange-900/70'}`}>{tone.desc}</p>
+                              <p className={`text-xs font-semibold ${isSelected ? (isDark ? 'text-zinc-100' : 'text-zinc-900') : (isDark ? 'text-zinc-300' : 'text-zinc-700')}`}>{tone.label}</p>
+                              <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{tone.desc}</p>
                             </div>
-                            {isSelected && <Check className="w-4 h-4 text-orange-400 flex-shrink-0 ml-2" />}
+                            {isSelected && <Check className="w-4 h-4 text-orange-500 flex-shrink-0 ml-2" />}
                           </button>
                         );
                       })}
@@ -400,7 +402,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
 
             {/* Modal Footer Controls */}
             <div className={`mt-6 pt-4 border-t flex items-center justify-between gap-3 flex-shrink-0 ${
-              isDark ? 'border-zinc-800' : 'border-orange-100'
+              isDark ? 'border-zinc-800' : 'border-zinc-200'
             }`}>
               {currentStep > 1 ? (
                 <button
@@ -418,7 +420,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
                   onClick={handleSkip}
                   disabled={isSubmitting}
                   className={`text-xs transition cursor-pointer px-2 ${
-                    isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-800/60 hover:text-orange-950'
+                    isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
                   Skip for now

@@ -10,7 +10,7 @@ export default function Skeleton({ className = '', ...props }) {
   return (
     <div
       className={`animate-pulse rounded-lg transition-colors ${
-        isDark ? 'bg-zinc-900/80' : 'bg-orange-100/80'
+        isDark ? 'bg-zinc-900/80' : 'bg-zinc-100'
       } ${className}`}
       {...props}
     />

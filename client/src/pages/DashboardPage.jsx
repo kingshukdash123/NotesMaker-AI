@@ -187,11 +187,11 @@ export default function DashboardPage() {
           <div className="md:col-span-2 flex flex-col justify-between space-y-3 h-full">
             <div>
               <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-2 ${
-                isDark ? 'text-zinc-50' : 'text-orange-950'
+                isDark ? 'text-zinc-50' : 'text-zinc-900'
               }`}>
                 Welcome back, {displayName} 👋
               </h2>
-              <p className={`text-xs sm:text-sm md:text-base mt-1 sm:mt-1.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-orange-800'}`}>
+              <p className={`text-xs sm:text-sm md:text-base mt-1 sm:mt-1.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
                 {notesHistory.length > 0 || watchHistory.length > 0 
                   ? `You've engaged with ${Math.max(notesHistory.length, watchHistory.length)} educational lectures. Let's make today productive!`
                   : "Ready to start your learning journey? Explore educational videos or set daily study targets."}
@@ -203,29 +203,27 @@ export default function DashboardPage() {
           
           {/* 2nd Column: Date and Time Widget (1/3 width) */}
           <div className="md:col-span-1 flex flex-col justify-center">
-            <div className={`h-full rounded-2xl p-3.5 sm:p-4 md:p-5 flex flex-col justify-center items-center text-center select-none backdrop-blur-sm ${
-              isDark ? 'bg-zinc-900/30 text-zinc-100' : 'bg-orange-50/50 text-orange-950'
+            <div className={`h-full rounded-2xl p-3.5 sm:p-4 md:p-5 flex flex-col justify-center items-center text-center select-none bg-transparent ${
+              isDark ? 'text-zinc-100' : 'text-zinc-900'
             }`}>
               {/* Clock Display with Seconds */}
               <div className="flex items-baseline justify-center font-mono">
                 <span className={`text-3xl sm:text-4xl md:text-3xl lg:text-5xl font-black tracking-tight leading-none ${
-                  isDark ? 'text-zinc-100' : 'text-orange-950'
+                  isDark ? 'text-zinc-100' : 'text-zinc-900'
                 }`}>
                   {timeHoursMinutes}
                 </span>
                 <span className="text-xl sm:text-2xl md:text-xl lg:text-3xl font-black text-orange-500 leading-none">
                   :{timeSeconds}
                 </span>
-                <span className={`text-[10px] sm:text-xs md:text-[11px] lg:text-sm font-bold uppercase tracking-wider ml-1 sm:ml-1.5 leading-none ${
-                  isDark ? 'text-orange-400' : 'text-orange-600'
-                }`}>
+                <span className="text-[10px] sm:text-xs md:text-[11px] lg:text-sm font-bold uppercase tracking-wider ml-1 sm:ml-1.5 leading-none text-orange-500">
                   {timePeriod}
                 </span>
               </div>
 
               {/* Full Calendar Date */}
               <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-xs lg:text-sm font-medium mt-2.5 sm:mt-3 ${
-                isDark ? 'text-zinc-400' : 'text-orange-800'
+                isDark ? 'text-zinc-400' : 'text-zinc-600'
               }`}>
                 <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 shrink-0" />
                 <span>{fullDateString}</span>

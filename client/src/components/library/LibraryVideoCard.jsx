@@ -78,7 +78,7 @@ export default function LibraryVideoCard({
           <div
             onClick={onOpen}
             className={`w-8 h-8 rounded-full border font-bold flex items-center justify-center shrink-0 text-xs uppercase mt-0.5 select-none ${
-              isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-orange-100 border-orange-200 text-orange-800'
+              isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-700'
             }`}
           >
             {channelLetter}
@@ -90,7 +90,7 @@ export default function LibraryVideoCard({
             <h4
               onClick={onOpen}
               className={`text-sm font-bold line-clamp-2 leading-snug transition ${
-                isDark ? 'text-zinc-100 group-hover:text-white' : 'text-orange-950 group-hover:text-orange-600'
+                isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
               }`}
               title={metadata.title || ''}
             >
@@ -102,7 +102,7 @@ export default function LibraryVideoCard({
               <p
                 onClick={onOpen}
                 className={`text-xs truncate font-medium ${
-                  isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-orange-800 hover:text-orange-950'
+                  isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
                 }`}
                 title={metadata.channel || ''}
               >
@@ -110,8 +110,8 @@ export default function LibraryVideoCard({
               </p>
               {timeAgoText && (
                 <>
-                  <span className={`text-[10px] shrink-0 ${isDark ? 'text-zinc-600' : 'text-orange-300'}`}>•</span>
-                  <span className={`text-[11px] shrink-0 font-normal ${isDark ? 'text-zinc-500' : 'text-orange-900/60'}`}>
+                  <span className={`text-[10px] shrink-0 ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
+                  <span className={`text-[11px] shrink-0 font-normal ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                     {timeAgoText}
                   </span>
                 </>
@@ -122,7 +122,7 @@ export default function LibraryVideoCard({
 
         {/* Action Bar Pinned at the Bottom of the Card: Action Buttons first, Notes Icon in last */}
         <div className={`mt-auto pt-2 flex items-center justify-between border-t min-h-[32px] ${
-          isDark ? 'border-zinc-800/60' : 'border-orange-100'
+          isDark ? 'border-zinc-800/60' : 'border-zinc-100'
         }`}>
           {/* Action Buttons: Bookmark, Add to Playlist, Delete + Watched Checkbox */}
           <div className="flex items-center gap-1 shrink-0">
@@ -154,7 +154,7 @@ export default function LibraryVideoCard({
                       : 'text-green-800 bg-green-100 hover:bg-green-200'
                     : isDark
                       ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
-                      : 'text-orange-950/60 hover:text-orange-950 hover:bg-orange-100'
+                      : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
                 }`}
                 title={isLoadingWatched ? 'Updating status...' : isWatched ? 'Mark as unwatched' : 'Mark as watched'}
                 aria-label={isLoadingWatched ? 'Updating status...' : isWatched ? 'Mark as unwatched' : 'Mark as watched'}
@@ -163,7 +163,7 @@ export default function LibraryVideoCard({
                   <Loader2 className={`w-3.5 h-3.5 animate-spin ${
                     isWatched 
                       ? isDark ? 'text-green-400' : 'text-green-700'
-                      : isDark ? 'text-zinc-300' : 'text-orange-600'
+                      : isDark ? 'text-zinc-300' : 'text-zinc-600'
                   }`} />
                 ) : isWatched ? (
                   <CheckSquare className="w-3.5 h-3.5" />

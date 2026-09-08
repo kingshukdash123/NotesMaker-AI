@@ -294,7 +294,7 @@ function MainApp() {
   const isWorkspaceActive = Boolean(currentUser);
 
   return (
-    <div className={`${isWorkspaceActive ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} bg-black text-zinc-100 flex flex-col selection:bg-zinc-800 relative transition-colors duration-200`}>
+    <div className={`${isWorkspaceActive ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} ${isDark ? 'bg-black text-zinc-100' : 'bg-white text-zinc-900'} flex flex-col selection:bg-zinc-800 relative transition-colors duration-200`}>
       {/* Top Header Navbar (Hidden in Fullscreen Video Mode) */}
       {!isVideoFullscreen && (
         <Header
@@ -346,14 +346,18 @@ function MainApp() {
           {/* Global Background Grid and moving ambient glow bubbles for landing page */}
           <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
             <div className="premium-grid-bg h-full w-full"></div>
-            <div className="hero-glow-orb-1"></div>
-            <div className="hero-glow-orb-2"></div>
-            <div className="hero-glow-orb-3"></div>
-            <div className="hero-glow-orb-4"></div>
+            {isDark && (
+              <>
+                <div className="hero-glow-orb-1"></div>
+                <div className="hero-glow-orb-2"></div>
+                <div className="hero-glow-orb-3"></div>
+                <div className="hero-glow-orb-4"></div>
+              </>
+            )}
           </div>
 
-          <div className="flex-1 w-full flex flex-col px-4 sm:px-8 pb-12 pt-20 sm:pt-24 max-w-7xl mx-auto transition-all duration-300 relative z-10">
-            <main className={`flex-1 min-w-0 w-full ${LEGAL_SECTIONS.has(activeSection) ? 'flex flex-col' : 'flex items-center justify-center'
+          <div className="flex-1 w-full flex flex-col pb-12 pt-20 sm:pt-24 transition-all duration-300 relative z-10">
+            <main className={`flex-1 min-w-0 w-full ${LEGAL_SECTIONS.has(activeSection) ? 'flex flex-col px-4 sm:px-8 max-w-7xl mx-auto' : 'flex flex-col'
               }`}>
               {LEGAL_SECTIONS.has(activeSection)
                 ? <PolicyPage slug={activeSection} />
@@ -362,7 +366,7 @@ function MainApp() {
             </main>
           </div>
 
-          <footer className={`relative z-10 border-t transition-colors backdrop-blur-sm ${isDark ? 'border-zinc-900 bg-black/80' : 'border-orange-200/80 bg-white/75'
+          <footer className={`relative z-10 border-t transition-colors backdrop-blur-sm ${isDark ? 'border-zinc-900 bg-black/80' : 'border-zinc-200 bg-white/80'
             }`}>
             <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
               {/* Brand */}
@@ -372,7 +376,7 @@ function MainApp() {
                   resetActiveVideo();
                   setActiveSection('dashboard');
                 }}
-                className={`text-xs font-medium shrink-0 cursor-pointer hover:underline text-left ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-900/60 hover:text-orange-950'
+                className={`text-xs font-medium shrink-0 cursor-pointer hover:underline text-left ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-900'
                   }`}
                 title="Go to Home"
               >
@@ -385,7 +389,7 @@ function MainApp() {
                     key={slug}
                     type="button"
                     onClick={() => setActiveSection(slug)}
-                    className={`text-[11px] transition hover:underline underline-offset-2 cursor-pointer ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-orange-900/60 hover:text-orange-600'
+                    className={`text-[11px] transition hover:underline underline-offset-2 cursor-pointer ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-400 hover:text-zinc-900'
                       }`}
                   >
                     {shortLabel || label}
@@ -409,7 +413,7 @@ function MainApp() {
 
           {/* Right Scrollable Page Pane */}
           <div className={`flex-1 min-w-0 ${isVideoFullscreen ? 'pl-0' : isSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'} flex flex-col h-full overflow-hidden transition-all duration-300`}>
-            <div className="flex-1 w-full relative z-10 overflow-hidden flex flex-col h-full min-h-0 bg-zinc-950/10">
+            <div className={`flex-1 w-full relative z-10 overflow-hidden flex flex-col h-full min-h-0 ${isDark ? 'bg-zinc-950/10' : 'bg-white'}`}>
               {activeSection === 'dashboard' && <DashboardPage />}
               {activeSection === 'discover' && <DiscoverPage />}
               {activeSection === 'library' && <LibraryPage />}
@@ -439,7 +443,7 @@ function MainApp() {
           {!isVideoFullscreen && !isAssistantOpen && activeSection !== 'assistant' && (
             <button
               onClick={() => setIsAssistantOpen(true)}
-              className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-2xl z-[100] cursor-pointer bg-black hover:scale-105 active:scale-95 transition-all hover:shadow-orange-500/20 hover:shadow-2xl overflow-hidden border border-zinc-800"
+              className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-2xl z-[100] cursor-pointer bg-black hover:scale-105 active:scale-95 transition-all ${isDark ? 'hover:shadow-orange-500/20' : 'hover:shadow-xl'} hover:shadow-2xl overflow-hidden border border-zinc-800`}
               title="Ask Guruji"
               aria-label="Guruji"
             >

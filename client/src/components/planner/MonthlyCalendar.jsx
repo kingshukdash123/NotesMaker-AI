@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, Crown } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function MonthlyCalendar({ 
   monthTasks = [], 
@@ -6,6 +7,7 @@ export default function MonthlyCalendar({
   onMonthChange, 
   onSelectDate 
 }) {
+  const { isDark } = useTheme();
   const date = new Date(currentDate);
   const year = date.getFullYear();
   const month = date.getMonth(); // 0-indexed
@@ -95,8 +97,8 @@ export default function MonthlyCalendar({
     <div className="space-y-4 animate-in fade-in duration-300">
       
       {/* Month Navigation Control Header */}
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-3 mb-2">
-        <h3 className="text-xs sm:text-sm font-bold text-zinc-100">{formattedMonthHeading}</h3>
+      <div className={`flex items-center justify-between border-b ${isDark ? 'border-zinc-900' : 'border-zinc-200'} pb-3 mb-2`}>
+        <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>{formattedMonthHeading}</h3>
         <div className="flex gap-1">
           <button
             type="button"
@@ -118,7 +120,7 @@ export default function MonthlyCalendar({
       </div>
 
       {/* Weekday Titles */}
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-mono font-bold text-zinc-550 select-none pb-1">
+      <div className={`grid grid-cols-7 gap-1 text-center text-[10px] font-mono font-bold ${isDark ? 'text-zinc-500' : 'text-zinc-400'} select-none pb-1`}>
         {weekdays.map(day => <span key={day}>{day}</span>)}
       </div>
 
@@ -136,9 +138,15 @@ export default function MonthlyCalendar({
               className={`min-h-[46px] sm:min-h-[60px] p-1 sm:p-1.5 border rounded-xl flex flex-col justify-between cursor-pointer transition select-none ${
                 cell.isCurrentMonth
                   ? isToday
-                    ? 'bg-orange-500/5 border-orange-500 hover:bg-orange-500/10'
-                    : 'bg-zinc-950/40 border-zinc-900 hover:border-zinc-800'
-                  : 'bg-zinc-950/10 border-zinc-950/20 text-zinc-700 hover:border-zinc-900/60'
+                    ? isDark
+                      ? 'bg-orange-500/5 border-orange-500 hover:bg-orange-500/10'
+                      : 'bg-orange-50/60 border-orange-500 hover:bg-orange-100/60 shadow-xs'
+                    : isDark
+                      ? 'bg-zinc-950/40 border-zinc-900 hover:border-zinc-800'
+                      : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 shadow-xs'
+                  : isDark
+                    ? 'bg-zinc-950/10 border-zinc-950/20 text-zinc-700 hover:border-zinc-900/60'
+                    : 'bg-zinc-50/50 border-zinc-100/60 text-zinc-300 hover:border-zinc-200'
               }`}
             >
               {/* Cell Header: Crown on Left, Day Number on Right */}
@@ -151,8 +159,10 @@ export default function MonthlyCalendar({
                 
                 <span className={`text-[10px] font-bold ${
                   isToday && cell.isCurrentMonth
-                    ? 'text-orange-400'
-                    : cell.isCurrentMonth ? 'text-zinc-400' : 'text-zinc-750'
+                    ? 'text-orange-500'
+                    : cell.isCurrentMonth 
+                      ? isDark ? 'text-zinc-400' : 'text-zinc-800' 
+                      : isDark ? 'text-zinc-700' : 'text-zinc-300'
                 }`}>
                   {cell.dayNumber}
                 </span>
@@ -171,10 +181,10 @@ export default function MonthlyCalendar({
                         />
                       );
                     } else {
-                      let dotStyle = 'bg-zinc-700';
-                      if (t.priority === 'high') dotStyle = 'bg-red-950/40 border border-red-500/50';
-                      else if (t.priority === 'medium') dotStyle = 'bg-yellow-950/40 border border-yellow-500/50';
-                      else if (t.priority === 'low') dotStyle = 'bg-emerald-950/40 border border-emerald-500/50';
+                      let dotStyle = isDark ? 'bg-zinc-700' : 'bg-zinc-300';
+                      if (t.priority === 'high') dotStyle = isDark ? 'bg-red-950/40 border border-red-500/50' : 'bg-red-100 border border-red-400';
+                      else if (t.priority === 'medium') dotStyle = isDark ? 'bg-yellow-950/40 border border-yellow-500/50' : 'bg-amber-100 border border-amber-400';
+                      else if (t.priority === 'low') dotStyle = isDark ? 'bg-emerald-950/40 border border-emerald-500/50' : 'bg-emerald-100 border border-emerald-400';
                       return (
                         <span 
                           key={tIdx} 
@@ -192,21 +202,21 @@ export default function MonthlyCalendar({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center text-[9px] font-mono text-zinc-550 pt-2 select-none">
+      <div className={`flex flex-wrap gap-x-4 gap-y-1.5 justify-center text-[9px] font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-500'} pt-2 select-none`}>
         <span className="flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           Completed Task
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-950/40 border border-red-500/50" />
+          <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-red-950/40 border border-red-500/50' : 'bg-red-100 border border-red-400'}`} />
           High Pending
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-yellow-950/40 border border-yellow-500/50" />
+          <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-yellow-950/40 border border-yellow-500/50' : 'bg-amber-100 border border-amber-400'}`} />
           Medium Pending
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/50" />
+          <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-emerald-950/40 border border-emerald-500/50' : 'bg-emerald-100 border border-emerald-400'}`} />
           Low Pending
         </span>
         <span className="flex items-center gap-1">

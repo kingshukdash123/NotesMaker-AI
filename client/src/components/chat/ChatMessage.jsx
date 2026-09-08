@@ -26,13 +26,13 @@ export default function ChatMessage({ message, isStreaming = false }) {
         <div className={`max-w-[88%] rounded-2xl rounded-tr-xs px-3.5 py-2.5 sm:px-4 sm:py-2.5 text-sm leading-relaxed font-sans shadow-xs break-words ${
           isDark 
             ? 'bg-zinc-900 text-zinc-100' 
-            : 'bg-orange-100 text-orange-950 font-medium'
+            : 'bg-zinc-900 text-white font-medium'
         }`}>
           <div className="whitespace-pre-wrap">{text}</div>
         </div>
         {formattedTime && (
           <span className={`text-[10px] mt-1 pr-1 font-mono select-none ${
-            isDark ? 'text-zinc-600' : 'text-orange-900/60'
+            isDark ? 'text-zinc-600' : 'text-zinc-400'
           }`}>
             {formattedTime}
           </span>
@@ -43,13 +43,13 @@ export default function ChatMessage({ message, isStreaming = false }) {
 
   return (
     <div className={`flex gap-2.5 w-full py-3.5 px-2 transition duration-150 border-b relative ${
-      isDark ? 'border-zinc-900/40' : 'border-orange-100'
+      isDark ? 'border-zinc-900/40' : 'border-zinc-100'
     }`}>
       {/* Guruji Avatar Badge */}
       <div className={`w-5.5 h-5.5 sm:w-6 sm:h-6 rounded flex items-center justify-center text-[11px] font-black shrink-0 mt-0.5 select-none border ${
         isDark 
           ? 'bg-orange-950/30 border-orange-900/40 text-orange-400 shadow-sm' 
-          : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
+          : 'bg-orange-500/10 border-orange-500/20 text-orange-600 shadow-xs'
       }`} title="Guruji">
         G
       </div>
@@ -58,7 +58,7 @@ export default function ChatMessage({ message, isStreaming = false }) {
         <div className={`max-w-none text-sm leading-relaxed ${
           isDark 
             ? 'text-zinc-200 selection:bg-zinc-800' 
-            : 'text-orange-950 selection:bg-orange-100'
+            : 'text-zinc-900 selection:bg-zinc-200'
         }`}>
           {!text && isStreaming ? (
             <div className="flex items-center gap-1 py-1">

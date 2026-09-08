@@ -14,8 +14,8 @@ export default function DocPageHeader({
 }) {
   const { isDark } = useTheme();
 
-  const textPrimary = isDark ? 'text-zinc-50' : 'text-orange-950';
-  const textSecondary = isDark ? 'text-zinc-400' : 'text-orange-900/70';
+  const textPrimary = isDark ? 'text-zinc-50' : 'text-zinc-900';
+  const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
 
   return (
     <div className={`space-y-3 ${className}`}>

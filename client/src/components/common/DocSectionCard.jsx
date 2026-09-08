@@ -21,9 +21,9 @@ export default function DocSectionCard({
 }) {
   const { isDark } = useTheme();
 
-  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-orange-200/80';
-  const textPrimary = isDark ? 'text-zinc-50' : 'text-orange-950';
-  const textSecondary = isDark ? 'text-zinc-400' : 'text-orange-900/70';
+  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-zinc-200 shadow-xs';
+  const textPrimary = isDark ? 'text-zinc-50' : 'text-zinc-900';
+  const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
 
   return (
     <div

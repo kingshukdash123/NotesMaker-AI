@@ -79,13 +79,17 @@ export default function ActivityHeatmap({
   };
 
   const getLevelColorClass = (level, isToday, isSelected) => {
-    const ring = isSelected ? 'ring-2 ring-orange-500 ring-offset-1 ring-offset-black' : isToday ? 'ring-1 ring-orange-400/80' : '';
+    const ring = isSelected 
+      ? isDark ? 'ring-2 ring-orange-500 ring-offset-1 ring-offset-black' : 'ring-2 ring-orange-500 ring-offset-1 ring-offset-white' 
+      : isToday 
+        ? isDark ? 'ring-1 ring-orange-400/80' : 'ring-1 ring-orange-400/80 ring-offset-1 ring-offset-white' 
+        : '';
     
     if (level === 0) {
       return `${ring} ${
         isDark 
           ? 'bg-zinc-900/60 border-zinc-900 hover:border-zinc-800' 
-          : 'bg-orange-100/70 border-orange-200/60 hover:bg-orange-200/70'
+          : 'bg-zinc-200 border border-zinc-300 hover:bg-zinc-300'
       }`;
     }
     if (level === 1) {
@@ -128,13 +132,13 @@ export default function ActivityHeatmap({
 
   return (
     <div className={`glass-panel rounded-2xl p-5 sm:p-6 transition duration-300 space-y-4 border ${
-      isDark ? 'border-zinc-900 bg-zinc-950/40 hover:border-zinc-850' : 'border-orange-200/90 hover:border-orange-300 bg-white/80 shadow-xs'
+      isDark ? 'border-zinc-900 bg-zinc-950/40 hover:border-zinc-850' : 'border-zinc-200/80 bg-white shadow-xs'
     }`}>
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h4 className={`text-[10px] font-mono font-bold tracking-wider uppercase ${
-            isDark ? 'text-zinc-500' : 'text-orange-700'
+            isDark ? 'text-zinc-500' : 'text-zinc-500'
           }`}>
             STUDY CONSISTENCY HEATMAP
           </h4>
@@ -151,7 +155,7 @@ export default function ActivityHeatmap({
         </div>
 
         <span className={`text-[10px] font-mono ${
-          isDark ? 'text-zinc-600' : 'text-orange-800/70'
+          isDark ? 'text-zinc-600' : 'text-zinc-400'
         }`}>
           Last 12 Weeks (84 Days)
         </span>
@@ -165,7 +169,7 @@ export default function ActivityHeatmap({
       >
         {/* Left Day Labels */}
         <div className={`flex flex-col justify-between h-[105px] text-[9px] font-mono pt-1 shrink-0 select-none ${
-          isDark ? 'text-zinc-600' : 'text-orange-700/90 font-bold'
+          isDark ? 'text-zinc-600' : 'text-zinc-400 font-medium'
         }`}>
           <span>Sun</span>
           <span>Tue</span>
@@ -205,7 +209,7 @@ export default function ActivityHeatmap({
       {/* Interactive Tap-to-Inspect Card for Touch & Desktop */}
       {selectedDay && (
         <div className={`rounded-xl p-3 sm:p-3.5 transition animate-in fade-in zoom-in-95 duration-150 flex items-start justify-between gap-3 ${
-          isDark ? 'bg-zinc-900/70 text-zinc-200' : 'bg-orange-50/90 text-orange-950'
+          isDark ? 'bg-zinc-900/70 text-zinc-200' : 'bg-white border border-zinc-200 shadow-xs text-zinc-900'
         }`}>
           <div className="space-y-1.5 text-xs">
             <div className="flex items-center gap-2 flex-wrap">
@@ -218,7 +222,7 @@ export default function ActivityHeatmap({
                 </span>
               )}
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold ${
-                isDark ? 'bg-orange-950/40 text-orange-400' : 'bg-orange-100 text-orange-800'
+                isDark ? 'bg-orange-950/40 text-orange-400' : 'bg-zinc-100 border border-zinc-200 text-zinc-800'
               }`}>
                 {getLevelLabel(selectedDay.metric.level || getLevelFromScore(selectedDay.metric.score))} ({selectedDay.metric.score || 0} pts)
               </span>
@@ -263,11 +267,11 @@ export default function ActivityHeatmap({
 
       {/* Heatmap Legend */}
       <div className={`flex items-center justify-between text-[9px] font-mono pt-2 border-t flex-wrap gap-2 ${
-        isDark ? 'text-zinc-500 border-zinc-900/80' : 'text-orange-700 font-bold border-orange-200/70'
+        isDark ? 'text-zinc-500 border-zinc-900/80' : 'text-zinc-500 border-zinc-200/80'
       }`}>
         <span>Less active</span>
         <div className="flex items-center gap-1">
-          <div className={`w-2.5 h-2.5 rounded-[2px] border ${isDark ? 'bg-zinc-900/60 border-zinc-900' : 'bg-orange-100/70 border-orange-200/60'}`} title="Level 0: 0 pts" />
+          <div className={`w-2.5 h-2.5 rounded-[2px] border ${isDark ? 'bg-zinc-900/60 border-zinc-900' : 'bg-zinc-200 border-zinc-300'}`} title="Level 0: 0 pts" />
           <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-orange-500/25' : 'bg-orange-300'}`} title="Level 1: 1-2 pts" />
           <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-orange-500/50' : 'bg-orange-400'}`} title="Level 2: 3-5 pts" />
           <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-orange-500/80' : 'bg-orange-500'}`} title="Level 3: 6-8 pts" />

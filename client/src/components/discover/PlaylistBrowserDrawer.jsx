@@ -149,44 +149,44 @@ export default function PlaylistBrowserDrawer({
 
       {/* Drawer Panel */}
       <div className={`relative w-full max-w-xl h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300 border-l ${
-        isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-orange-200 text-orange-950'
+        isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'
       }`}>
         {/* Drawer Header - YouTube Playlist Panel Style */}
         <div className={`p-4 sm:p-5 border-b flex items-start justify-between gap-3 ${
-          isDark ? 'border-zinc-800/80 bg-zinc-900/60' : 'border-orange-200 bg-white'
+          isDark ? 'border-zinc-800/80 bg-zinc-900/60' : 'border-zinc-200 bg-white'
         }`}>
           <div className="flex items-start gap-3 min-w-0">
             <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 mt-0.5 ${
-              isDark ? 'bg-zinc-800 border-zinc-700/60 text-orange-500' : 'bg-orange-50 border-orange-200 text-orange-600'
+              isDark ? 'bg-zinc-800 border-zinc-700/60 text-orange-500' : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
             }`}>
               <ListVideo className="w-5 h-5" />
             </div>
             <div className="min-w-0 space-y-1">
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                  isDark ? 'bg-orange-500/15 text-orange-400' : 'bg-orange-100 text-orange-800'
+                  isDark ? 'bg-orange-500/15 text-orange-400' : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
                 }`}>
                   Playlist
                 </span>
                 {videos.length > 0 && (
-                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-orange-900/80'}`}>
+                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                     {totalResults > videos.length ? `${videos.length} of ${totalResults}` : videos.length} videos
                   </span>
                 )}
               </div>
               {isLoading && !playlist?.title && !playlistSummary?.title ? (
                 <div className="space-y-1.5 py-0.5 min-w-[200px]">
-                  <div className={`h-5 w-48 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-orange-200/70'}`} />
-                  <div className={`h-3.5 w-28 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-orange-200/50'}`} />
+                  <div className={`h-5 w-48 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
+                  <div className={`h-3.5 w-28 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`} />
                 </div>
               ) : (
                 <>
                   <h2 className={`text-base sm:text-lg font-bold line-clamp-2 leading-snug ${
-                    isDark ? 'text-zinc-100' : 'text-orange-950'
+                    isDark ? 'text-zinc-100' : 'text-zinc-900'
                   }`}>
                     {displayTitle}
                   </h2>
-                  <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-400' : 'text-orange-800'}`}>
+                  <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                     {displayChannel}
                   </p>
                 </>
@@ -198,7 +198,7 @@ export default function PlaylistBrowserDrawer({
             type="button"
             onClick={onClose}
             className={`p-2 rounded-lg transition shrink-0 cursor-pointer ${
-              isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-orange-100 text-orange-800 hover:text-orange-950'
+              isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
             }`}
             aria-label="Close drawer"
           >
@@ -208,7 +208,7 @@ export default function PlaylistBrowserDrawer({
 
         {/* Action Toolbar */}
         <div className={`px-4 sm:px-5 py-2.5 border-b flex items-center justify-between gap-2 text-xs ${
-          isDark ? 'border-zinc-800/60 bg-zinc-950 text-zinc-400' : 'border-orange-200 bg-orange-50/70 text-orange-900'
+          isDark ? 'border-zinc-800/60 bg-zinc-950 text-zinc-400' : 'border-zinc-200 bg-zinc-50 text-zinc-600'
         }`}>
           <div className="font-medium text-[11px] truncate">
             Click any lecture to open and generate notes
@@ -256,14 +256,14 @@ export default function PlaylistBrowserDrawer({
                 <div
                   key={idx}
                   className={`p-2.5 rounded-xl animate-pulse flex items-center gap-3 ${
-                    isDark ? 'bg-zinc-900/40' : 'bg-orange-100/40 border border-orange-200/60'
+                    isDark ? 'bg-zinc-900/40' : 'bg-white border border-zinc-200 shadow-xs'
                   }`}
                 >
-                  <div className={`w-6 h-4 rounded shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-orange-200/70'}`} />
-                  <div className={`w-28 sm:w-32 aspect-video rounded-lg shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-orange-200/70'}`} />
+                  <div className={`w-6 h-4 rounded shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
+                  <div className={`w-28 sm:w-32 aspect-video rounded-lg shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
                   <div className="flex-1 space-y-2">
-                    <div className={`h-3.5 rounded w-3/4 ${isDark ? 'bg-zinc-800' : 'bg-orange-200/70'}`} />
-                    <div className={`h-2.5 rounded w-1/3 ${isDark ? 'bg-zinc-800' : 'bg-orange-200/50'}`} />
+                    <div className={`h-3.5 rounded w-3/4 ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
+                    <div className={`h-2.5 rounded w-1/3 ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`} />
                   </div>
                 </div>
               ))}
@@ -292,7 +292,7 @@ export default function PlaylistBrowserDrawer({
               </button>
             </div>
           ) : videos.length === 0 ? (
-            <div className={`text-center py-12 space-y-1 ${isDark ? 'text-zinc-500' : 'text-orange-900/60'}`}>
+            <div className={`text-center py-12 space-y-1 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               <Folder className="w-8 h-8 mx-auto opacity-40 mb-2" />
               <p className="text-xs font-semibold">No available public videos found</p>
               <p className="text-[11px]">This playlist may be empty, unlisted, or private.</p>
@@ -305,19 +305,19 @@ export default function PlaylistBrowserDrawer({
                 className={`group p-2 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-3 cursor-pointer ${
                   isDark
                     ? 'hover:bg-zinc-900/80 text-zinc-100'
-                    : 'hover:bg-orange-50 text-orange-950'
+                    : 'hover:bg-zinc-50 text-zinc-900'
                 }`}
               >
                 {/* Index Number */}
                 <div className={`w-5 text-center text-xs font-semibold shrink-0 ${
-                  isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-orange-900/60 group-hover:text-orange-950 font-bold'
+                  isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-400 group-hover:text-zinc-900 font-medium'
                 }`}>
                   {index + 1}
                 </div>
 
                 {/* Clean YouTube Thumbnail without gaudy center play button */}
                 <div className={`relative w-28 sm:w-32 aspect-video rounded-lg overflow-hidden shrink-0 border ${
-                  isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-orange-200/80 bg-orange-50 shadow-2xs'
+                  isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100 shadow-2xs'
                 }`}>
                   <img
                     src={vid.thumbnail}
@@ -334,12 +334,12 @@ export default function PlaylistBrowserDrawer({
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <h4 className={`text-xs sm:text-sm font-semibold line-clamp-2 leading-snug transition ${
-                    isDark ? 'text-zinc-100 group-hover:text-white' : 'text-orange-950 group-hover:text-orange-600'
+                    isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
                   }`}>
                     {vid.title}
                   </h4>
                   <p className={`text-[11px] truncate mt-0.5 font-normal ${
-                    isDark ? 'text-zinc-400' : 'text-orange-800'
+                    isDark ? 'text-zinc-400' : 'text-zinc-500'
                   }`}>
                     {vid.channel}
                   </p>
@@ -358,7 +358,7 @@ export default function PlaylistBrowserDrawer({
                 className={`w-full py-2.5 px-4 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${
                   isDark
                     ? 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-200 hover:text-white'
-                    : 'bg-white hover:bg-orange-50 border-orange-200 text-orange-950 hover:text-orange-900 shadow-2xs'
+                    : 'bg-white hover:bg-zinc-50 border-zinc-200 text-zinc-900 hover:text-zinc-950 shadow-2xs'
                 }`}
               >
                 {isLoadingMore ? (

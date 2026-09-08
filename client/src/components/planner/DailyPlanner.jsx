@@ -36,11 +36,11 @@ export default function DailyPlanner({
       
       {/* Date Navigation Header */}
       <div className={`shrink-0 flex items-center justify-between gap-4 border-b pb-3 ${
-        isDark ? 'border-zinc-900' : 'border-orange-200/80'
+        isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
         <div className="flex items-center gap-1.5 sm:gap-2">
           <CalendarDays className="w-4.5 h-4.5 text-orange-500 shrink-0" />
-          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-orange-950'}`}>
+          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
             {formattedDateHeading}
           </h3>
         </div>
@@ -79,12 +79,12 @@ export default function DailyPlanner({
         {tasks.length === 0 ? (
           /* Empty State */
           <div className={`text-center py-16 border rounded-2xl flex flex-col items-center justify-center gap-3 ${
-            isDark ? 'border-zinc-900 bg-zinc-950/20 text-zinc-400' : 'border-orange-200 bg-orange-50/30 text-orange-950'
+            isDark ? 'border-zinc-900 bg-zinc-950/20 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-600 shadow-xs'
           }`}>
-            <ClipboardList className={`w-10 h-10 ${isDark ? 'text-zinc-700' : 'text-orange-300'}`} />
+            <ClipboardList className={`w-10 h-10 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
             <div className="space-y-1">
-              <p className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Nothing planned for this day</p>
-              <p className={`text-[10px] max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-700'}`}>
+              <p className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Nothing planned for this day</p>
+              <p className={`text-[10px] max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                 Add study goals, lecture revisions, or homework targets to keep track of your schedule.
               </p>
             </div>
@@ -96,7 +96,7 @@ export default function DailyPlanner({
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2 px-1">
                   <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${
-                    isDark ? 'text-zinc-500' : 'text-orange-800'
+                    isDark ? 'text-zinc-500' : 'text-zinc-500'
                   }`}>
                     TO DO ({todoTasks.length})
                   </span>
@@ -119,9 +119,9 @@ export default function DailyPlanner({
             {completedTasks.length > 0 && (
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2 px-1">
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-600' : 'text-orange-600'}`} />
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-600' : 'text-emerald-500'}`} />
                   <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${
-                    isDark ? 'text-zinc-500' : 'text-orange-800'
+                    isDark ? 'text-zinc-500' : 'text-zinc-500'
                   }`}>
                     COMPLETED ({completedTasks.length})
                   </span>
@@ -144,7 +144,7 @@ export default function DailyPlanner({
       </div>
 
       {/* Task input form footer - Fixed at bottom */}
-      <div className={`shrink-0 pt-4 border-t ${isDark ? 'border-zinc-900/60' : 'border-orange-200/80'}`}>
+      <div className={`shrink-0 pt-4 border-t ${isDark ? 'border-zinc-900/60' : 'border-zinc-200'}`}>
         <AddTaskForm onAddTask={onAddTask} />
       </div>
     </div>

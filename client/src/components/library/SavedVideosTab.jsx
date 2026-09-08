@@ -1,6 +1,7 @@
 import LibraryVideoCard from './LibraryVideoCard';
 import VideoGridSkeleton from '../skeletons/VideoGridSkeleton';
 import { BookOpen } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function SavedVideosTab({ 
   savedVideos = [], 
@@ -13,11 +14,13 @@ export default function SavedVideosTab({
   onCreatePlaylist,
   onToggleSave
 }) {
+  const { isDark } = useTheme();
+
   if (isLoading) {
     return (
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden space-y-3 sm:space-y-4 animate-in fade-in duration-300">
-        <div className="border-b border-zinc-900/50 pb-2 shrink-0">
-          <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-550">
+        <div className={`border-b ${isDark ? 'border-zinc-900/50' : 'border-zinc-200/80'} pb-2 shrink-0`}>
+          <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
             SAVED VIDEOS
           </span>
         </div>
@@ -30,13 +33,13 @@ export default function SavedVideosTab({
 
   if (savedVideos.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-zinc-950/20 border border-zinc-900 rounded-2xl py-16 gap-4 animate-in fade-in duration-300">
-        <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-500">
+      <div className={`flex-1 flex flex-col items-center justify-center text-center p-8 ${isDark ? 'bg-zinc-950/20 border border-zinc-900' : 'bg-white border border-zinc-200/80 shadow-xs'} rounded-2xl py-16 gap-4 animate-in fade-in duration-300`}>
+        <div className={`w-12 h-12 rounded-full ${isDark ? 'bg-zinc-900 text-zinc-500' : 'bg-zinc-100 text-zinc-600'} flex items-center justify-center`}>
           <BookOpen className="w-5 h-5" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-xs sm:text-sm font-bold text-zinc-300">Your library is empty</h3>
-          <p className="text-[10px] sm:text-xs text-zinc-550 max-w-xs mx-auto leading-relaxed">
+          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Your library is empty</h3>
+          <p className={`text-[10px] sm:text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-500'} max-w-xs mx-auto leading-relaxed`}>
             Save educational videos from the Discover page to build your study collection.
           </p>
         </div>
@@ -54,8 +57,8 @@ export default function SavedVideosTab({
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden space-y-3 sm:space-y-4 animate-in fade-in duration-300">
       {/* Saved Videos Header (Pinned) */}
-      <div className="flex items-center justify-between border-b border-zinc-900/50 pb-2 shrink-0">
-        <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-550">
+      <div className={`flex items-center justify-between border-b ${isDark ? 'border-zinc-900/50' : 'border-zinc-200/80'} pb-2 shrink-0`}>
+        <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
           SAVED VIDEOS
         </span>
       </div>

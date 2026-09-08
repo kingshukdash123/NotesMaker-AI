@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Search, FileText, CheckSquare, Mail, Calculator, Code, Trash2, X } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const COMMANDS = [
   { name: '/explain', description: 'Break down a complex study concept', icon: Search, placeholder: '/explain ' },
@@ -12,6 +13,7 @@ const COMMANDS = [
 ];
 
 export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClose }) {
+  const { isDark } = useTheme();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef(null);
 
@@ -63,9 +65,13 @@ export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClo
 
   return (
     <div 
-      className="absolute bottom-[calc(100%+8px)] left-0 w-full max-w-sm max-w-[calc(100vw-2.5rem)] bg-zinc-950 border border-zinc-800/80 shadow-2xl rounded-xl p-1.5 z-[150] animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md"
+      className={`absolute bottom-[calc(100%+8px)] left-0 w-full max-w-sm max-w-[calc(100vw-2.5rem)] ${
+        isDark ? 'bg-zinc-950 border-zinc-800/80 shadow-2xl' : 'bg-white border-zinc-200 shadow-xl'
+      } border rounded-xl p-1.5 z-[150] animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md`}
     >
-      <div className="px-2.5 py-1.5 flex items-center justify-between border-b border-zinc-900/60 mb-1">
+      <div className={`px-2.5 py-1.5 flex items-center justify-between border-b ${
+        isDark ? 'border-zinc-900/60' : 'border-zinc-100'
+      } mb-1`}>
         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Slash Commands</span>
         <button
           type="button"
@@ -90,11 +96,17 @@ export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClo
               onClick={() => onSelect(cmd)}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors duration-150 cursor-pointer ${
                 isSelected 
-                  ? 'bg-orange-950/20 border border-orange-900/30 text-orange-400 font-bold' 
-                  : 'text-zinc-350 hover:bg-zinc-900/50 hover:text-zinc-200 border border-transparent'
+                  ? isDark 
+                    ? 'bg-orange-950/20 border border-orange-900/30 text-orange-400 font-bold' 
+                    : 'bg-orange-500/10 border border-orange-500/20 text-orange-600 font-bold'
+                  : isDark 
+                    ? 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 border border-transparent' 
+                    : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 border border-transparent'
               }`}
             >
-              <div className="p-1 rounded bg-zinc-900/80 border border-zinc-800 text-zinc-400 shrink-0">
+              <div className={`p-1 rounded ${
+                isDark ? 'bg-zinc-900/80 border-zinc-800 text-zinc-400' : 'bg-zinc-100 border-zinc-200 text-zinc-600'
+              } border shrink-0`}>
                 <Icon className="w-3.5 h-3.5" />
               </div>
               <div className="flex-1 min-w-0">

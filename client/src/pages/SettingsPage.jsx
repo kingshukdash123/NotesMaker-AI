@@ -151,12 +151,12 @@ export default function SettingsPage() {
   };
 
   // ─── Theme Colors matching Legal Docs / PolicyPage ────────────────────────
-  const bg = isDark ? 'bg-zinc-950' : 'bg-orange-50/30';
-  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-orange-200/80';
-  const textPrimary = isDark ? 'text-zinc-50' : 'text-orange-950';
-  const textSecondary = isDark ? 'text-zinc-400' : 'text-orange-900/70';
-  const textMuted = isDark ? 'text-zinc-500' : 'text-orange-900/50';
-  const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-white border-orange-200 placeholder-orange-400/60';
+  const bg = isDark ? 'bg-zinc-950' : 'bg-white';
+  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-zinc-200 shadow-xs';
+  const textPrimary = isDark ? 'text-zinc-50' : 'text-zinc-900';
+  const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
+  const textMuted = isDark ? 'text-zinc-500' : 'text-zinc-500';
+  const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400';
 
   return (
     <div className={`flex-1 min-h-full overflow-y-auto custom-scrollbar ${bg}`}>
@@ -193,9 +193,9 @@ export default function SettingsPage() {
               {/* Feedback Alerts */}
               {prefSuccess && (
                 <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
-                  isDark ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' : 'bg-orange-50 border-orange-300 text-orange-950'
+                  isDark ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' : 'bg-white border border-zinc-200 shadow-xs text-zinc-900'
                 }`}>
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-400" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-500" />
                   <span className="font-semibold">{prefSuccess}</span>
                 </div>
               )}
@@ -228,7 +228,7 @@ export default function SettingsPage() {
                         className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
                       >
                         {EDUCATION_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-orange-950'}>
+                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
                             {opt}
                           </option>
                         ))}
@@ -247,7 +247,7 @@ export default function SettingsPage() {
                         className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
                       >
                         {STREAM_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-orange-950'}>
+                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
                             {opt}
                           </option>
                         ))}
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                         className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
                       >
                         {STYLE_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-orange-950'}>
+                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
                             {opt}
                           </option>
                         ))}
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                         className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
                       >
                         {TONE_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-orange-950'}>
+                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
                             {opt}
                           </option>
                         ))}
@@ -312,7 +312,7 @@ export default function SettingsPage() {
                     <button
                       type="submit"
                       disabled={isSavingPrefs}
-                      className="btn-primary py-2.5 px-6 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md shadow-orange-500/15"
+                      className="btn-primary py-2.5 px-6 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md"
                     >
                       {isSavingPrefs ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                       <span>Save Mentor Preferences</span>
@@ -328,31 +328,31 @@ export default function SettingsPage() {
                 subtitle="A quick summary of how Guruji recognizes your current academic profile in real time:"
               >
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-orange-50/50 border-orange-200/60'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-xs'}`}>
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>Level</p>
                     <p className={`text-xs font-semibold truncate mt-0.5 ${textPrimary}`} title={educationLevel}>
                       {educationLevel}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-orange-50/50 border-orange-200/60'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-xs'}`}>
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>Field</p>
                     <p className={`text-xs font-semibold truncate mt-0.5 ${textPrimary}`} title={fieldOfStudy}>
                       {fieldOfStudy}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-xl border col-span-2 sm:col-span-1 ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-orange-50/50 border-orange-200/60'}`}>
+                  <div className={`p-3 rounded-xl border col-span-2 sm:col-span-1 ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-xs'}`}>
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>Goal</p>
                     <p className={`text-xs font-semibold truncate mt-0.5 ${textPrimary}`} title={targetGoal || 'General Learning & Exams'}>
                       {targetGoal || 'General Learning & Exams'}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-orange-50/50 border-orange-200/60'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-xs'}`}>
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>Style</p>
                     <p className={`text-xs font-semibold truncate mt-0.5 ${textPrimary}`} title={explanationStyle}>
                       {explanationStyle}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-orange-50/50 border-orange-200/60'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-xs'}`}>
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>Tone</p>
                     <p className={`text-xs font-semibold truncate mt-0.5 ${textPrimary}`} title={mentorTone}>
                       {mentorTone}
@@ -371,9 +371,9 @@ export default function SettingsPage() {
               {/* Feedback Alerts */}
               {keysSuccess && (
                 <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
-                  isDark ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' : 'bg-orange-50 border-orange-300 text-orange-950'
+                  isDark ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' : 'bg-white border border-zinc-200 shadow-xs text-zinc-900'
                 }`}>
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-400" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-500" />
                   <span className="font-semibold">{keysSuccess}</span>
                 </div>
               )}
@@ -404,7 +404,7 @@ export default function SettingsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`text-xs flex items-center gap-1 font-semibold underline underline-offset-2 transition ${
-                          isDark ? 'text-zinc-400 hover:text-white' : 'text-orange-600 hover:text-orange-900'
+                          isDark ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-900'
                         }`}
                       >
                         Get Key <ExternalLink className="w-3 h-3" />
@@ -412,7 +412,7 @@ export default function SettingsPage() {
                     }
                   >
                     <div className="relative">
-                      <Key className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-orange-400'}`} />
+                      <Key className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                       <input
                         type={showGoogle ? 'text' : 'password'}
                         value={googleApiKey}
@@ -424,7 +424,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={() => setShowGoogle(!showGoogle)}
                         className={`btn-icon absolute right-2.5 top-1/2 -translate-y-1/2 !p-1.5 cursor-pointer ${
-                          isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-500 hover:text-orange-800'
+                          isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700'
                         }`}
                         title={showGoogle ? 'Hide Key' : 'Show Key'}
                       >
@@ -444,7 +444,7 @@ export default function SettingsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`text-xs flex items-center gap-1 font-semibold underline underline-offset-2 transition ${
-                          isDark ? 'text-zinc-400 hover:text-white' : 'text-orange-600 hover:text-orange-900'
+                          isDark ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-900'
                         }`}
                       >
                         Get Key <ExternalLink className="w-3 h-3" />
@@ -452,7 +452,7 @@ export default function SettingsPage() {
                     }
                   >
                     <div className="relative">
-                      <Key className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-orange-400'}`} />
+                      <Key className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                       <input
                         type={showGroq ? 'text' : 'password'}
                         value={groqApiKey}
@@ -464,7 +464,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={() => setShowGroq(!showGroq)}
                         className={`btn-icon absolute right-2.5 top-1/2 -translate-y-1/2 !p-1.5 cursor-pointer ${
-                          isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-500 hover:text-orange-800'
+                          isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700'
                         }`}
                         title={showGroq ? 'Hide Key' : 'Show Key'}
                       >
@@ -477,7 +477,7 @@ export default function SettingsPage() {
                     <button
                       type="submit"
                       disabled={isSavingKeys}
-                      className="btn-primary py-2.5 px-6 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md shadow-orange-500/15"
+                      className="btn-primary py-2.5 px-6 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md"
                     >
                       {isSavingKeys ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                       <span>Save API Configurations</span>
@@ -506,11 +506,11 @@ export default function SettingsPage() {
                     className={`flex items-center gap-3.5 p-4 rounded-xl border text-left transition cursor-pointer ${
                       isDark
                         ? 'bg-zinc-900 border-orange-500 text-zinc-100 ring-1 ring-orange-500/50 shadow-sm'
-                        : 'bg-orange-50/40 border-orange-200/80 text-orange-900/70 hover:text-orange-950 hover:bg-orange-100/50'
+                        : 'bg-white border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
                     }`}
                   >
                     <div className={`p-2.5 rounded-xl border flex-shrink-0 ${
-                      isDark ? 'bg-zinc-800 border-zinc-700 text-orange-400' : 'bg-orange-100 border-orange-200 text-orange-700'
+                      isDark ? 'bg-zinc-800 border-zinc-700 text-orange-400' : 'bg-zinc-100 border-zinc-200 text-zinc-600'
                     }`}>
                       <Moon className="w-5 h-5" />
                     </div>
@@ -533,12 +533,12 @@ export default function SettingsPage() {
                     onClick={() => setTheme('light')}
                     className={`flex items-center gap-3.5 p-4 rounded-xl border text-left transition cursor-pointer ${
                       !isDark
-                        ? 'bg-orange-50 border-orange-500 text-orange-950 ring-1 ring-orange-500/50 shadow-sm'
+                        ? 'bg-white border-orange-500 text-zinc-900 ring-1 ring-orange-500/50 shadow-sm'
                         : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/70'
                     }`}
                   >
                     <div className={`p-2.5 rounded-xl border flex-shrink-0 ${
-                      !isDark ? 'bg-orange-100 border-orange-300 text-orange-600' : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                      !isDark ? 'bg-orange-500/10 border-orange-500/20 text-orange-600' : 'bg-zinc-800 border-zinc-700 text-zinc-400'
                     }`}>
                       <Sun className="w-5 h-5" />
                     </div>
@@ -551,7 +551,7 @@ export default function SettingsPage() {
                           </span>
                         )}
                       </div>
-                      <p className={`text-[11px] mt-0.5 ${textMuted}`}>Warm amber &amp; orange shade</p>
+                      <p className={`text-[11px] mt-0.5 ${textMuted}`}>Clean white &amp; neutral black aesthetic</p>
                     </div>
                   </button>
                 </div>

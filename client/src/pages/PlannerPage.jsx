@@ -96,27 +96,27 @@ export default function PlannerPage() {
         
         {/* Page Header */}
         <div className="space-y-1">
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-50 flex items-center gap-2">
+          <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2`}>
             <Calendar className="w-5 h-5 text-orange-500" />
             Study Planner
           </h2>
-          <p className="text-xs text-zinc-450">
+          <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
             Set study targets, organise lectures, and track your daily checklist.
           </p>
         </div>
 
         {/* Tab Selection */}
-        <div className="flex border-b border-zinc-900/60 pb-px select-none">
+        <div className={`flex border-b ${isDark ? 'border-zinc-900/60' : 'border-zinc-200'} pb-px select-none`}>
           <button
             type="button"
             onClick={() => setPlannerTab('daily')}
             className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold relative transition cursor-pointer ${
               plannerTab === 'daily' 
-                ? isDark ? 'text-zinc-50 font-bold' : 'text-orange-950 font-bold'
-                : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-950/60 hover:text-orange-900'
+                ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
+                : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-800'
             }`}
           >
-            <ClipboardList className={`w-4 h-4 ${plannerTab === 'daily' ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+            <ClipboardList className={`w-4 h-4 ${plannerTab === 'daily' ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
             <span>Daily Targets</span>
             {plannerTab === 'daily' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
@@ -128,11 +128,11 @@ export default function PlannerPage() {
             onClick={() => setPlannerTab('monthly')}
             className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold relative transition cursor-pointer ${
               plannerTab === 'monthly' 
-                ? isDark ? 'text-zinc-50 font-bold' : 'text-orange-950 font-bold'
-                : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-950/60 hover:text-orange-900'
+                ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
+                : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-800'
             }`}
           >
-            <CalendarDays className={`w-4 h-4 ${plannerTab === 'monthly' ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+            <CalendarDays className={`w-4 h-4 ${plannerTab === 'monthly' ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
             <span>Monthly Calendar</span>
             {plannerTab === 'monthly' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />

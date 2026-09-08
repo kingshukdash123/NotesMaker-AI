@@ -29,17 +29,19 @@ export default function CustomDialogModal() {
       <div className={`relative w-full max-w-sm border rounded-2xl p-5 sm:p-6 shadow-2xl animate-in scale-in duration-200 max-h-[90vh] overflow-x-hidden overflow-y-auto custom-scrollbar ${
         isDark 
           ? 'bg-zinc-950 border-zinc-900 text-zinc-100' 
-          : 'bg-white border-orange-200 text-orange-950 shadow-orange-500/10'
+          : 'bg-white border-zinc-200 text-zinc-900 shadow-2xl'
       }`}>
         
-        {/* Glow ambient background contained */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none"></div>
+        {/* Glow ambient background contained in dark mode only */}
+        {isDark && (
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none"></div>
+        )}
 
         {/* Top close button (resolves to false) */}
         <button
           type="button"
           onClick={() => handleDialogResponse(false)}
-          className="btn-icon absolute top-4 right-4"
+          className={`btn-icon absolute top-4 right-4 ${isDark ? 'text-zinc-400 hover:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900'}`}
           title="Close"
         >
           <X className="w-4 h-4" />
@@ -49,8 +51,8 @@ export default function CustomDialogModal() {
         <div className="flex items-start gap-3.5 mb-4">
           <div className={`p-2 rounded-xl shrink-0 ${
             isConfirm 
-              ? (isDark ? 'bg-orange-950/30 text-orange-400 border border-orange-900/30' : 'bg-orange-100 text-orange-600 border border-orange-200')
-              : (isDark ? 'bg-red-950/30 text-red-400 border border-red-900/30' : 'bg-red-100 text-red-600 border border-red-200')
+              ? (isDark ? 'bg-orange-950/30 text-orange-400 border border-orange-900/30' : 'bg-orange-500/10 text-orange-600 border border-orange-500/20')
+              : (isDark ? 'bg-red-950/30 text-red-400 border border-red-900/30' : 'bg-red-50 text-red-600 border border-red-200')
           }`}>
             {isConfirm ? (
               <HelpCircle className="w-5 h-5 stroke-[2]" />
@@ -59,7 +61,7 @@ export default function CustomDialogModal() {
             )}
           </div>
           <div className="space-y-1">
-            <h3 className={`text-sm font-bold pr-6 ${isDark ? 'text-zinc-100' : 'text-orange-950'}`}>
+            <h3 className={`text-sm font-bold pr-6 ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
               {title || (isConfirm ? 'Are you sure?' : 'Notification')}
             </h3>
           </div>
@@ -67,7 +69,7 @@ export default function CustomDialogModal() {
 
         {/* Message Content */}
         <div className={`text-xs leading-relaxed mb-6 whitespace-pre-line ${
-          isDark ? 'text-zinc-400' : 'text-orange-900/80'
+          isDark ? 'text-zinc-400' : 'text-zinc-600'
         }`}>
           {message}
         </div>

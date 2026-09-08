@@ -16,9 +16,9 @@ export default function StickyToc({
 }) {
   const { isDark } = useTheme();
 
-  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-orange-200/80';
-  const textSecondary = isDark ? 'text-zinc-400' : 'text-orange-900/70';
-  const textMuted = isDark ? 'text-zinc-500' : 'text-orange-900/50';
+  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-zinc-200 shadow-xs';
+  const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
+  const textMuted = isDark ? 'text-zinc-500' : 'text-zinc-400';
 
   const handleClick = (id) => {
     if (onSelectSection) {
@@ -42,7 +42,7 @@ export default function StickyToc({
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className={`h-3 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-orange-100'}`}
+                className={`h-3 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`}
                 style={{ width: `${60 + (i % 3) * 15}%` }}
               />
             ))}

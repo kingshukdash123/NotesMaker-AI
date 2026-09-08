@@ -261,11 +261,13 @@ export default function LibraryPage() {
         {/* Page Header (Pinned) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
           <div className="space-y-1">
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-50 flex items-center gap-2">
+            <h2 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
+              isDark ? 'text-zinc-50' : 'text-zinc-900'
+            }`}>
               <Library className="w-5 h-5 text-orange-500" />
               Your Library
             </h2>
-            <p className="text-xs text-zinc-450">
+            <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
               Manage saved playlists, study history logs, and generated notes archive.
             </p>
           </div>
@@ -279,7 +281,9 @@ export default function LibraryPage() {
         />
 
         {/* Library Sub-navigation tab bar (Pinned) */}
-        <div className="flex border-b border-zinc-900/60 pb-px overflow-x-auto select-none custom-scrollbar flex-nowrap shrink-0">
+        <div className={`flex border-b pb-px overflow-x-auto select-none custom-scrollbar flex-nowrap shrink-0 ${
+          isDark ? 'border-zinc-900/60' : 'border-zinc-200/80'
+        }`}>
           {subTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = libraryTab === tab.id;
@@ -292,11 +296,11 @@ export default function LibraryPage() {
                 aria-label={tab.label}
                 className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-3 text-xs font-semibold relative transition shrink-0 cursor-pointer ${
                   isActive 
-                    ? isDark ? 'text-zinc-50 font-bold' : 'text-orange-950 font-bold'
-                    : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-950/60 hover:text-orange-900'
+                    ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
+                    : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-900'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                 <span className="hidden sm:inline">{tab.label}</span>
                 {isActive && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />

@@ -45,10 +45,10 @@ export default function InfoPopover({
           isOpen
             ? isDark 
               ? 'text-orange-400 bg-orange-950/40' 
-              : 'text-orange-600 bg-orange-100'
+              : 'text-orange-600 bg-orange-50'
             : isDark
               ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 active:bg-zinc-800'
-              : 'text-orange-800/60 hover:text-orange-900 hover:bg-orange-100/70 active:bg-orange-200/50'
+              : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 active:bg-zinc-200'
         }`}
       >
         <HelpCircle className="w-3.5 h-3.5" />
@@ -63,16 +63,16 @@ export default function InfoPopover({
           <div 
             ref={popoverRef}
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full max-w-sm rounded-2xl p-5 shadow-2xl animate-in zoom-in-95 duration-150 select-text text-left ${
+            className={`relative w-full max-w-sm rounded-2xl p-5 shadow-2xl animate-in zoom-in-95 duration-150 select-text text-left border ${
               isDark 
-                ? 'bg-zinc-950 text-zinc-200 shadow-black/90' 
-                : 'bg-white text-orange-950 shadow-orange-950/20'
+                ? 'bg-zinc-950 border-zinc-800 text-zinc-200 shadow-black/90' 
+                : 'bg-white border-zinc-200 text-zinc-900 shadow-xl'
             }`}
           >
             {/* Header */}
             <div className="flex items-start justify-between gap-3 pb-2.5 mb-3">
               <h5 className={`text-sm font-bold tracking-tight flex items-center gap-1.5 ${
-                isDark ? 'text-zinc-100' : 'text-orange-950'
+                isDark ? 'text-zinc-100' : 'text-zinc-900'
               }`}>
                 <HelpCircle className="w-4 h-4 text-orange-500 shrink-0" />
                 <span>{title || buttonLabel}</span>
@@ -89,7 +89,7 @@ export default function InfoPopover({
             </div>
 
             {/* Body */}
-            <div className={`text-xs space-y-2 leading-relaxed ${isDark ? 'text-zinc-300' : 'text-orange-950/80'}`}>
+            <div className={`text-xs space-y-2 leading-relaxed ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
               {children}
             </div>
 

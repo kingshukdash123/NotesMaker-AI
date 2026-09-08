@@ -30,7 +30,7 @@ export default function AddTaskForm({ onAddTask, placeholder = "e.g. Complete Th
         className={`flex-1 rounded-xl px-4 py-2.5 text-xs sm:text-sm outline-none border transition ${
           isDark 
             ? 'bg-zinc-950 border-zinc-900 text-zinc-100 placeholder-zinc-500 focus:border-orange-500/60' 
-            : 'bg-white border-orange-200 text-orange-950 placeholder-orange-400 focus:border-orange-500 shadow-xs'
+            : 'bg-white border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white shadow-xs'
         }`}
         required
         maxLength={100}
@@ -44,7 +44,7 @@ export default function AddTaskForm({ onAddTask, placeholder = "e.g. Complete Th
           className={`rounded-xl px-3 py-2.5 text-xs font-semibold outline-none cursor-pointer border transition ${
             isDark 
               ? 'bg-zinc-950 border-zinc-900 text-zinc-200 focus:border-zinc-800' 
-              : 'bg-white border-orange-200 text-orange-950 focus:border-orange-300 shadow-xs'
+              : 'bg-white border-zinc-200 text-zinc-900 focus:border-zinc-400 shadow-xs'
           }`}
         >
           <option value="low">🟢 Low</option>

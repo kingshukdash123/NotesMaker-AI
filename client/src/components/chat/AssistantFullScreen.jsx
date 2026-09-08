@@ -65,7 +65,7 @@ export default function AssistantFullScreen({ currentUser }) {
 
   if (!currentUser) {
     return (
-      <div className={`h-full flex items-center justify-center ${isDark ? 'text-zinc-500' : 'text-orange-700'}`}>
+      <div className={`h-full flex items-center justify-center ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
         Please sign in to access the assistant.
       </div>
     );
@@ -75,13 +75,13 @@ export default function AssistantFullScreen({ currentUser }) {
 
   const renderThreadList = (isMobile = false) => (
     <div className={`flex flex-col h-full ${
-      isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-orange-950'
+      isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'
     }`}>
       <div className={`p-3.5 sm:p-4 border-b flex items-center justify-between shrink-0 h-[53px] ${
-        isDark ? 'border-zinc-900' : 'border-orange-100'
+        isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
         <span className={`text-[10px] font-bold uppercase tracking-widest font-mono select-none ${
-          isDark ? 'text-zinc-550' : 'text-orange-700'
+          isDark ? 'text-zinc-550' : 'text-zinc-500'
         }`}>AI Chat Pages</span>
         <div className="flex items-center gap-1">
           <button
@@ -115,12 +115,12 @@ export default function AssistantFullScreen({ currentUser }) {
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
         {isLoadingHistory && threads.length === 0 ? (
           <div className="space-y-3 py-2 animate-pulse">
-            <div className={`h-8 rounded-lg ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
-            <div className={`h-8 rounded-lg ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
-            <div className={`h-8 rounded-lg ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
+            <div className={`h-8 rounded-lg ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+            <div className={`h-8 rounded-lg ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+            <div className={`h-8 rounded-lg ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
           </div>
         ) : threads.length === 0 ? (
-          <div className={`text-center py-8 text-[10px] select-none ${isDark ? 'text-zinc-550' : 'text-orange-700'}`}>
+          <div className={`text-center py-8 text-[10px] select-none ${isDark ? 'text-zinc-550' : 'text-zinc-400'}`}>
             No chat pages created.
           </div>
         ) : (
@@ -139,14 +139,14 @@ export default function AssistantFullScreen({ currentUser }) {
                   isActive
                     ? isDark
                       ? 'bg-orange-950/15 border-orange-900/35 text-orange-400 font-bold font-sans'
-                      : 'bg-orange-100 border-orange-300 text-orange-700 font-bold font-sans shadow-xs'
+                      : 'bg-orange-500/10 border-orange-500/20 text-orange-600 font-bold font-sans shadow-xs'
                     : isDark
                       ? 'bg-zinc-900/10 border-zinc-900 hover:border-zinc-800 text-zinc-400 font-sans'
-                      : 'bg-white border-orange-200/70 hover:border-orange-300 text-orange-950 font-sans'
+                      : 'bg-white border-zinc-200/70 hover:border-zinc-300 text-zinc-900 font-sans'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
-                  <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+                  <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                   {editingThreadId === t.threadId ? (
                     <input
                       type="text"
@@ -161,7 +161,7 @@ export default function AssistantFullScreen({ currentUser }) {
                       }}
                       onBlur={() => handleSaveRename(t.threadId)}
                       className={`border rounded px-1.5 py-0.5 text-xs outline-none w-full font-normal ${
-                        isDark ? 'bg-zinc-950 border-zinc-850 text-zinc-100' : 'bg-white border-orange-300 text-orange-950'
+                        isDark ? 'bg-zinc-950 border-zinc-850 text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'
                       }`}
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
@@ -179,7 +179,7 @@ export default function AssistantFullScreen({ currentUser }) {
                         setEditingThreadId(t.threadId);
                         setEditTitleValue(t.title);
                       }}
-                      className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-zinc-300' : 'text-orange-600 hover:text-orange-950'}`}
+                      className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700'}`}
                       title="Rename page"
                     >
                       <Pencil className="w-3 h-3" />
@@ -189,7 +189,7 @@ export default function AssistantFullScreen({ currentUser }) {
                         e.stopPropagation();
                         setThreadToDelete(t.threadId);
                       }}
-                      className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-red-500' : 'text-orange-600 hover:text-red-600'}`}
+                      className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-red-500' : 'text-zinc-400 hover:text-red-600'}`}
                       title="Delete page"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -206,11 +206,11 @@ export default function AssistantFullScreen({ currentUser }) {
 
   return (
     <div className={`h-full w-full flex rounded-xl overflow-hidden relative z-10 border ${
-      isDark ? 'bg-black border-zinc-900' : 'bg-white border-orange-200 shadow-sm'
+      isDark ? 'bg-black border-zinc-900' : 'bg-white border-zinc-200 shadow-sm'
     }`}>
       {/* 1. Desktop Left Sidebar thread list */}
       <div className={`hidden md:flex md:w-60 lg:w-64 border-r flex-col h-full shrink-0 ${
-        isDark ? 'border-zinc-900 bg-zinc-950' : 'border-orange-100 bg-orange-50/30'
+        isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/50'
       }`}>
         {renderThreadList(false)}
       </div>
@@ -232,7 +232,7 @@ export default function AssistantFullScreen({ currentUser }) {
       <div className="flex-1 flex flex-col h-full min-w-0 bg-transparent relative">
         {/* Top Header */}
         <div className={`px-3 sm:px-6 py-3 border-b flex items-center justify-between shrink-0 h-[53px] gap-2 ${
-          isDark ? 'border-zinc-900 bg-zinc-950/80' : 'border-orange-100 bg-white'
+          isDark ? 'border-zinc-900 bg-zinc-950/80' : 'border-zinc-200 bg-white'
         }`}>
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
@@ -247,13 +247,13 @@ export default function AssistantFullScreen({ currentUser }) {
 
             {activeThread ? (
               <div className="flex items-center gap-2 min-w-0">
-                <FileText className={`w-4 h-4 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
-                <h2 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-150' : 'text-orange-950'}`}>
+                <FileText className={`w-4 h-4 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-orange-500'}`} />
+                <h2 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-150' : 'text-zinc-900'}`}>
                   {activeThread.title}
                 </h2>
               </div>
             ) : (
-              <span className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Guruji's Study Desk</span>
+              <span className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Guruji's Study Desk</span>
             )}
           </div>
 
@@ -262,9 +262,9 @@ export default function AssistantFullScreen({ currentUser }) {
               <div className="relative">
                 {showConfirmClear ? (
                   <div className={`flex items-center gap-1 border rounded-lg px-2 py-1 z-50 animate-in fade-in duration-100 ${
-                    isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-orange-200 shadow-sm'
+                    isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'
                   }`}>
-                    <span className={`text-[10px] mr-1 ${isDark ? 'text-zinc-400' : 'text-orange-900'}`}>Clear all?</span>
+                    <span className={`text-[10px] mr-1 ${isDark ? 'text-zinc-400' : 'text-zinc-700'}`}>Clear all?</span>
                     <button
                       onClick={() => {
                         clearThread();
@@ -276,7 +276,7 @@ export default function AssistantFullScreen({ currentUser }) {
                     </button>
                     <button
                       onClick={() => setShowConfirmClear(false)}
-                      className={`text-[10px] px-1.5 py-0.5 rounded cursor-pointer ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-orange-700 hover:text-orange-900'}`}
+                      className={`text-[10px] px-1.5 py-0.5 rounded cursor-pointer ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-800'}`}
                     >
                       No
                     </button>
@@ -299,25 +299,25 @@ export default function AssistantFullScreen({ currentUser }) {
 
         {/* Messages viewport */}
         <div className={`flex-1 overflow-y-auto px-3 sm:px-6 md:px-8 py-4 sm:py-6 space-y-4 custom-scrollbar min-h-0 ${
-          isDark ? 'bg-black/10' : 'bg-[#fffcf8]'
+          isDark ? 'bg-black/10' : 'bg-white'
         }`}>
           {isLoadingHistory ? (
             <div className="space-y-6 py-6 animate-pulse max-w-3xl mx-auto">
-              <div className={`h-4 w-1/4 rounded ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
-              <div className={`h-10 w-full rounded-xl ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
-              <div className={`h-4 w-1/3 rounded ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
-              <div className={`h-20 w-5/6 rounded-xl ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
+              <div className={`h-4 w-1/4 rounded ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+              <div className={`h-10 w-full rounded-xl ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+              <div className={`h-4 w-1/3 rounded ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+              <div className={`h-20 w-5/6 rounded-xl ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
             </div>
           ) : !activeThread ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-4 max-w-sm mx-auto">
               <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${
-                isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-orange-100 border-orange-300 shadow-xs'
+                isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-orange-500/10 border-orange-500/20 text-orange-600 shadow-xs'
               }`}>
                 <Bot className="w-6 h-6 text-orange-500" />
               </div>
               <div className="space-y-1">
-                <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>Guruji's Study Desk</h3>
-                <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
+                <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Guruji's Study Desk</h3>
+                <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                   Start a study session to learn with Guruji's personal guidance and motivation.
                 </p>
               </div>
@@ -326,7 +326,7 @@ export default function AssistantFullScreen({ currentUser }) {
                   const id = await createNewThread('Study Session');
                   if (id) selectThread(id);
                 }}
-                className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition cursor-pointer shadow-lg shadow-orange-500/20"
+                className={`px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition cursor-pointer ${isDark ? 'shadow-lg shadow-orange-500/20' : 'shadow-sm'}`}
               >
                 Start Session with Guruji
               </button>
@@ -335,9 +335,9 @@ export default function AssistantFullScreen({ currentUser }) {
             <div className="h-full flex flex-col justify-center items-center py-8">
               <div className="max-w-md w-full space-y-6 text-center">
                 <div className="space-y-2">
-                  <FileText className={`w-10 h-10 mx-auto ${isDark ? 'text-zinc-650' : 'text-orange-400'}`} />
-                  <h2 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>{activeThread.title}</h2>
-                  <p className={`text-xs max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-550' : 'text-orange-800'}`}>
+                  <FileText className={`w-10 h-10 mx-auto ${isDark ? 'text-zinc-650' : 'text-zinc-400'}`} />
+                  <h2 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeThread.title}</h2>
+                  <p className={`text-xs max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-550' : 'text-zinc-500'}`}>
                     Ask Guruji any study doubts, plan routines, or use slash commands for detailed notes.
                   </p>
                 </div>
@@ -349,7 +349,7 @@ export default function AssistantFullScreen({ currentUser }) {
                       className={`text-left p-3 rounded-xl border text-[10px] transition cursor-pointer leading-normal ${
                         isDark 
                           ? 'border-zinc-900 bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-350' 
-                          : 'border-orange-200/80 bg-orange-50/70 hover:bg-orange-100 text-orange-950'
+                          : 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-800'
                       }`}
                     >
                       {sug.text}
@@ -359,7 +359,7 @@ export default function AssistantFullScreen({ currentUser }) {
               </div>
             </div>
           ) : (
-            <div className={`max-w-3xl mx-auto divide-y ${isDark ? 'divide-zinc-900/30' : 'divide-orange-100'}`}>
+            <div className={`max-w-3xl mx-auto divide-y ${isDark ? 'divide-zinc-900/30' : 'divide-zinc-100'}`}>
               {messages.map((msg, idx) => {
                 const isLast = idx === messages.length - 1;
                 return (
@@ -379,10 +379,10 @@ export default function AssistantFullScreen({ currentUser }) {
         {/* Input box */}
         {activeThread && (
           <div className={`p-2.5 sm:p-4 border-t shrink-0 ${
-            isDark ? 'border-zinc-900 bg-zinc-950' : 'border-orange-100 bg-white'
+            isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-white'
           }`}>
             <div className={`max-w-3xl mx-auto rounded-2xl px-3 py-1.5 sm:py-2 flex items-end border ${
-              isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-orange-50/50 border-orange-200 shadow-xs'
+              isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-zinc-50 border-zinc-200 shadow-xs'
             }`}>
               <ChatInput
                 value={inputValue}
@@ -400,11 +400,11 @@ export default function AssistantFullScreen({ currentUser }) {
       {threadToDelete && (
         <div className="absolute inset-0 bg-black/75 backdrop-blur-sm z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl p-5 sm:p-6 w-full max-w-[calc(100vw-2rem)] sm:max-w-sm shadow-2xl text-center space-y-4 animate-in zoom-in-95 duration-200 ${
-            isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-orange-200'
+            isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-zinc-200 shadow-2xl'
           }`}>
             <div className="space-y-1.5">
-              <h4 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-orange-950'}`}>Delete page chat history?</h4>
-              <p className={`text-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-orange-800'}`}>
+              <h4 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Delete page chat history?</h4>
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                 This will permanently delete this conversation page and its context from your workspace.
               </p>
             </div>
@@ -437,7 +437,7 @@ export default function AssistantFullScreen({ currentUser }) {
                 disabled={isDeleting}
                 onClick={() => setThreadToDelete(null)}
                 className={`px-4 py-2 rounded-xl border transition cursor-pointer flex-1 disabled:opacity-50 text-xs font-bold ${
-                  isDark ? 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300' : 'bg-orange-50 border-orange-200 text-orange-900 hover:bg-orange-100'
+                  isDark ? 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200'
                 }`}
               >
                 Cancel

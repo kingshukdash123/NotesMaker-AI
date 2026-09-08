@@ -83,11 +83,11 @@ export default function VideoPlayer({
 
   if (!videoId) {
     return (
-      <div className={`flex-1 flex flex-col items-center justify-center p-6 text-center rounded-xl glass-panel min-h-[300px] border ${
-        isDark ? 'bg-zinc-950/40 border-zinc-900' : 'bg-white border-orange-200/80'
+      <div className={`flex-1 flex flex-col items-center justify-center p-6 text-center rounded-xl min-h-[300px] border ${
+        isDark ? 'bg-zinc-950/40 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'
       }`}>
-        <PlayCircle className={`w-12 h-12 mb-3 animate-pulse ${isDark ? 'text-zinc-600' : 'text-orange-300'}`} />
-        <p className={`text-sm font-medium ${isDark ? 'text-zinc-400' : 'text-orange-950'}`}>No video tutorial loaded</p>
+        <PlayCircle className={`w-12 h-12 mb-3 animate-pulse ${isDark ? 'text-zinc-600' : 'text-zinc-400'}`} />
+        <p className={`text-sm font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-900'}`}>No video tutorial loaded</p>
       </div>
     );
   }
@@ -102,17 +102,17 @@ export default function VideoPlayer({
         ? 'overflow-visible w-full lg:w-14 lg:h-full lg:items-center lg:py-2.5 z-40' 
         : 'overflow-hidden w-full'
     } ${
-      isDark ? 'bg-zinc-950/95 lg:bg-zinc-950/40 border-zinc-900 backdrop-blur-md' : 'bg-white/95 lg:bg-white border-orange-200/80 backdrop-blur-md'
+      isDark ? 'bg-zinc-950/95 lg:bg-zinc-950/40 border-zinc-900 backdrop-blur-md' : 'bg-white border-zinc-200 shadow-xs'
     }`}>
       {/* Player Header with Back Button and Title */}
       <div className={`shrink-0 flex items-center justify-between px-3 py-2 border-b w-full ${
         isVideoCollapsed 
           ? isDark 
             ? 'border-zinc-900 bg-zinc-900/50 lg:bg-transparent lg:border-b-0 lg:px-0 lg:py-0 lg:justify-center lg:mb-2'
-            : 'border-orange-100 bg-orange-50/50 lg:bg-transparent lg:border-b-0 lg:px-0 lg:py-0 lg:justify-center lg:mb-2'
+            : 'border-zinc-200 bg-white lg:bg-transparent lg:border-b-0 lg:px-0 lg:py-0 lg:justify-center lg:mb-2'
           : isDark 
             ? 'bg-zinc-900/50 border-zinc-900' 
-            : 'bg-orange-50/50 border-orange-100'
+            : 'bg-white border-zinc-200'
       }`}>
         <div className={`flex items-center ${isVideoCollapsed ? 'lg:justify-center' : 'gap-2.5'}`}>
           {onBack && (
@@ -126,7 +126,7 @@ export default function VideoPlayer({
               <ArrowLeft className="w-4 h-4" />
             </button>
           )}
-          <h3 className={`text-xs sm:text-sm font-bold ${isVideoCollapsed ? 'lg:hidden' : ''} ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>
+          <h3 className={`text-xs sm:text-sm font-bold ${isVideoCollapsed ? 'lg:hidden' : ''} ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
             Watch & Learn
           </h3>
         </div>
@@ -138,12 +138,16 @@ export default function VideoPlayer({
           ? 'h-0 max-h-0 opacity-0 pointer-events-none border-b-0 overflow-hidden invisible' 
           : 'aspect-video w-full opacity-100 border-b overflow-hidden visible'
       } ${
-        isDark ? 'border-zinc-900' : 'border-orange-100'
+        isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
         {!isLoaded && (
-          <div className="absolute inset-0 skeleton-shimmer bg-zinc-900/90 z-10 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full bg-zinc-950/80 border border-zinc-800 flex items-center justify-center shadow-lg">
-              <PlayCircle className="w-6 h-6 text-orange-500/70" />
+          <div className={`absolute inset-0 skeleton-shimmer z-10 flex items-center justify-center ${
+            isDark ? 'bg-zinc-900/90' : 'bg-zinc-100'
+          }`}>
+            <div className={`w-12 h-12 rounded-full border flex items-center justify-center shadow-lg ${
+              isDark ? 'bg-zinc-950/80 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'
+            }`}>
+              <PlayCircle className="w-6 h-6 text-orange-500" />
             </div>
           </div>
         )}

@@ -133,11 +133,11 @@ export default function VideoContentPage() {
 
         {/* Right Side: Workspace Active Tool Header & Content Pane */}
         <div className={`flex-1 min-w-0 flex flex-col h-full min-h-0 rounded-2xl relative border overflow-hidden mx-3 sm:mx-5 lg:mx-0 ${
-          isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-white border-orange-200/90 shadow-xs'
+          isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'
         }`}>
           {/* Active Tool Name Header on Right Side */}
           <div className={`px-4 sm:px-5 py-3 border-b flex items-center justify-between shrink-0 rounded-t-2xl ${
-            isDark ? 'border-zinc-900 bg-zinc-950/70' : 'border-orange-100 bg-orange-50/40'
+            isDark ? 'border-zinc-900 bg-zinc-950/70' : 'border-zinc-200 bg-white'
           }`}>
             <div className="flex items-center gap-2.5">
               <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${
@@ -149,13 +149,13 @@ export default function VideoContentPage() {
               </div>
               <div>
                 <h3 className={`text-xs sm:text-sm font-bold tracking-tight ${
-                  isDark ? 'text-zinc-100' : 'text-orange-950'
+                  isDark ? 'text-zinc-100' : 'text-zinc-900'
                 }`}>
                   {activeTab === 'notes' && 'Study Notes'}
                   {activeTab === 'summary' && 'Summary Dashboard'}
                   {activeTab === 'qa' && 'Video Q&A Companion'}
                 </h3>
-                <p className={`text-[10px] ${isDark ? 'text-zinc-500' : 'text-orange-700'}`}>
+                <p className={`text-[10px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                   {activeTab === 'notes' && 'Structured lecture notes with markdown, formulas & code'}
                   {activeTab === 'summary' && 'Key takeaways, learning objectives, and curriculum hierarchy'}
                   {activeTab === 'qa' && 'Interactive question answering on the lecture transcript'}

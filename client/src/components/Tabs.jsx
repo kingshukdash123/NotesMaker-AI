@@ -134,12 +134,12 @@ export default function Tabs({
       {!isVertical && (
         <div className="flex items-center justify-between px-0.5">
           <span className={`text-[10px] font-bold uppercase tracking-wider ${
-            isDark ? 'text-zinc-400' : 'text-orange-900'
+            isDark ? 'text-zinc-400' : 'text-zinc-500'
           }`}>
             Study Tools
           </span>
           <span className={`text-[10px] font-bold uppercase tracking-wider ${
-            isDark ? 'text-zinc-400' : 'text-orange-900'
+            isDark ? 'text-zinc-400' : 'text-zinc-500'
           }`}>
             Quick Actions
           </span>
@@ -168,10 +168,10 @@ export default function Tabs({
                   isActive
                     ? isDark 
                       ? 'bg-orange-500/15 text-orange-400 font-bold' 
-                      : 'bg-orange-100 text-orange-600 font-bold'
+                      : 'bg-orange-500/10 text-orange-600 font-bold border border-orange-500/20 shadow-xs'
                     : isDark
                       ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
-                      : 'text-orange-950/60 hover:text-orange-600 hover:bg-orange-100/60'
+                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -182,7 +182,7 @@ export default function Tabs({
 
         {/* Divider in vertical desktop mode */}
         {isVertical && (
-          <div className={`hidden lg:block w-5 h-px my-0.5 ${isDark ? 'bg-zinc-850' : 'bg-orange-200'}`} />
+          <div className={`hidden lg:block w-5 h-px my-0.5 ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
         )}
 
         {/* 2. Quick Actions */}
@@ -198,10 +198,10 @@ export default function Tabs({
                 isVideoCollapsed
                   ? isDark 
                     ? 'bg-orange-500/15 text-orange-400 font-bold' 
-                    : 'bg-orange-100 text-orange-600 font-bold'
+                    : 'bg-orange-500/10 text-orange-600 font-bold border border-orange-500/20 shadow-xs'
                   : isDark
                     ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
-                    : 'text-orange-950/60 hover:text-orange-600 hover:bg-orange-100/60'
+                    : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
               }`}
             >
               {isVideoCollapsed ? (
@@ -224,10 +224,10 @@ export default function Tabs({
                 isSaved
                   ? isDark 
                     ? 'bg-orange-500/15 text-orange-400' 
-                    : 'bg-orange-100 text-orange-600'
+                    : 'bg-orange-500/10 text-orange-600 border border-orange-500/20 shadow-xs'
                   : isDark
                     ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
-                    : 'text-orange-950/60 hover:text-orange-600 hover:bg-orange-100/60'
+                    : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
               }`}
             >
               {isCheckingSaved ? (
@@ -250,10 +250,10 @@ export default function Tabs({
                 isPlaylistOpen
                   ? isDark 
                     ? 'bg-orange-500/15 text-orange-400' 
-                    : 'bg-orange-100 text-orange-600'
+                    : 'bg-orange-500/10 text-orange-600 border border-orange-500/20 shadow-xs'
                   : isDark
                     ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
-                    : 'text-orange-950/60 hover:text-orange-600 hover:bg-orange-100/60'
+                    : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
               }`}
             >
               {loadingPlaylists || Boolean(addingPlaylistId) ? (
@@ -272,11 +272,11 @@ export default function Tabs({
               } w-52 max-w-[calc(100vw-3rem)] p-2.5 rounded-xl border shadow-2xl z-[100] ${
                 isDark 
                   ? 'bg-zinc-950 border-zinc-800 text-zinc-200 shadow-black/90' 
-                  : 'bg-white border-orange-200 text-orange-950 shadow-orange-500/15'
+                  : 'bg-white border-zinc-200 text-zinc-900 shadow-xl'
               }`}>
                 {/* Dropdown Header */}
                 <div className="flex items-center justify-between px-1 pb-1.5 border-b border-inherit mb-1">
-                  <span className={`text-[10px] font-bold ${isDark ? 'text-zinc-400' : 'text-orange-900'}`}>Add to Playlist</span>
+                  <span className={`text-[10px] font-bold ${isDark ? 'text-zinc-400' : 'text-zinc-700'}`}>Add to Playlist</span>
                 </div>
 
                 {/* Playlists List */}
@@ -286,7 +286,7 @@ export default function Tabs({
                       <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto text-orange-500" />
                     </div>
                   ) : playlists.length === 0 ? (
-                    <div className={`p-2 text-center text-[10px] ${isDark ? 'text-zinc-500' : 'text-orange-950/50'}`}>No playlists yet</div>
+                    <div className={`p-2 text-center text-[10px] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>No playlists yet</div>
                   ) : (
                     playlists.map((pl) => {
                       const isAdding = addingPlaylistId === pl.id;
@@ -300,10 +300,10 @@ export default function Tabs({
                           disabled={isAlreadyIn || isAdding}
                           className={`w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-lg text-left transition select-none ${
                             isAlreadyIn
-                              ? isDark ? 'text-zinc-500 cursor-default' : 'text-orange-950/50 cursor-default'
+                              ? isDark ? 'text-zinc-500 cursor-default' : 'text-zinc-400 cursor-default'
                               : isDark 
                                 ? 'text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer' 
-                                : 'text-orange-950 hover:bg-orange-50 hover:text-orange-600 cursor-pointer'
+                                : 'text-zinc-800 hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer'
                           }`}
                         >
                           <span className="truncate flex-1 font-medium">{pl.name}</span>
@@ -329,8 +329,8 @@ export default function Tabs({
                     placeholder="New playlist..."
                     className={`flex-1 rounded-lg px-2 py-1 text-[10px] outline-none border transition ${
                       isDark 
-                        ? 'bg-zinc-900 border-zinc-800 text-zinc-200 placeholder-zinc-500 focus:border-orange-500' 
-                        : 'bg-orange-50/50 border-orange-200 text-orange-950 placeholder-orange-400 focus:border-orange-500'
+                        ? 'bg-zinc-900 border-zinc-800 text-zinc-200 placeholder-zinc-500 focus:border-zinc-700' 
+                        : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white'
                     }`}
                   />
                   <button

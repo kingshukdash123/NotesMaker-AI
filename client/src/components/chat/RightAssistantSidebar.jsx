@@ -74,10 +74,10 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
 
   const containerClasses = mode === 'sidebar'
     ? `fixed top-[53px] bottom-0 right-0 w-[calc(100vw-1rem)] max-w-sm sm:w-96 lg:static lg:w-80 xl:w-96 lg:h-full z-[85] border-l flex flex-col shrink-0 transition-all duration-300 animate-in slide-in-from-right duration-200 ${
-        isDark ? 'border-zinc-900/90 bg-zinc-950' : 'border-orange-200/80 bg-white'
+        isDark ? 'border-zinc-900/90 bg-zinc-950' : 'border-zinc-200 bg-white shadow-xl'
       }`
     : `fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] max-w-sm sm:max-w-md h-[480px] max-h-[82vh] rounded-2xl shadow-2xl z-[110] flex flex-col overflow-hidden backdrop-blur-xl transition-all duration-200 origin-bottom-right animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-200 border ${
-        isDark ? 'bg-zinc-950/95 border-zinc-800/90' : 'bg-white/95 border-orange-200'
+        isDark ? 'bg-zinc-950/95 border-zinc-800/90' : 'bg-white border-zinc-200 shadow-2xl'
       }`;
 
   return (
@@ -95,19 +95,19 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
 
         {/* Header */}
         <div className={`px-4 py-3 border-b flex items-center justify-between shrink-0 h-[53px] ${
-          isDark ? 'border-zinc-900 bg-zinc-950' : 'border-orange-100 bg-white'
+          isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-white'
         }`}>
           {activeThread ? (
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-orange-600'}`} />
+              <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-orange-500'}`} />
               <button
                 onClick={() => setShowSelector(!showSelector)}
                 className={`flex items-center gap-1 min-w-0 text-left cursor-pointer transition ${
-                  isDark ? 'hover:text-zinc-200' : 'hover:text-orange-700'
+                  isDark ? 'hover:text-zinc-200' : 'hover:text-zinc-900'
                 }`}
               >
-                <span className={`text-xs font-bold truncate ${isDark ? 'text-zinc-150' : 'text-orange-950'}`}>{activeThread.title}</span>
-                <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${showSelector ? 'rotate-180' : ''} ${isDark ? 'text-zinc-550' : 'text-orange-600'}`} />
+                <span className={`text-xs font-bold truncate ${isDark ? 'text-zinc-150' : 'text-zinc-900'}`}>{activeThread.title}</span>
+                <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${showSelector ? 'rotate-180' : ''} ${isDark ? 'text-zinc-550' : 'text-zinc-400'}`} />
               </button>
               <button
                 type="button"
@@ -120,7 +120,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               </button>
             </div>
           ) : (
-            <span className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Guruji — Personal Mentor</span>
+            <span className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Guruji — Personal Mentor</span>
           )}
 
           <div className="flex items-center gap-1 shrink-0">
@@ -128,7 +128,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               <div className="relative">
                 {showConfirmClear ? (
                   <div className={`absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 border rounded px-1.5 py-1 z-50 animate-in fade-in duration-100 w-32 justify-between ${
-                    isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-orange-200 shadow-sm'
+                    isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'
                   }`}>
                     <button
                       type="button"
@@ -143,7 +143,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                     <button
                       type="button"
                       onClick={() => setShowConfirmClear(false)}
-                      className={`text-[8px] font-bold cursor-pointer ${isDark ? 'text-zinc-550' : 'text-orange-700'}`}
+                      className={`text-[8px] font-bold cursor-pointer ${isDark ? 'text-zinc-550' : 'text-zinc-600'}`}
                     >
                       Cancel
                     </button>
@@ -205,10 +205,10 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               isDark ? 'bg-zinc-950' : 'bg-white'
             }`}>
               <div className={`p-3 border-b flex items-center justify-between shrink-0 ${
-                isDark ? 'border-zinc-900' : 'border-orange-100'
+                isDark ? 'border-zinc-900' : 'border-zinc-200'
               }`}>
                 <span className={`text-[10px] font-bold uppercase tracking-widest font-mono ${
-                  isDark ? 'text-zinc-550' : 'text-orange-700'
+                  isDark ? 'text-zinc-550' : 'text-zinc-500'
                 }`}>Workspace Pages</span>
                 <button
                   type="button"
@@ -228,7 +228,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               </div>
               <div className="flex-1 overflow-y-auto p-2.5 space-y-1.5 custom-scrollbar">
                 {threads.length === 0 ? (
-                  <div className={`text-center py-8 text-[10px] ${isDark ? 'text-zinc-550' : 'text-orange-700'}`}>
+                  <div className={`text-center py-8 text-[10px] ${isDark ? 'text-zinc-550' : 'text-zinc-400'}`}>
                     No workspace pages. Create a new page.
                   </div>
                 ) : (
@@ -247,14 +247,14 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                           isActive
                             ? isDark 
                               ? 'bg-orange-950/15 border-orange-900/35 text-orange-400 font-bold' 
-                              : 'bg-orange-100 border-orange-300 text-orange-700 font-bold shadow-xs'
+                              : 'bg-orange-500/10 border-orange-500/20 text-orange-600 font-bold shadow-xs'
                             : isDark
                               ? 'bg-zinc-900/10 border-zinc-900/80 hover:border-zinc-800 text-zinc-400'
-                              : 'bg-orange-50/50 border-orange-200/70 hover:border-orange-300 text-orange-950'
+                              : 'bg-zinc-50/50 border-zinc-200/70 hover:border-zinc-300 text-zinc-900'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
-                          <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-550' : 'text-orange-600'}`} />
+                          <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-550' : 'text-zinc-400'}`} />
                           {editingThreadId === t.threadId ? (
                             <input
                               type="text"
@@ -269,7 +269,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                               }}
                               onBlur={() => handleSaveRename(t.threadId)}
                               className={`border rounded px-1.5 py-0.5 text-xs outline-none w-full font-normal ${
-                                isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-orange-300 text-orange-950'
+                                isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'
                               }`}
                               autoFocus
                               onClick={(e) => e.stopPropagation()}
@@ -287,7 +287,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                                 setEditingThreadId(t.threadId);
                                 setEditTitleValue(t.title);
                               }}
-                              className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-zinc-300' : 'text-orange-600 hover:text-orange-950'}`}
+                              className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700'}`}
                               title="Rename page"
                             >
                               <Pencil className="w-3 h-3" />
@@ -297,7 +297,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                                 e.stopPropagation();
                                 setThreadToDelete(t.threadId);
                               }}
-                              className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-red-500' : 'text-orange-600 hover:text-red-600'}`}
+                              className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-red-500' : 'text-zinc-400 hover:text-red-600'}`}
                               title="Delete page"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -314,23 +314,23 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
 
           {/* 2. Scrollable Messages flow */}
           <div className={`flex-1 overflow-y-auto px-4 py-3 space-y-3 custom-scrollbar ${
-            isDark ? 'bg-black/5' : 'bg-[#fffcf8]'
+            isDark ? 'bg-black/5' : 'bg-white'
           }`}>
             {isLoadingHistory ? (
               <div className="space-y-4 py-4 animate-pulse">
-                <div className={`h-4 w-1/3 rounded ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
-                <div className={`h-4 w-5/6 rounded ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
-                <div className={`h-4 w-2/3 rounded ${isDark ? 'bg-zinc-900' : 'bg-orange-100'}`} />
+                <div className={`h-4 w-1/3 rounded ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+                <div className={`h-4 w-5/6 rounded ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
+                <div className={`h-4 w-2/3 rounded ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
               </div>
             ) : !activeThread ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
                 <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${
-                  isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-orange-100 border-orange-300 shadow-xs'
+                  isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-orange-500/10 border-orange-500/20 text-orange-600 shadow-xs'
                 }`}>
                   <Bot className="w-5 h-5 text-orange-500" />
                 </div>
-                <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-orange-950'}`}>Guruji — Personal Mentor</h4>
-                <p className={`text-[10px] max-w-[200px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-orange-800'}`}>
+                <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Guruji — Personal Mentor</h4>
+                <p className={`text-[10px] max-w-[200px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
                   Start a study session to learn and study with Guruji's guidance.
                 </p>
                 <button
@@ -347,13 +347,13 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               <div className="h-full flex flex-col justify-center py-4">
                 <div className="max-w-[280px] mx-auto space-y-4">
                   <div className="space-y-1 text-center">
-                    <FileText className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-zinc-650' : 'text-orange-400'}`} />
-                    <h3 className={`text-xs font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>{activeThread.title}</h3>
-                    <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-550' : 'text-orange-800'}`}>
+                    <FileText className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-zinc-650' : 'text-zinc-400'}`} />
+                    <h3 className={`text-xs font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeThread.title}</h3>
+                    <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-550' : 'text-zinc-500'}`}>
                       Ask Guruji any study doubt, discuss your goals, or use slash commands.
                     </p>
                   </div>
-                  <div className={`space-y-1.5 border-t pt-4 flex flex-col ${isDark ? 'border-zinc-900' : 'border-orange-100'}`}>
+                  <div className={`space-y-1.5 border-t pt-4 flex flex-col ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
                     {COMPACT_SUGGESTIONS.map((sug) => (
                       <button
                         key={sug.text}
@@ -361,7 +361,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                         className={`text-left px-2.5 py-2 rounded-lg border text-[10px] transition cursor-pointer ${
                           isDark 
                             ? 'border-zinc-900 bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-350' 
-                            : 'border-orange-200/80 bg-orange-50/70 hover:bg-orange-100 text-orange-950'
+                            : 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-800'
                         }`}
                       >
                         {sug.text}
@@ -371,7 +371,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                 </div>
               </div>
             ) : (
-              <div className={`divide-y ${isDark ? 'divide-zinc-900/30' : 'divide-orange-100'}`}>
+              <div className={`divide-y ${isDark ? 'divide-zinc-900/30' : 'divide-zinc-100'}`}>
                 {messages.map((msg, idx) => {
                   const isLast = idx === messages.length - 1;
                   return (
@@ -398,10 +398,10 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
           {/* 3. Input container at bottom */}
           {activeThread && !showSelector && (
             <div className={`p-3 border-t shrink-0 ${
-              isDark ? 'border-zinc-900/80 bg-zinc-950' : 'border-orange-100 bg-white'
+              isDark ? 'border-zinc-900/80 bg-zinc-950' : 'border-zinc-200 bg-white'
             }`}>
               <div className={`rounded-2xl px-2.5 py-1.5 flex items-end border ${
-                isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-orange-50/50 border-orange-200 shadow-xs'
+                isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-zinc-50 border-zinc-200 shadow-xs'
               }`}>
                 <ChatInput
                   value={inputValue}
@@ -419,11 +419,11 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
         {threadToDelete && (
           <div className="absolute inset-0 bg-black/75 backdrop-blur-sm z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200">
             <div className={`border rounded-xl p-4 w-full max-w-[280px] shadow-2xl text-center space-y-4 animate-in zoom-in-95 duration-200 ${
-              isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-orange-200'
+              isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-zinc-200 shadow-2xl'
             }`}>
               <div className="space-y-1">
-                <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-200' : 'text-orange-950'}`}>Delete page chat history?</h4>
-                <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-550' : 'text-orange-800'}`}>
+                <h4 className={`text-xs font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Delete page chat history?</h4>
+                <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-550' : 'text-zinc-500'}`}>
                   This will permanently delete this conversation page from your workspace.
                 </p>
               </div>
@@ -456,7 +456,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                   disabled={isDeleting}
                   onClick={() => setThreadToDelete(null)}
                   className={`px-3 py-1.5 rounded-lg border transition cursor-pointer flex-1 disabled:opacity-50 text-[10px] font-bold ${
-                    isDark ? 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-350' : 'bg-orange-50 border-orange-200 text-orange-900 hover:bg-orange-100'
+                    isDark ? 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-350' : 'bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200'
                   }`}
                 >
                   Cancel

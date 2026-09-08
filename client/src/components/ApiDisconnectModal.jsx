@@ -55,17 +55,19 @@ export default function ApiDisconnectModal({ isOpen, onClose, onConnect, apiStat
         className={`relative w-full max-w-md rounded-2xl p-5 sm:p-8 shadow-2xl overflow-x-hidden overflow-y-auto custom-scrollbar max-h-[90vh] ${
           isDark
             ? 'bg-zinc-950 border border-zinc-800 text-zinc-100'
-            : 'bg-white border border-orange-200 text-orange-950'
+            : 'bg-white border border-zinc-200 text-zinc-900 shadow-2xl'
         }`}
       >
-        {/* Glow ambient background */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Glow ambient background in dark mode only */}
+        {isDark && (
+          <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        )}
 
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="btn-icon absolute top-4 right-4 text-zinc-400 hover:text-zinc-100"
+          className={`btn-icon absolute top-4 right-4 ${isDark ? 'text-zinc-400 hover:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900'}`}
           title="Close"
         >
           <X className="w-5 h-5" />
@@ -82,10 +84,10 @@ export default function ApiDisconnectModal({ isOpen, onClose, onConnect, apiStat
                 : isChecking
                 ? isDark
                   ? 'bg-orange-950/30 border border-orange-500/30 text-orange-400'
-                  : 'bg-orange-50 border border-orange-200 text-orange-600'
+                  : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
                 : isDark
                 ? 'bg-zinc-900 border border-zinc-800 text-zinc-400'
-                : 'bg-zinc-100 border border-zinc-200 text-zinc-500'
+                : 'bg-zinc-100 border border-zinc-200 text-zinc-700'
             }`}
           >
             {isHealthy ? (
@@ -97,7 +99,7 @@ export default function ApiDisconnectModal({ isOpen, onClose, onConnect, apiStat
             )}
           </div>
 
-          <h3 className={`text-xl font-bold tracking-tight ${isDark ? 'text-zinc-50' : 'text-orange-950'}`}>
+          <h3 className={`text-xl font-bold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>
             {isHealthy
               ? 'Server Connected'
               : isChecking
@@ -105,7 +107,7 @@ export default function ApiDisconnectModal({ isOpen, onClose, onConnect, apiStat
               : 'Server Offline'}
           </h3>
 
-          <p className={`text-xs mt-1.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-orange-900/70'}`}>
+          <p className={`text-xs mt-1.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
             {isHealthy
               ? 'The API server is online and ready.'
               : isChecking

@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
  * designed specifically for Pathshala AI's dark/light design system.
  *
  * Variants:
- *  - 'primary'   : Glowing orange gradient with subtle border glow & active scale
+ *  - 'primary'   : High-contrast solid button (white in dark / zinc-900 in light)
  *  - 'secondary' : Sleek glass-panel dark/light container with hover border highlight
  *  - 'accent'    : Subtle orange tint button with orange glow on hover
  *  - 'tab'       : Interactive tab button with distinct active/inactive pill states
@@ -51,8 +51,7 @@ const CustomButton = forwardRef(function CustomButton(
             active:scale-[0.97] transition-all duration-200
           `
           : `
-            bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[length:200%_auto]
-            hover:bg-[position:right_center] text-white font-bold
+            bg-zinc-900 hover:bg-black text-white font-bold shadow-xs
             active:scale-[0.97] transition-all duration-200
           `;
 
@@ -63,7 +62,7 @@ const CustomButton = forwardRef(function CustomButton(
             active:scale-[0.97] transition-all duration-150
           `
           : `
-            bg-white hover:bg-orange-50/80 text-orange-950 font-semibold
+            bg-zinc-100 hover:bg-zinc-200/80 text-zinc-900 font-semibold
             active:scale-[0.97] transition-all duration-150
           `;
 
@@ -86,7 +85,7 @@ const CustomButton = forwardRef(function CustomButton(
               transition-all duration-150
             `
             : `
-              bg-orange-100 text-orange-800 font-bold
+              bg-zinc-200/80 text-zinc-900 font-bold
               transition-all duration-150
             `;
         }
@@ -96,7 +95,7 @@ const CustomButton = forwardRef(function CustomButton(
             transition-all duration-150
           `
           : `
-            text-orange-950/60 hover:text-orange-950 hover:bg-orange-50 font-medium
+            text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 font-medium
             transition-all duration-150
           `;
 
@@ -107,7 +106,7 @@ const CustomButton = forwardRef(function CustomButton(
             active:scale-[0.97] transition-all duration-150
           `
           : `
-            text-orange-800/80 hover:text-orange-950 hover:bg-orange-100/60 font-medium
+            text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/80 font-medium
             active:scale-[0.97] transition-all duration-150
           `;
 
@@ -118,7 +117,7 @@ const CustomButton = forwardRef(function CustomButton(
             active:scale-95 transition-all duration-150
           `
           : `
-            bg-white hover:bg-orange-100/80 text-orange-700 hover:text-orange-900
+            bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900
             active:scale-95 transition-all duration-150
           `;
 
