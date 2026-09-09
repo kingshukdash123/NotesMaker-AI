@@ -20,10 +20,10 @@ export const SITE_URL = COMPANY_DOMAIN;
 export const SITE_NAME = COMPANY_NAME;
 
 // Official Email Addresses
-export const GRIEVANCE_EMAIL = 'legal@pathshalaai.co.in';
+export const GRIEVANCE_EMAIL = 'support@pathshalaai.co.in';
 export const SUPPORT_EMAIL = 'support@pathshalaai.co.in';
-export const LEGAL_EMAIL = GRIEVANCE_EMAIL;
-export const CONTACT_EMAIL = SUPPORT_EMAIL;
+export const LEGAL_EMAIL = 'support@pathshalaai.co.in';
+export const CONTACT_EMAIL = 'support@pathshalaai.co.in';
 
 // Legal & Compliance Metadata
 export const GRIEVANCE_OFFICER_TITLE = 'Grievance Officer';

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { ExternalLink } from 'lucide-react';
 import Header from './components/Header';
 import Sidebar from './components/layout/Sidebar';
 import SettingsModal from './components/layout/SettingsModal';
@@ -383,8 +384,8 @@ function MainApp() {
               >
                 &copy; {new Date().getFullYear()} Pathshala A<i>I</i> &mdash; All Rights Reserved
               </a>
-              {/* Legal Links */}
-              <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1" aria-label="Legal & Policies">
+              {/* Legal & Compliance Links */}
+              <nav className="flex flex-wrap items-center justify-center gap-x-3.5 sm:gap-x-4 gap-y-1" aria-label="Legal & Policies">
                 {LEGAL_NAV_ITEMS.map(({ slug, shortLabel, label }) => (
                   <a
                     key={slug}
@@ -399,6 +400,29 @@ function MainApp() {
                     {shortLabel || label}
                   </a>
                 ))}
+                <span className={`text-[11px] hidden sm:inline select-none ${isDark ? 'text-zinc-800' : 'text-zinc-300'}`}>|</span>
+                <a
+                  href="https://www.youtube.com/t/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`text-[11px] inline-flex items-center gap-1 transition hover:underline underline-offset-2 cursor-pointer ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-400 hover:text-zinc-900'
+                    }`}
+                  title="YouTube Terms of Service (opens in new tab)"
+                >
+                  <span>YouTube ToS</span>
+                  <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                </a>
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`text-[11px] inline-flex items-center gap-1 transition hover:underline underline-offset-2 cursor-pointer ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-400 hover:text-zinc-900'
+                    }`}
+                  title="Google Privacy Policy (opens in new tab)"
+                >
+                  <span>Google Privacy</span>
+                  <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                </a>
               </nav>
             </div>
           </footer>

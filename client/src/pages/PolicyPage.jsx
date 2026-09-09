@@ -38,7 +38,7 @@ const ICON_MAP = {
   CreditCard,
 };
 
-// ─── Markdown-like body renderer (supports **bold**, bullet lines, table rows) ──
+// ─── Markdown-like body renderer (supports **bold**, bullet lines, table rows, links) ──
 function PolicyBody({ body }) {
   if (!body) return null;
 
@@ -68,9 +68,11 @@ function PolicyBody({ body }) {
         // Bullet point
         if (line.trim().startsWith('- ')) {
           return (
-            <div key={i} className="flex gap-2 items-start">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
-              <InlineFormat text={line.trim().slice(2)} />
+            <div key={i} className="flex gap-2.5 items-start">
+              <span className="mt-2 w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <InlineFormat text={line.trim().slice(2)} />
+              </div>
             </div>
           );
         }
@@ -83,7 +85,9 @@ function PolicyBody({ body }) {
               <span className="shrink-0 w-5 h-5 rounded-full bg-orange-500/15 text-orange-500 text-[10px] font-bold flex items-center justify-center mt-0.5">
                 {num}
               </span>
-              <InlineFormat text={line.trim().replace(/^\d+\.\s/, '')} />
+              <div className="flex-1 min-w-0 pt-0.5">
+                <InlineFormat text={line.trim().replace(/^\d+\.\s/, '')} />
+              </div>
             </div>
           );
         }
@@ -98,29 +102,47 @@ function PolicyBody({ body }) {
   );
 }
 
-// Inline bold (**text**) and code (`text`) formatting
+// Inline bold (**text**), code (`text`), and clickable URLs formatting
 function InlineFormat({ text }) {
   if (!text) return null;
   // Split by **...**
-  const parts = text.split(/\*\*(.+?)\*\*/g);
+  const boldParts = text.split(/\*\*(.+?)\*\*/g);
   return (
     <>
-      {parts.map((part, i) =>
-        i % 2 === 1 ? (
-          <strong key={i} className="font-semibold">{part}</strong>
-        ) : (
-          // Split by `...`
-          part.split(/`(.+?)`/g).map((sub, si) =>
-            si % 2 === 1 ? (
-              <code key={si} className="font-mono text-xs bg-orange-500/10 text-orange-400 px-1 py-0.5 rounded">
-                {sub}
+      {boldParts.map((boldPart, bi) => {
+        if (bi % 2 === 1) {
+          return <strong key={bi} className="font-semibold text-current">{boldPart}</strong>;
+        }
+        // Split by `...`
+        const codeParts = boldPart.split(/`(.+?)`/g);
+        return codeParts.map((codePart, ci) => {
+          if (ci % 2 === 1) {
+            return (
+              <code key={ci} className="font-mono text-xs bg-orange-500/10 text-orange-400 px-1 py-0.5 rounded">
+                {codePart}
               </code>
-            ) : (
-              <span key={si}>{sub}</span>
-            )
-          )
-        )
-      )}
+            );
+          }
+          // Split by URLs
+          const urlParts = codePart.split(/(https?:\/\/[^\s\),]+)/g);
+          return urlParts.map((urlPart, ui) => {
+            if (/^https?:\/\//.test(urlPart)) {
+              return (
+                <a
+                  key={ui}
+                  href={urlPart}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-orange-500 hover:underline inline-flex items-center gap-0.5 break-all"
+                >
+                  <span>{urlPart}</span>
+                </a>
+              );
+            }
+            return <span key={ui}>{urlPart}</span>;
+          });
+        });
+      })}
     </>
   );
 }
@@ -353,6 +375,52 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
                   <span>{GRIEVANCE_EMAIL}</span>
                   <ExternalLink className="w-3 h-3 opacity-60" />
                 </a>
+              </div>
+            )}
+
+            {/* ── YouTube API Services Compliance Notice ── */}
+            {!loading && (
+              <div className={`rounded-xl border p-4.5 space-y-2 mt-3 ${isDark
+                  ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400'
+                  : 'bg-zinc-50 border-zinc-200 text-zinc-600'
+                }`}>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-orange-500 shrink-0" />
+                  <h4 className={`text-xs font-bold ${textPrimary}`}>YouTube API Services Compliance</h4>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  Pathshala AI uses YouTube API Services to deliver educational lectures and course playlists. By using our platform, you acknowledge and agree to be bound by the{' '}
+                  <a
+                    href="https://www.youtube.com/t/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-orange-500 hover:underline inline-flex items-center gap-0.5"
+                  >
+                    <span>YouTube Terms of Service</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>{' '}
+                  and the{' '}
+                  <a
+                    href="https://policies.google.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-orange-500 hover:underline inline-flex items-center gap-0.5"
+                  >
+                    <span>Google Privacy Policy</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                  . You can review and revoke permissions at any time via the{' '}
+                  <a
+                    href="https://security.google.com/settings/security/permissions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-orange-500 hover:underline inline-flex items-center gap-0.5"
+                  >
+                    <span>Google Security Settings page</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                  .
+                </p>
               </div>
             )}
 

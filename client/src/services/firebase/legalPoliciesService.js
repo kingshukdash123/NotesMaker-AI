@@ -28,16 +28,24 @@ const COLLECTION = LEGAL_POLICIES_COLLECTION;
 export async function getLegalPolicy(slug) {
   if (!slug) throw new Error('Policy slug is required.');
 
+  const defaultData = LEGAL_POLICIES_DEFAULTS[slug];
+
   try {
     const docRef = doc(db, COLLECTION, slug);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return LegalPolicyModel.fromFirestore(docSnap);
+      const model = LegalPolicyModel.fromFirestore(docSnap);
+      // Auto-update Firestore if local default version is newer or content was revised
+      if (defaultData && defaultData.version && model && model.version !== defaultData.version) {
+        console.info(`[legalPoliciesService] Updating policy "${slug}" in Firestore (from ${model.version} to ${defaultData.version})`);
+        await _seedPolicyDocument(slug, defaultData);
+        return new LegalPolicyModel(defaultData);
+      }
+      return model;
     }
 
     // Firestore doc missing — seed it and return the default
-    const defaultData = LEGAL_POLICIES_DEFAULTS[slug];
     if (defaultData) {
       await _seedPolicyDocument(slug, defaultData);
       return new LegalPolicyModel(defaultData);
@@ -47,7 +55,6 @@ export async function getLegalPolicy(slug) {
   } catch (err) {
     console.warn(`[legalPoliciesService] Failed to fetch policy "${slug}" from Firestore. Using local default.`, err);
     // Fallback: return local default without seeding (offline / permission error)
-    const defaultData = LEGAL_POLICIES_DEFAULTS[slug];
     return defaultData ? new LegalPolicyModel(defaultData) : null;
   }
 }
@@ -67,13 +74,21 @@ export async function getAllLegalPolicies() {
     const fetchedSlugs = new Set();
     const policies = [];
 
-    querySnapshot.forEach((docSnap) => {
+    for (const docSnap of querySnapshot.docs) {
       const model = LegalPolicyModel.fromFirestore(docSnap);
       if (model) {
-        fetchedSlugs.add(model.slug);
-        policies.push(model);
+        const defaultData = LEGAL_POLICIES_DEFAULTS[model.slug];
+        if (defaultData && defaultData.version && model.version !== defaultData.version) {
+          console.info(`[legalPoliciesService] Updating policy "${model.slug}" in Firestore (from ${model.version} to ${defaultData.version})`);
+          await _seedPolicyDocument(model.slug, defaultData);
+          fetchedSlugs.add(model.slug);
+          policies.push(new LegalPolicyModel(defaultData));
+        } else {
+          fetchedSlugs.add(model.slug);
+          policies.push(model);
+        }
       }
-    });
+    }
 
     // Seed any slugs that are missing from Firestore
     for (const slug of LEGAL_POLICY_SLUGS) {

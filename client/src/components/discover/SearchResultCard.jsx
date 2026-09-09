@@ -1,6 +1,6 @@
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FileCheck2 } from 'lucide-react';
+import { FileCheck2, ExternalLink } from 'lucide-react';
 import VideoActionButtons from '../common/VideoActionButtons';
 import { formatTimeAgo, getChannelInitial } from '../../utils/formatters';
 
@@ -100,6 +100,24 @@ export default function SearchResultCard({
                 {timeAgoText}
               </span>
             </>
+          )}
+
+          {/* Direct YouTube link for attribution */}
+          {video.videoId && (
+            <a
+              href={`https://www.youtube.com/watch?v=${video.videoId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className={`ml-auto p-1 rounded-md text-[11px] transition flex items-center gap-1 opacity-70 hover:opacity-100 ${
+                isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
+              }`}
+              title="Open video on YouTube"
+              aria-label="Open on YouTube"
+            >
+              <span className="hidden sm:inline">YouTube</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           )}
         </div>
 

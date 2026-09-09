@@ -458,7 +458,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alex@example.com"
+                    placeholder="name@email.com"
                     className={`w-full border rounded-xl pl-9 pr-4 py-2.5 text-sm transition focus:outline-none focus:border-orange-500 ${
                       isDark 
                         ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500' 
