@@ -95,30 +95,34 @@ export default function SettingsPage() {
   const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400';
 
   return (
-    <div className={`flex-1 min-h-full overflow-y-auto custom-scrollbar ${bg}`}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8 space-y-6">
+    <div className={`flex-1 w-full h-full flex flex-col min-h-0 overflow-hidden ${bg}`}>
+      {/* ── Pinned Header Section ── */}
+      <div className="w-full shrink-0">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-4 space-y-4">
+          {/* ── Page Header using Reusable DocPageHeader ── */}
+          <DocPageHeader
+            title="Application Settings"
+            subtitle="Configure your Guruji mentor persona and theme appearance."
+          />
 
-        {/* ── Page Header using Reusable DocPageHeader ── */}
-        <DocPageHeader
-          title="Application Settings"
-          subtitle="Configure your Guruji mentor persona and theme appearance."
-        />
+          {/* ── Main Tab Switcher using Reusable TabPillSwitcher ── */}
+          <TabPillSwitcher
+            tabs={TABS}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
 
-        {/* ── Main Tab Switcher using Reusable TabPillSwitcher ── */}
-        <TabPillSwitcher
-          tabs={TABS}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-
-        {/* ── Tab Context Subtitle ── */}
-        <div className={`text-xs ${textMuted}`}>
-          {activeTab === 'mentor' && 'Adjust your academic preferences, focus milestones, and mentor interaction style.'}
-          {activeTab === 'appearance' && 'Customize theme mode and color aesthetics.'}
+          {/* ── Tab Context Subtitle ── */}
+          <div className={`text-xs ${textMuted}`}>
+            {activeTab === 'mentor' && 'Adjust your academic preferences, focus milestones, and mentor interaction style.'}
+            {activeTab === 'appearance' && 'Customize theme mode and color aesthetics.'}
+          </div>
         </div>
+      </div>
 
-        {/* ── Settings Content Area ── */}
-        <div className="space-y-6">
+      {/* ── Scrollable Settings Content Area ── */}
+      <div className="flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
           {/* ════════════════════════════════════════════════════════════════
               TAB 1: MENTOR PROFILE

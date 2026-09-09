@@ -30,7 +30,7 @@ export default function StickyToc({
   };
 
   return (
-    <aside className={`hidden lg:flex flex-col w-56 shrink-0 sticky top-20 max-h-[calc(100vh-10rem)] overflow-y-auto custom-scrollbar ${className}`}>
+    <aside className={`hidden lg:flex flex-col w-56 shrink-0 h-full overflow-y-auto custom-scrollbar pb-8 ${className}`}>
       <div className={`rounded-xl border p-4 space-y-1 ${cardBg}`}>
         <p className={`text-[10px] font-bold uppercase tracking-wider mb-3 ${textMuted}`}>
           {title}
@@ -59,10 +59,12 @@ export default function StickyToc({
                 type="button"
                 title={sec.title || sec.heading}
                 onClick={() => handleClick(sec.id)}
-                className={`w-full text-left text-xs py-1.5 px-2 rounded-lg transition cursor-pointer truncate flex items-center gap-2 ${
+                className={`w-full text-left text-xs py-2 px-2.5 rounded-lg transition-colors cursor-pointer truncate flex items-center gap-2 ${
                   isItemActive
-                    ? 'bg-orange-500/10 text-orange-500 font-semibold'
-                    : `${textSecondary} hover:text-orange-500 hover:bg-orange-500/5`
+                    ? isDark
+                      ? 'bg-orange-500/15 text-orange-400 font-semibold border border-orange-500/30'
+                      : 'bg-orange-50 text-orange-600 font-semibold border border-orange-200'
+                    : `border border-transparent ${textSecondary} hover:text-orange-500 hover:bg-orange-500/5`
                 }`}
               >
                 {Icon && <Icon className={`w-3.5 h-3.5 shrink-0 ${isItemActive ? 'text-orange-500' : textMuted}`} />}

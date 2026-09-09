@@ -20,7 +20,13 @@ export default function DocSectionCard({
 }) {
   const { isDark } = useTheme();
 
-  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-zinc-200 shadow-xs';
+  const cardStyles = isDark
+    ? isActive
+      ? 'bg-zinc-900/80 border-orange-500/60 shadow-xs'
+      : 'bg-zinc-900/60 border-zinc-800/80 hover:border-zinc-700/80'
+    : isActive
+      ? 'bg-white border-orange-500/60 shadow-xs'
+      : 'bg-white border-zinc-200 shadow-xs hover:border-zinc-300';
   const textPrimary = isDark ? 'text-zinc-50' : 'text-zinc-900';
   const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
 
@@ -28,9 +34,7 @@ export default function DocSectionCard({
     <div
       id={id ? `section-${id}` : undefined}
       onClick={onClick}
-      className={`rounded-xl border p-5 sm:p-6 space-y-4 scroll-mt-20 transition-all ${cardBg} ${
-        isActive ? 'ring-1 ring-orange-500/30 border-orange-500/50' : ''
-      } ${className}`}
+      className={`rounded-xl border p-5 sm:p-6 space-y-4 scroll-mt-20 transition-colors duration-150 ${cardStyles} ${className}`}
     >
       {/* Header Row */}
       {(title || headerAction) && (

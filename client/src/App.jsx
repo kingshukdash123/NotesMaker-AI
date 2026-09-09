@@ -293,9 +293,10 @@ function MainApp() {
   }, [checkHealth]);
 
   const isWorkspaceActive = Boolean(currentUser);
+  const isLegalPage = LEGAL_SECTIONS.has(activeSection);
 
   return (
-    <div className={`${isWorkspaceActive ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} ${isDark ? 'bg-black text-zinc-100' : 'bg-white text-zinc-900'} flex flex-col selection:bg-zinc-800 relative transition-colors duration-200`}>
+    <div className={`${isWorkspaceActive || isLegalPage ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} ${isDark ? 'bg-black text-zinc-100' : 'bg-white text-zinc-900'} flex flex-col selection:bg-zinc-800 relative transition-colors duration-200`}>
       {/* Top Header Navbar (Hidden in Fullscreen Video Mode) */}
       {!isVideoFullscreen && (
         <Header
@@ -357,18 +358,22 @@ function MainApp() {
             )}
           </div>
 
-          <div className="flex-1 w-full flex flex-col pb-12 pt-20 sm:pt-24 transition-all duration-300 relative z-10">
-            <main className={`flex-1 min-w-0 w-full ${LEGAL_SECTIONS.has(activeSection) ? 'flex flex-col px-4 sm:px-8 max-w-7xl mx-auto' : 'flex flex-col'
-              }`}>
-              {LEGAL_SECTIONS.has(activeSection)
-                ? <PolicyPage slug={activeSection} />
-                : <HomeSection onOpenAuthModal={handleOpenAuthModal} />
-              }
-            </main>
-          </div>
+          {isLegalPage ? (
+            <div className="flex-1 w-full flex flex-col pt-[53px] h-[calc(100vh-53px)] transition-all duration-300 relative z-10 overflow-hidden">
+              <main className="flex-1 min-w-0 w-full flex flex-col h-full overflow-hidden">
+                <PolicyPage slug={activeSection} />
+              </main>
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 w-full flex flex-col pb-12 pt-20 sm:pt-24 transition-all duration-300 relative z-10">
+                <main className="flex-1 min-w-0 w-full flex flex-col">
+                  <HomeSection onOpenAuthModal={handleOpenAuthModal} />
+                </main>
+              </div>
 
-          <footer className={`relative z-10 border-t transition-colors backdrop-blur-sm ${isDark ? 'border-zinc-900 bg-black/80' : 'border-zinc-200 bg-white/80'
-            }`}>
+              <footer className={`relative z-10 border-t transition-colors backdrop-blur-sm ${isDark ? 'border-zinc-900 bg-black/80' : 'border-zinc-200 bg-white/80'
+                }`}>
             <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
               {/* Brand */}
               <a
@@ -426,6 +431,8 @@ function MainApp() {
               </nav>
             </div>
           </footer>
+            </>
+          )}
         </>
       ) : (
         /* Workspace (Authenticated) Layout */

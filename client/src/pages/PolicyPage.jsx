@@ -231,76 +231,79 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
   const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400';
 
   return (
-    <div className={`flex-1 min-h-full overflow-y-auto custom-scrollbar ${bg}`}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6">
-
-        {/* ── Page Header using Reusable DocPageHeader ── */}
-        <DocPageHeader
-          title="Legal Center"
-          subtitle={`All ${COMPANY_NAME} legal documents, policies, and terms — always up to date.`}
-          backAction={!currentUser && (
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                setActiveSection('dashboard');
-                if (window.location.pathname !== '/') {
-                  window.history.pushState(null, '', '/');
-                }
-              }}
-              className={`inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer transition hover:text-orange-500 ${textMuted}`}
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Home</span>
-            </a>
-          )}
-        />
-
-        {/* ── Tab Switcher using Reusable TabPillSwitcher ── */}
-        <TabPillSwitcher
-          tabs={LEGAL_POLICY_SLUGS.map((slug) => ({
-            id: slug,
-            label: LEGAL_POLICY_LABELS[slug],
-            icon: ICON_MAP[LEGAL_POLICY_ICONS[slug]],
-          }))}
-          activeTab={activeSlug}
-          onTabChange={handleTabChange}
-        />
-
-        {/* ── Effective Date & Search Row ── */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          {policy?.effectiveDate && (
-            <div className={`flex items-center gap-1.5 text-xs shrink-0 ${textMuted}`}>
-              <Clock className="w-3.5 h-3.5" />
-              <span>Effective {formatDate(policy.effectiveDate)}</span>
-            </div>
-          )}
-          <div className="sm:ml-auto relative w-full sm:w-64">
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${textMuted}`} />
-            <input
-              type="text"
-              placeholder={`Search ${LEGAL_POLICY_LABELS[activeSlug]}...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full border rounded-xl pl-8 pr-8 py-2 text-xs focus:outline-none focus:border-orange-500 transition ${inputBg} ${textPrimary}`}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="btn-icon absolute right-2 top-1/2 -translate-y-1/2 !p-1 cursor-pointer"
-                title="Clear search"
+    <div className={`flex-1 w-full h-full flex flex-col min-h-0 overflow-hidden ${bg}`}>
+      {/* ── Pinned Header Section ── */}
+      <div className="w-full shrink-0">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-3 space-y-4">
+          {/* ── Page Header using Reusable DocPageHeader ── */}
+          <DocPageHeader
+            title="Legal Center"
+            subtitle={`All ${COMPANY_NAME} legal documents, policies, and terms — always up to date.`}
+            backAction={!currentUser && (
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveSection('dashboard');
+                  if (window.location.pathname !== '/') {
+                    window.history.pushState(null, '', '/');
+                  }
+                }}
+                className={`inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer transition hover:text-orange-500 ${textMuted}`}
               >
-                <X className="w-3.5 h-3.5" />
-              </button>
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Home</span>
+              </a>
             )}
+          />
+
+          {/* ── Tab Switcher using Reusable TabPillSwitcher ── */}
+          <TabPillSwitcher
+            tabs={LEGAL_POLICY_SLUGS.map((slug) => ({
+              id: slug,
+              label: LEGAL_POLICY_LABELS[slug],
+              icon: ICON_MAP[LEGAL_POLICY_ICONS[slug]],
+            }))}
+            activeTab={activeSlug}
+            onTabChange={handleTabChange}
+          />
+
+          {/* ── Effective Date & Search Row ── */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            {policy?.effectiveDate && (
+              <div className={`flex items-center gap-1.5 text-xs shrink-0 ${textMuted}`}>
+                <Clock className="w-3.5 h-3.5" />
+                <span>Effective {formatDate(policy.effectiveDate)}</span>
+              </div>
+            )}
+            <div className="sm:ml-auto relative w-full sm:w-64">
+              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${textMuted}`} />
+              <input
+                type="text"
+                placeholder={`Search ${LEGAL_POLICY_LABELS[activeSlug]}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full border rounded-xl pl-8 pr-8 py-2 text-xs focus:outline-none focus:border-orange-500 transition ${inputBg} ${textPrimary}`}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="btn-icon absolute right-2 top-1/2 -translate-y-1/2 !p-1 cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* ── Main Two-Column Layout ── */}
-        <div className="flex gap-6 items-start">
-
-          {/* Left: Sticky Table of Contents (Desktop only) */}
+      {/* ── Main Two-Column Layout (Independent Scrolling for Docs Pane and Content Pane) ── */}
+      <div className="flex-1 min-h-0 w-full overflow-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex gap-6 items-start pt-2">
+          {/* Left: Sticky Table of Contents (Scrolls independently) */}
           <StickyToc
             sections={filteredSections.map((s) => ({ id: s.id, title: s.heading }))}
             activeSectionId={activeSectionId}
@@ -309,8 +312,8 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
             isLoading={loading}
           />
 
-          {/* Right: Policy Content */}
-          <div ref={contentRef} className="flex-1 min-w-0 space-y-4">
+          {/* Right: Policy Content (Scrolls independently) */}
+          <div ref={contentRef} className="flex-1 min-w-0 h-full overflow-y-auto custom-scrollbar space-y-4 pr-1 pb-8">
             {loading ? (
               /* Skeleton loader */
               Array.from({ length: 5 }).map((_, i) => (
