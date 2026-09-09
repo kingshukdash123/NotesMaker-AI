@@ -302,6 +302,7 @@ function MainApp() {
         <Header
           isSidebarMobileOpen={isSidebarMobileOpen}
           setIsSidebarMobileOpen={setIsSidebarMobileOpen}
+          onOpenAuthModal={handleOpenAuthModal}
         />
       )}
 

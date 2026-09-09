@@ -30,11 +30,13 @@ export default function HomeSection({ onOpenAuthModal }) {
       />
 
       {/* STUDY HABITS & CONSISTENCY */}
-      <StudyHabitsSection
-        isDark={isDark}
-        headingClass={headingClass}
-        subClass={subClass}
-      />
+      <div id="features" className="scroll-mt-24">
+        <StudyHabitsSection
+          isDark={isDark}
+          headingClass={headingClass}
+          subClass={subClass}
+        />
+      </div>
 
       {/* DISTRACTION-FREE LECTURE SPACE */}
       <LectureSpaceSection
@@ -44,28 +46,34 @@ export default function HomeSection({ onOpenAuthModal }) {
       />
 
       {/* GURUJI ACADEMIC MENTOR */}
-      <GurujiMentorSection
-        isDark={isDark}
-        headingClass={headingClass}
-        subClass={subClass}
-      />
+      <div id="mentor" className="scroll-mt-24">
+        <GurujiMentorSection
+          isDark={isDark}
+          headingClass={headingClass}
+          subClass={subClass}
+        />
+      </div>
 
       {/* SUBJECT PLAYLISTS & VIDEO LIBRARY */}
-      <PlaylistsSection
-        isDark={isDark}
-        headingClass={headingClass}
-        subClass={subClass}
-      />
+      <div id="library" className="scroll-mt-24">
+        <PlaylistsSection
+          isDark={isDark}
+          headingClass={headingClass}
+          subClass={subClass}
+        />
+      </div>
 
       {/* DAILY STUDY PLANNER & SCHEDULE */}
-      <StudyPlannerSection
-        isDark={isDark}
-        headingClass={headingClass}
-        subClass={subClass}
-      />
+      <div id="planner" className="scroll-mt-24">
+        <StudyPlannerSection
+          isDark={isDark}
+          headingClass={headingClass}
+          subClass={subClass}
+        />
+      </div>
 
       {/* PRICING & VALUE */}
-      <section className="px-4 sm:px-6 pb-20 space-y-16">
+      <section id="pricing" className="px-4 sm:px-6 pb-20 space-y-16 scroll-mt-24">
         <ComparisonSection
           isDark={isDark}
           headingClass={headingClass}
@@ -81,17 +89,21 @@ export default function HomeSection({ onOpenAuthModal }) {
       </section>
 
       {/* CONTACT & SUPPORT BANNER */}
-      <SupportBannerSection
-        isDark={isDark}
-        headingClass={headingClass}
-        subClass={subClass}
-      />
+      <div id="support" className="scroll-mt-24">
+        <SupportBannerSection
+          isDark={isDark}
+          headingClass={headingClass}
+          subClass={subClass}
+        />
+      </div>
 
       {/* FREQUENTLY ASKED QUESTIONS */}
-      <FaqSection
-        isDark={isDark}
-        headingClass={headingClass}
-      />
+      <div id="faq" className="scroll-mt-24">
+        <FaqSection
+          isDark={isDark}
+          headingClass={headingClass}
+        />
+      </div>
 
       {/* FINAL CTA */}
       <FinalCtaSection
