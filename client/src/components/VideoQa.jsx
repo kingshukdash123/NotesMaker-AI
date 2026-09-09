@@ -251,16 +251,16 @@ export default function VideoQa({ videoId, currentUser }) {
                 {/* Message Content */}
                 <div className={`flex flex-col min-w-0 ${isUser ? 'items-end' : 'items-start'}`}>
                   <div
-                    className={`px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl text-sm leading-relaxed break-words shadow-xs ${
+                    className={`px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl text-sm leading-relaxed break-words shadow-xs border ${
                       isUser
                         ? isDark
-                          ? 'bg-zinc-900 text-zinc-100 rounded-tr-xs'
-                          : 'bg-zinc-900 text-white font-medium rounded-tr-xs'
+                          ? 'bg-zinc-800 border-zinc-700/50 text-zinc-100 rounded-tr-xs'
+                          : 'bg-zinc-100 border-zinc-200/80 text-zinc-900 font-medium rounded-tr-xs'
                         : msg.isError
-                          ? 'bg-red-950/20 text-red-200 rounded-tl-xs'
+                          ? 'bg-red-950/20 border-red-900/30 text-red-200 rounded-tl-xs'
                           : isDark
-                            ? 'bg-zinc-900/60 text-zinc-100 selection:bg-zinc-800 rounded-tl-xs'
-                            : 'bg-white border border-zinc-200 shadow-xs text-zinc-900 selection:bg-zinc-200 rounded-tl-xs'
+                            ? 'bg-zinc-900/60 border-zinc-800/80 text-zinc-100 selection:bg-zinc-800 rounded-tl-xs'
+                            : 'bg-white border-zinc-200 shadow-xs text-zinc-900 selection:bg-zinc-200 rounded-tl-xs'
                     }`}
                   >
                     {isUser ? (

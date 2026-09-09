@@ -375,7 +375,7 @@ function MainApp() {
 
               <footer className={`relative z-10 border-t transition-colors backdrop-blur-sm ${isDark ? 'border-zinc-900 bg-black/80' : 'border-zinc-200 bg-white/80'
                 }`}>
-            <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
               {/* Brand */}
               <a
                 href="/"

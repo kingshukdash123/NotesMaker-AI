@@ -153,7 +153,7 @@ export default function Header({
     <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-2.5 sm:py-3 transition-colors duration-200 border-b bg-transparent ${
       isDark ? 'border-zinc-800/80' : 'border-zinc-200/80 shadow-xs'
     }`}>
-      <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-3 sm:gap-6">
+      <div className="w-full flex items-center justify-between gap-3 sm:gap-6">
         
         {/* Left: Brand Logo & Name */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">

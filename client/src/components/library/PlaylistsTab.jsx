@@ -9,17 +9,17 @@ import {
   Trash2, 
   BookOpen, 
   ListVideo, 
-  ArrowLeft,
-  CheckCircle2,
-  Clock,
-  CheckCheck,
-  RotateCcw,
-  CircleDot,
-  MoreVertical,
-  Pencil,
-  X,
-  Loader2
+  ArrowLeft, 
+  CheckCircle2, 
+  Clock, 
+  CheckCheck, 
+  RotateCcw, 
+  CircleDot, 
+  Pencil, 
+  X, 
+  Loader2 
 } from 'lucide-react';
+import ThreeDotMenu from '../common/ThreeDotMenu';
 
 export default function PlaylistsTab({ 
   playlists = [], 
@@ -49,8 +49,7 @@ export default function PlaylistsTab({
   const [mobileView, setMobileView] = useState('list'); // 'list' | 'videos'
   const [filter, setFilter] = useState('all'); // 'all' | 'unwatched' | 'watched'
 
-  // Dropdown menu & rename modal state
-  const [menuOpenPlaylistId, setMenuOpenPlaylistId] = useState(null);
+  // Rename modal state
   const [playlistToRename, setPlaylistToRename] = useState(null);
   const [renameInput, setRenameInput] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
@@ -76,13 +75,6 @@ export default function PlaylistsTab({
   useEffect(() => {
     setFilter('all');
   }, [selectedPlaylistId]);
-
-  // Close 3-dot dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => setMenuOpenPlaylistId(null);
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, []);
 
   // On desktop: fallback to first playlist if valid. On phone: respect null (no default selection)
   const activePlaylistId = selectedPlaylistId && playlists.some(pl => pl.id === selectedPlaylistId)
@@ -253,65 +245,24 @@ export default function PlaylistsTab({
                     </span>
                   </div>
 
-                  {/* 3-Dot Menu Dropdown (Rename & Delete) */}
-                  <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMenuOpenPlaylistId(menuOpenPlaylistId === pl.id ? null : pl.id);
-                      }}
-                      className={`p-1.5 rounded-lg transition cursor-pointer ${
-                        menuOpenPlaylistId === pl.id
-                          ? isDark ? 'text-zinc-100 bg-zinc-800' : 'text-zinc-900 bg-zinc-200'
-                          : isActive
-                            ? isDark ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800' : 'text-zinc-700 hover:text-zinc-900 hover:bg-zinc-200/60'
-                            : isDark ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
-                      }`}
-                      title="Playlist options"
-                      aria-label="Playlist options"
-                    >
-                      <MoreVertical className="w-3.5 h-3.5" />
-                    </button>
-
-                    {/* Popover Dropdown */}
-                    {menuOpenPlaylistId === pl.id && (
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        className={`absolute right-0 top-full mt-1 w-32 rounded-xl shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 border ${
-                          isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-zinc-200 text-zinc-900 shadow-md'
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMenuOpenPlaylistId(null);
-                            handleOpenRename(pl);
-                          }}
-                          className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                            isDark ? 'hover:bg-zinc-800 text-zinc-200' : 'hover:bg-zinc-50 text-zinc-900'
-                          }`}
-                        >
-                          <Pencil className="w-3.5 h-3.5 text-zinc-400" />
-                          <span>Rename</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMenuOpenPlaylistId(null);
-                            handleDeletePlaylist(pl.id, e);
-                          }}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-red-400 hover:bg-red-500/10"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                          <span>Delete</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  {/* Reusable 3-Dot Options Menu */}
+                  <ThreeDotMenu
+                    items={[
+                      {
+                        label: 'Rename',
+                        icon: Pencil,
+                        onClick: () => handleOpenRename(pl)
+                      },
+                      {
+                        label: 'Delete',
+                        icon: Trash2,
+                        variant: 'danger',
+                        onClick: (e) => handleDeletePlaylist(pl.id, e)
+                      }
+                    ]}
+                    title="Playlist options"
+                    ariaLabel="Playlist options"
+                  />
                 </div>
               );
             })

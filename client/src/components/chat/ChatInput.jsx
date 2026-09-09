@@ -98,8 +98,10 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
     }
   };
 
+  const hasValue = Boolean(value?.trim());
+
   return (
-    <div className="relative w-full flex items-end gap-2">
+    <div className="relative w-full flex items-center gap-2">
       <SlashCommandMenu
         visible={showMenu}
         searchQuery={searchQuery}
@@ -111,7 +113,11 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
       <button
         type="button"
         onClick={handlePlusClick}
-        className="btn-icon !w-7 !h-7 !p-1 text-zinc-400 hover:text-orange-500 shrink-0"
+        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition cursor-pointer ${
+          isDark
+            ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+            : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
+        }`}
         title="Add command (/)"
         aria-label="Add command"
       >
@@ -135,9 +141,15 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
       {/* Send message button */}
       <button
         type="button"
-        disabled={isLoading || isStreaming || !value.trim()}
+        disabled={isLoading || isStreaming || !hasValue}
         onClick={onSubmit}
-        className="btn-primary !w-7 !h-7 !p-0 !rounded-full shrink-0 shadow-xs flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+        className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center transition shadow-xs ${
+          hasValue && !isLoading && !isStreaming
+            ? 'bg-orange-500 hover:bg-orange-600 text-white cursor-pointer'
+            : isDark
+            ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed opacity-50'
+            : 'bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-50'
+        }`}
         title="Send message"
         aria-label="Send message"
       >

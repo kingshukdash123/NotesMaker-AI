@@ -256,7 +256,7 @@ export default function LibraryPage() {
 
   return (
     <div className="flex-1 w-full h-full flex flex-col min-h-0 overflow-hidden">
-      <div className="max-w-7xl w-full mx-auto p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-5 pb-2 sm:pb-4 animate-in fade-in duration-300">
+      <div className="w-full p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-5 pb-2 sm:pb-4 animate-in fade-in duration-300">
         
         {/* Page Header (Pinned) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">

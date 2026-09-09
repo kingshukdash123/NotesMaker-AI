@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Trash2, Edit2, Check, X } from 'lucide-react';
+import { Trash2, Pencil, Check, X } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import ThreeDotMenu from '../common/ThreeDotMenu';
 
 export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
   const { isDark } = useTheme();
@@ -20,7 +21,7 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
     if (isDark) {
       switch (priority) {
         case 'high': return 'bg-red-950/20 text-red-500 border-red-900/30';
-        case 'medium': return 'bg-yellow-955/20 text-yellow-500 border-yellow-900/30';
+        case 'medium': return 'bg-yellow-950/20 text-yellow-500 border-yellow-900/30';
         case 'low': return 'bg-emerald-950/20 text-emerald-500 border-emerald-900/30';
         default: return 'bg-zinc-900 text-zinc-500 border-zinc-800';
       }
@@ -43,8 +44,22 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
     }
   };
 
+  const menuItems = [
+    {
+      label: 'Rename',
+      icon: Pencil,
+      onClick: () => setIsEditing(true)
+    },
+    {
+      label: 'Delete',
+      icon: Trash2,
+      variant: 'danger',
+      onClick: () => onDelete(task.id)
+    }
+  ];
+
   return (
-    <div className={`group flex items-center justify-between gap-3 p-3.5 border rounded-xl transition duration-200 ${
+    <div className={`group relative flex items-center justify-between gap-3 p-3.5 border rounded-xl transition duration-200 ${
       isDark 
         ? 'bg-zinc-950/40 border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900/20' 
         : 'bg-white border-zinc-200 hover:border-zinc-300 shadow-xs'
@@ -138,25 +153,12 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
               {task.priority}
             </span>
 
-            {/* Hover Actions */}
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="btn-icon"
-                title="Edit Task"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onDelete(task.id)}
-                className="btn-icon hover:!text-red-500"
-                title="Delete Task"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            {/* Reusable 3-Dot Options Menu */}
+            <ThreeDotMenu
+              items={menuItems}
+              title="Task options"
+              ariaLabel="Task options"
+            />
           </div>
         </>
       )}

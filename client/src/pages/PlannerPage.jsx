@@ -87,12 +87,15 @@ export default function PlannerPage() {
 
   const handleSelectDateFromCalendar = (dateObj) => {
     setSelectedDate(dateObj);
-    setPlannerTab('daily'); // Switch to daily view for the selected day
+    // On mobile devices, switch tab to daily view when clicking a date in the calendar
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setPlannerTab('daily');
+    }
   };
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="max-w-4xl w-full mx-auto p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
+      <div className="w-full p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
         
         {/* Page Header */}
         <div className="space-y-1">
@@ -101,12 +104,12 @@ export default function PlannerPage() {
             Study Planner
           </h1>
           <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-            Set study targets, organise lectures, and track your daily checklist.
+            Set study targets, organize lectures, and track your daily checklist alongside the monthly calendar.
           </p>
         </div>
 
-        {/* Tab Selection */}
-        <div className={`flex border-b ${isDark ? 'border-zinc-900/60' : 'border-zinc-200'} pb-px select-none`}>
+        {/* ── Mobile & Tablet View: Tab Switcher (< lg) ── */}
+        <div className="lg:hidden flex border-b pb-px select-none border-zinc-200 dark:border-zinc-900/60">
           <button
             type="button"
             onClick={() => setPlannerTab('daily')}
@@ -140,8 +143,8 @@ export default function PlannerPage() {
           </button>
         </div>
 
-        {/* Sub-tab view content pane */}
-        <div className="min-h-0 w-full flex-1 flex flex-col">
+        {/* ── Mobile & Tablet Content Area (< lg) ── */}
+        <div className="lg:hidden min-h-0 w-full flex-1 flex flex-col">
           {plannerTab === 'daily' && (
             isLoading ? (
               <DailyPlannerSkeleton />
@@ -170,6 +173,42 @@ export default function PlannerPage() {
               />
             </div>
           )}
+        </div>
+
+        {/* ── Desktop View: Side-by-Side (>= lg) ── */}
+        <div className="hidden lg:grid lg:grid-cols-12 gap-6 min-h-0 w-full flex-1 items-stretch">
+          {/* Left Column: Daily Planner Checklist */}
+          <div className={`lg:col-span-6 xl:col-span-5 border rounded-2xl p-5 sm:p-6 flex flex-col min-h-[580px] ${
+            isDark ? 'bg-zinc-950/40 border-zinc-900/80' : 'bg-white border-zinc-200/80 shadow-xs'
+          }`}>
+            {isLoading ? (
+              <DailyPlannerSkeleton />
+            ) : (
+              <DailyPlanner
+                tasks={tasks}
+                selectedDate={selectedDate}
+                onAddTask={handleAddTask}
+                onToggleTask={toggleTask}
+                onDeleteTask={removeTask}
+                onUpdateTask={updateTask}
+                onPrevDay={handlePrevDay}
+                onNextDay={handleNextDay}
+                onSetToday={handleSetToday}
+              />
+            )}
+          </div>
+
+          {/* Right Column: Monthly Calendar View */}
+          <div className={`lg:col-span-6 xl:col-span-7 border rounded-2xl p-5 sm:p-6 flex flex-col min-h-[580px] overflow-y-auto custom-scrollbar ${
+            isDark ? 'bg-zinc-950/40 border-zinc-900/80' : 'bg-white border-zinc-200/80 shadow-xs'
+          }`}>
+            <MonthlyCalendar
+              monthTasks={monthTasks}
+              currentDate={selectedDate}
+              onMonthChange={handleMonthChange}
+              onSelectDate={handleSelectDateFromCalendar}
+            />
+          </div>
         </div>
 
       </div>

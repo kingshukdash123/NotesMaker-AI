@@ -27,30 +27,31 @@ export default function DailyPlanner({
   const completedTasks = tasks.filter(t => t.completed);
 
   const today = new Date();
-  const isToday = dateObj.getDate() === today.getDate() &&
-                  dateObj.getMonth() === today.getMonth() &&
-                  dateObj.getFullYear() === today.getFullYear();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const selectedStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+  const isToday = selectedStr === todayStr;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full w-full space-y-4 animate-in fade-in duration-300">
       
       {/* Date Navigation Header */}
-      <div className={`shrink-0 flex items-center justify-between gap-4 border-b pb-3 ${
+      <div className={`shrink-0 flex items-center justify-between gap-2 sm:gap-4 border-b pb-3 ${
         isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <CalendarDays className="w-4.5 h-4.5 text-orange-500 shrink-0" />
-          <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
+          <h3 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
             {formattedDateHeading}
           </h3>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
             onClick={onPrevDay}
             className="btn-icon"
             title="Previous Day"
+            aria-label="Previous Day"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -68,6 +69,7 @@ export default function DailyPlanner({
             onClick={onNextDay}
             className="btn-icon"
             title="Next Day"
+            aria-label="Next Day"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -78,7 +80,7 @@ export default function DailyPlanner({
       <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-1 py-1 space-y-6">
         {tasks.length === 0 ? (
           /* Empty State */
-          <div className={`text-center py-16 border rounded-2xl flex flex-col items-center justify-center gap-3 ${
+          <div className={`text-center py-14 border rounded-2xl flex flex-col items-center justify-center gap-3 ${
             isDark ? 'border-zinc-900 bg-zinc-950/20 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-600 shadow-xs'
           }`}>
             <ClipboardList className={`w-10 h-10 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />

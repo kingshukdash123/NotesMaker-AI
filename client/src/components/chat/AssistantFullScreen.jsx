@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAssistantChat } from '../../hooks/useAssistantChat';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
+import ThreeDotMenu from '../common/ThreeDotMenu';
 
 const FULLSCREEN_SUGGESTIONS = [
   { text: 'Explain a complex concept', command: '/explain ' },
@@ -17,7 +18,6 @@ export default function AssistantFullScreen({ currentUser }) {
   const [inputValue, setInputValue] = useState('');
   const [threadToDelete, setThreadToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [editingThreadId, setEditingThreadId] = useState(null);
   const [editTitleValue, setEditTitleValue] = useState('');
   const [isThreadDrawerOpen, setIsThreadDrawerOpen] = useState(false);
@@ -81,7 +81,7 @@ export default function AssistantFullScreen({ currentUser }) {
         isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
         <span className={`text-[10px] font-bold uppercase tracking-widest font-mono select-none ${
-          isDark ? 'text-zinc-550' : 'text-zinc-500'
+          isDark ? 'text-zinc-500' : 'text-zinc-500'
         }`}>AI Chat Pages</span>
         <div className="flex items-center gap-1">
           <button
@@ -120,7 +120,7 @@ export default function AssistantFullScreen({ currentUser }) {
             <div className={`h-8 rounded-lg ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`} />
           </div>
         ) : threads.length === 0 ? (
-          <div className={`text-center py-8 text-[10px] select-none ${isDark ? 'text-zinc-550' : 'text-zinc-400'}`}>
+          <div className={`text-center py-8 text-[10px] select-none ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
             No chat pages created.
           </div>
         ) : (
@@ -135,18 +135,22 @@ export default function AssistantFullScreen({ currentUser }) {
                     if (isMobile) setIsThreadDrawerOpen(false);
                   }
                 }}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl border transition duration-150 cursor-pointer group ${
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition duration-150 cursor-pointer group ${
                   isActive
                     ? isDark
-                      ? 'bg-orange-950/15 border-orange-900/35 text-orange-400 font-bold font-sans'
-                      : 'bg-orange-500/10 border-orange-500/20 text-orange-600 font-bold font-sans shadow-xs'
+                      ? 'bg-orange-950/20 text-orange-400 font-bold font-sans'
+                      : 'bg-zinc-100 text-zinc-900 font-bold font-sans'
                     : isDark
-                      ? 'bg-zinc-900/10 border-zinc-900 hover:border-zinc-800 text-zinc-400 font-sans'
-                      : 'bg-white border-zinc-200/70 hover:border-zinc-300 text-zinc-900 font-sans'
+                      ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 font-sans'
+                      : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 font-sans'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
-                  <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+                  <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${
+                    isActive 
+                      ? isDark ? 'text-orange-400' : 'text-zinc-900'
+                      : isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-400 group-hover:text-zinc-700'
+                  }`} />
                   {editingThreadId === t.threadId ? (
                     <input
                       type="text"
@@ -161,7 +165,7 @@ export default function AssistantFullScreen({ currentUser }) {
                       }}
                       onBlur={() => handleSaveRename(t.threadId)}
                       className={`border rounded px-1.5 py-0.5 text-xs outline-none w-full font-normal ${
-                        isDark ? 'bg-zinc-950 border-zinc-850 text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'
+                        isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'
                       }`}
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
@@ -172,29 +176,26 @@ export default function AssistantFullScreen({ currentUser }) {
                 </div>
                 
                 {editingThreadId !== t.threadId && (
-                  <div className="flex items-center gap-1 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingThreadId(t.threadId);
-                        setEditTitleValue(t.title);
-                      }}
-                      className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700'}`}
-                      title="Rename page"
-                    >
-                      <Pencil className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setThreadToDelete(t.threadId);
-                      }}
-                      className={`p-1 rounded transition cursor-pointer ${isDark ? 'text-zinc-650 hover:text-red-500' : 'text-zinc-400 hover:text-red-600'}`}
-                      title="Delete page"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
+                  <ThreeDotMenu
+                    items={[
+                      {
+                        label: 'Rename',
+                        icon: Pencil,
+                        onClick: () => {
+                          setEditingThreadId(t.threadId);
+                          setEditTitleValue(t.title);
+                        }
+                      },
+                      {
+                        label: 'Delete',
+                        icon: Trash2,
+                        variant: 'danger',
+                        onClick: () => setThreadToDelete(t.threadId)
+                      }
+                    ]}
+                    title="Page options"
+                    ariaLabel="Page options"
+                  />
                 )}
               </div>
             );
@@ -230,71 +231,21 @@ export default function AssistantFullScreen({ currentUser }) {
 
       {/* 2. Main Chat Viewport */}
       <div className="flex-1 flex flex-col h-full min-w-0 bg-transparent relative">
-        {/* Top Header */}
-        <div className={`px-3 sm:px-6 py-3 border-b flex items-center justify-between shrink-0 h-[53px] gap-2 ${
-          isDark ? 'border-zinc-900 bg-zinc-950/80' : 'border-zinc-200 bg-white'
-        }`}>
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <button
-              type="button"
-              onClick={() => setIsThreadDrawerOpen(true)}
-              className="btn-icon md:hidden shrink-0"
-              title="Toggle chat pages"
-              aria-label="Toggle chat pages"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-
-            {activeThread ? (
-              <div className="flex items-center gap-2 min-w-0">
-                <FileText className={`w-4 h-4 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-orange-500'}`} />
-                <h1 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-150' : 'text-zinc-900'}`}>
-                  {activeThread.title}
-                </h1>
-              </div>
-            ) : (
-              <h1 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Guruji's Study Desk</h1>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {activeThread && messages.length > 0 && (
-              <div className="relative">
-                {showConfirmClear ? (
-                  <div className={`flex items-center gap-1 border rounded-lg px-2 py-1 z-50 animate-in fade-in duration-100 ${
-                    isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'
-                  }`}>
-                    <span className={`text-[10px] mr-1 ${isDark ? 'text-zinc-400' : 'text-zinc-700'}`}>Clear all?</span>
-                    <button
-                      onClick={() => {
-                        clearThread();
-                        setShowConfirmClear(false);
-                      }}
-                      className="text-[10px] font-bold text-red-500 hover:text-red-400 px-1.5 py-0.5 rounded cursor-pointer"
-                    >
-                      Yes
-                    </button>
-                    <button
-                      onClick={() => setShowConfirmClear(false)}
-                      className={`text-[10px] px-1.5 py-0.5 rounded cursor-pointer ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-800'}`}
-                    >
-                      No
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmClear(true)}
-                    disabled={isStreaming}
-                    className="btn-icon hover:!text-red-500"
-                    title="Clear history"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+        {/* Mobile Toggle Button (opens chat pages drawer when header is removed) */}
+        <div className="md:hidden absolute top-3 left-3 z-20">
+          <button
+            type="button"
+            onClick={() => setIsThreadDrawerOpen(true)}
+            className={`p-2 rounded-xl border transition shadow-sm backdrop-blur-md cursor-pointer ${
+              isDark 
+                ? 'bg-zinc-900/90 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800' 
+                : 'bg-white/90 border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100'
+            }`}
+            title="Chat Pages"
+            aria-label="Open chat pages"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Messages viewport */}
@@ -378,11 +329,9 @@ export default function AssistantFullScreen({ currentUser }) {
 
         {/* Input box */}
         {activeThread && (
-          <div className={`p-2.5 sm:p-4 border-t shrink-0 ${
-            isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-white'
-          }`}>
-            <div className={`max-w-3xl mx-auto rounded-2xl px-3 py-1.5 sm:py-2 flex items-end border ${
-              isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-zinc-50 border-zinc-200 shadow-xs'
+          <div className="p-3 sm:px-6 sm:pb-5 sm:pt-2 shrink-0 bg-transparent">
+            <div className={`max-w-3xl mx-auto rounded-2xl px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center border ${
+              isDark ? 'bg-zinc-900/60 border-zinc-800 shadow-inner' : 'bg-zinc-50 border-zinc-200 shadow-xs'
             }`}>
               <ChatInput
                 value={inputValue}

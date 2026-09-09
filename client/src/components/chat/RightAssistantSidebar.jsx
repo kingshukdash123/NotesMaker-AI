@@ -243,18 +243,22 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                             setShowSelector(false);
                           }
                         }}
-                        className={`flex items-center justify-between p-2.5 rounded-lg border transition duration-150 cursor-pointer ${
+                        className={`flex items-center justify-between p-2.5 rounded-xl transition duration-150 cursor-pointer ${
                           isActive
                             ? isDark 
-                              ? 'bg-orange-950/15 border-orange-900/35 text-orange-400 font-bold' 
-                              : 'bg-orange-500/10 border-orange-500/20 text-orange-600 font-bold shadow-xs'
+                              ? 'bg-orange-950/20 text-orange-400 font-bold' 
+                              : 'bg-zinc-100 text-zinc-900 font-bold'
                             : isDark
-                              ? 'bg-zinc-900/10 border-zinc-900/80 hover:border-zinc-800 text-zinc-400'
-                              : 'bg-zinc-50/50 border-zinc-200/70 hover:border-zinc-300 text-zinc-900'
+                              ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                              : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
-                          <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${isDark ? 'text-zinc-550' : 'text-zinc-400'}`} />
+                          <FileText className={`w-3.5 h-3.5 shrink-0 select-none ${
+                            isActive 
+                              ? isDark ? 'text-orange-400' : 'text-zinc-900'
+                              : isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-400 group-hover:text-zinc-700'
+                          }`} />
                           {editingThreadId === t.threadId ? (
                             <input
                               type="text"
@@ -400,7 +404,7 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
             <div className={`p-3 border-t shrink-0 ${
               isDark ? 'border-zinc-900/80 bg-zinc-950' : 'border-zinc-200 bg-white'
             }`}>
-              <div className={`rounded-2xl px-2.5 py-1.5 flex items-end border ${
+              <div className={`rounded-2xl px-2.5 py-1.5 flex items-center border ${
                 isDark ? 'bg-zinc-900/40 border-zinc-800/80 shadow-inner' : 'bg-zinc-50 border-zinc-200 shadow-xs'
               }`}>
                 <ChatInput

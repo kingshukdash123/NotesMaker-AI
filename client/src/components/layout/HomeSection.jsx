@@ -20,7 +20,7 @@ export default function HomeSection({ onOpenAuthModal }) {
   const subClass = isDark ? 'text-zinc-400' : 'text-zinc-600';
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
+    <div className="w-full px-4 sm:px-6 lg:px-8">
       {/* HERO SECTION */}
       <HeroSection
         isDark={isDark}
