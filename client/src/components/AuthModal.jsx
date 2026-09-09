@@ -356,10 +356,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
         {infoNotice && (
           <div className={`mb-4 p-3 rounded-xl border text-xs flex items-start gap-2.5 animate-fadeIn ${
             isDark 
-              ? 'bg-orange-950/40 border-orange-500/40 text-orange-200' 
-              : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+              ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' 
+              : 'bg-blue-50 border-blue-200 text-blue-900'
           }`}>
-            <Info className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
+            <Info className={`w-4 h-4 shrink-0 mt-0.5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
             <span className="leading-relaxed font-medium">{infoNotice}</span>
           </div>
         )}
@@ -368,8 +368,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
         {error && (
           <div className={`mb-4 p-3 rounded-xl border text-xs flex items-start gap-2.5 animate-fadeIn ${
             isDark 
-              ? 'bg-red-950/50 border-red-500/50 text-red-200' 
-              : 'bg-red-50 border-red-200 text-red-950'
+              ? 'bg-red-500/10 border-red-500/30 text-red-300' 
+              : 'bg-red-50 border-red-200 text-red-900'
           }`}>
             <AlertCircle className={`w-4 h-4 shrink-0 mt-0.5 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
             <span className="leading-relaxed font-medium">{error}</span>
@@ -380,10 +380,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
         {successMsg && (
           <div className={`mb-4 p-3 rounded-xl border text-xs flex items-start gap-2.5 animate-fadeIn shadow-xs ${
             isDark 
-              ? 'bg-orange-950/60 border-orange-500/60 text-orange-200' 
-              : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
+              : 'bg-emerald-50 border-emerald-200 text-emerald-900'
           }`}>
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
+            <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
             <span className="leading-relaxed font-semibold">{successMsg}</span>
           </div>
         )}

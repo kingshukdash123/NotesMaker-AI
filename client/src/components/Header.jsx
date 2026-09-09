@@ -150,8 +150,8 @@ export default function Header({
     : 'text-zinc-600 hover:text-orange-600 hover:bg-orange-50';
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-2.5 sm:py-3 transition-colors duration-200 border-b ${
-      isDark ? 'bg-black/85 border-zinc-800/80' : 'bg-white/95 border-zinc-200/80 shadow-xs'
+    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-2.5 sm:py-3 transition-colors duration-200 border-b bg-transparent ${
+      isDark ? 'border-zinc-800/80' : 'border-zinc-200/80 shadow-xs'
     }`}>
       <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-3 sm:gap-6">
         
@@ -161,10 +161,10 @@ export default function Header({
             <button
               type="button"
               onClick={() => setIsSidebarMobileOpen?.(!isSidebarMobileOpen)}
-              className="btn-icon lg:hidden"
+              className="lg:hidden p-1.5 text-zinc-400 hover:text-zinc-200 cursor-pointer bg-transparent"
               aria-label="Toggle sidebar menu"
             >
-              <Menu className="w-4 h-4" />
+              <Menu className="w-5 h-5" />
             </button>
           )}
 
@@ -251,8 +251,8 @@ export default function Header({
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`lg:hidden w-8 h-8 rounded-xl flex items-center justify-center transition cursor-pointer ${
-                  isDark ? 'text-zinc-300 bg-zinc-900 border border-zinc-800' : 'text-zinc-700 bg-zinc-100 border border-zinc-200'
+                className={`lg:hidden w-8 h-8 flex items-center justify-center transition cursor-pointer bg-transparent ${
+                  isDark ? 'text-zinc-300 hover:text-white' : 'text-zinc-700 hover:text-zinc-900'
                 }`}
                 aria-label="Toggle navigation menu"
               >
@@ -265,10 +265,10 @@ export default function Header({
               <button
                 type="button"
                 onClick={handleToggleBrowserFullscreen}
-                className={`hidden lg:flex w-8 h-8 rounded-full transition items-center justify-center cursor-pointer select-none ${
+                className={`hidden lg:flex w-8 h-8 rounded-full transition items-center justify-center cursor-pointer select-none bg-transparent ${
                   isDark
-                    ? 'bg-zinc-900 border border-zinc-800 text-orange-500 hover:border-zinc-700'
-                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                    ? 'text-orange-500 hover:text-orange-400'
+                    : 'text-zinc-600 hover:text-zinc-900'
                 }`}
                 title={isBrowserFullscreen ? 'Exit Fullscreen (F11)' : 'Enter Fullscreen (F11)'}
                 aria-label={isBrowserFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}

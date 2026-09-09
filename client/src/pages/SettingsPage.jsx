@@ -132,17 +132,17 @@ export default function SettingsPage() {
               {/* Feedback Alerts */}
               {prefSuccess && (
                 <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
-                  isDark ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' : 'bg-white border border-zinc-200 shadow-xs text-zinc-900'
+                  isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-emerald-50 border border-emerald-200 shadow-xs text-emerald-900'
                 }`}>
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-500" />
+                  <CheckCircle2 className={`w-4 h-4 shrink-0 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   <span className="font-semibold">{prefSuccess}</span>
                 </div>
               )}
               {prefError && (
                 <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
-                  isDark ? 'bg-red-950/50 border-red-500/40 text-red-200' : 'bg-red-50 border-red-200 text-red-950'
+                  isDark ? 'bg-red-500/10 border-red-500/30 text-red-300' : 'bg-red-50 border border-red-200 text-red-900'
                 }`}>
-                  <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                  <AlertCircle className={`w-4 h-4 shrink-0 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
                   <span className="font-semibold">{prefError}</span>
                 </div>
               )}

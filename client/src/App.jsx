@@ -296,7 +296,7 @@ function MainApp() {
   const isLegalPage = LEGAL_SECTIONS.has(activeSection);
 
   return (
-    <div className={`${isWorkspaceActive || isLegalPage ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} ${isDark ? 'bg-black text-zinc-100' : 'bg-white text-zinc-900'} flex flex-col selection:bg-zinc-800 relative transition-colors duration-200`}>
+    <div className={`${isWorkspaceActive || isLegalPage ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} ${isDark ? 'bg-black text-zinc-100 selection:bg-zinc-800 selection:text-zinc-100' : 'bg-white text-zinc-900 selection:bg-zinc-200 selection:text-zinc-900'} flex flex-col relative transition-colors duration-200`}>
       {/* Top Header Navbar (Hidden in Fullscreen Video Mode) */}
       {!isVideoFullscreen && (
         <Header

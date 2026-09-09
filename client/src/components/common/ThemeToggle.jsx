@@ -91,10 +91,10 @@ export default function ThemeToggle({
       aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       className={`group relative ${
         showLabel ? 'px-3 py-1.5 rounded-xl' : 'w-8 h-8 rounded-full'
-      } transition flex items-center justify-center gap-2 cursor-pointer select-none ${
+      } transition flex items-center justify-center gap-2 cursor-pointer select-none bg-transparent ${
         isDark
-          ? 'bg-zinc-900 border border-zinc-800 text-orange-500 hover:border-zinc-700'
-          : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+          ? 'text-orange-500 hover:text-orange-400'
+          : 'text-zinc-600 hover:text-zinc-900'
       } ${className}`}
     >
       <div className="relative w-4 h-4 flex items-center justify-center overflow-hidden">

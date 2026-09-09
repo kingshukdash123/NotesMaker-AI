@@ -74,6 +74,19 @@
   }
 }
 
+/* Global Selection Styles */
+::selection {
+  background-color: #27272a;
+  color: #fafafa;
+}
+
+[data-theme="light"] ::selection,
+html[data-theme="light"] ::selection,
+[data-theme="light"] *::selection {
+  background-color: #e4e4e7;
+  color: #09090b;
+}
+
 /* Custom Scrollbar - Dark */
 ::-webkit-scrollbar {
   width: 6px;
