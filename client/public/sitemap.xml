@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- 1. Landing Page / Main Platform -->
+  <url>
+    <loc>https://pathshalaai.co.in/</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- 2. Discover Educational Lectures & Courses -->
+  <url>
+    <loc>https://pathshalaai.co.in/discover</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 3. Guruji AI Academic Mentor -->
+  <url>
+    <loc>https://pathshalaai.co.in/assistant</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 4. Study Notes & Outlines Archive -->
+  <url>
+    <loc>https://pathshalaai.co.in/library/notes</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- 5. Watch History Archive -->
+  <url>
+    <loc>https://pathshalaai.co.in/library/history</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- 6. Daily Study Targets & Checklist -->
+  <url>
+    <loc>https://pathshalaai.co.in/planner/daily</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- 7. Monthly Academic Calendar -->
+  <url>
+    <loc>https://pathshalaai.co.in/planner/monthly</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- 8. Legal Center -->
+  <url>
+    <loc>https://pathshalaai.co.in/legal</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 9. Privacy Policy -->
+  <url>
+    <loc>https://pathshalaai.co.in/privacy</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 10. Terms of Service -->
+  <url>
+    <loc>https://pathshalaai.co.in/terms</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 11. AI & Academic Integrity Disclaimer -->
+  <url>
+    <loc>https://pathshalaai.co.in/disclaimer</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 12. Cookie & Storage Policy -->
+  <url>
+    <loc>https://pathshalaai.co.in/cookies</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 13. Refund & Cancellation Policy -->
+  <url>
+    <loc>https://pathshalaai.co.in/refund</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>

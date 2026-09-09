@@ -141,9 +141,10 @@ export default function RecentActivityWidget({
                       }`}>
                         <img 
                           src={thumbnail} 
-                          alt="" 
+                          alt={title || 'Lecture Video Thumbnail'} 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" 
                           loading="lazy"
+                          decoding="async"
                         />
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 flex items-center justify-center transition-colors">
                           <PlayCircle className="w-4 h-4 text-white drop-shadow" />
@@ -251,9 +252,10 @@ export default function RecentActivityWidget({
                       }`}>
                         <img 
                           src={thumbnail} 
-                          alt="" 
+                          alt={title || 'Study Note Thumbnail'} 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" 
                           loading="lazy"
+                          decoding="async"
                         />
                         <div className="absolute top-1 right-1 px-1 py-0.2 rounded text-[8px] font-bold bg-orange-500 text-white shadow">
                           Notes

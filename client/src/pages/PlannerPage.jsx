@@ -96,10 +96,10 @@ export default function PlannerPage() {
         
         {/* Page Header */}
         <div className="space-y-1">
-          <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2`}>
+          <h1 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2`}>
             <Calendar className="w-5 h-5 text-orange-500" />
             Study Planner
-          </h2>
+          </h1>
           <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
             Set study targets, organise lectures, and track your daily checklist.
           </p>

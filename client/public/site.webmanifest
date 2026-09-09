@@ -1,0 +1,28 @@
+{
+  "name": "Pathshala AI — Distraction-Free Study & Productivity Platform",
+  "short_name": "Pathshala AI",
+  "description": "One platform for distraction-free study and maximum productivity. Focused educational lectures, structured AI notes, smart planner, and personal AI mentorship.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "education",
+    "productivity"
+  ]
+}

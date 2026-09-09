@@ -261,12 +261,12 @@ export default function LibraryPage() {
         {/* Page Header (Pinned) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
           <div className="space-y-1">
-            <h2 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
+            <h1 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
               isDark ? 'text-zinc-50' : 'text-zinc-900'
             }`}>
               <Library className="w-5 h-5 text-orange-500" />
               Your Library
-            </h2>
+            </h1>
             <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
               Manage saved playlists, study history logs, and generated notes archive.
             </p>

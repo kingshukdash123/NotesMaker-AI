@@ -206,7 +206,6 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
   const textPrimary = isDark ? 'text-zinc-50' : 'text-zinc-900';
   const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
   const textMuted = isDark ? 'text-zinc-500' : 'text-zinc-500';
-  const divider = isDark ? 'border-zinc-800/80' : 'border-zinc-200';
   const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400';
 
   return (
@@ -218,9 +217,10 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
           title="Legal Center"
           subtitle={`All ${COMPANY_NAME} legal documents, policies, and terms — always up to date.`}
           backAction={!currentUser && (
-            <button
-              type="button"
-              onClick={() => {
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
                 setActiveSection('dashboard');
                 if (window.location.pathname !== '/') {
                   window.history.pushState(null, '', '/');
@@ -230,7 +230,7 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Home</span>
-            </button>
+            </a>
           )}
         />
 

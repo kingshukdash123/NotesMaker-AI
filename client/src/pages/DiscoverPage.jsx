@@ -340,12 +340,12 @@ export default function DiscoverPage() {
       <div className="max-w-7xl mx-auto p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
         {/* Page Header */}
         <div className="space-y-1">
-          <h2 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
+          <h1 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
             isDark ? 'text-zinc-100' : 'text-zinc-900'
           }`}>
             <Search className="w-5 h-5 text-orange-500" />
             Discover Lectures & Courses
-          </h2>
+          </h1>
           <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
             Find high-quality academic lectures, full course playlists, and live masterclasses to outline, transcribe, and study.
           </p>

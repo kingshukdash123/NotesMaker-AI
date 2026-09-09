@@ -17,7 +17,7 @@ import RecentActivityWidget from '../components/dashboard/RecentActivityWidget';
 import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
 
 // Icons
-import { Clock, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export default function DashboardPage() {
   const { currentUser, getUserDisplayName } = useAuth();
@@ -186,11 +186,11 @@ export default function DashboardPage() {
           {/* 1st Column: Greetings & Motivational Quote (2/3 width) */}
           <div className="md:col-span-2 flex flex-col justify-between space-y-3 h-full">
             <div>
-              <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-2 ${
+              <h1 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-2 ${
                 isDark ? 'text-zinc-50' : 'text-zinc-900'
               }`}>
                 Welcome back, {displayName} 👋
-              </h2>
+              </h1>
               <p className={`text-xs sm:text-sm md:text-base mt-1 sm:mt-1.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
                 {notesHistory.length > 0 || watchHistory.length > 0 
                   ? `You've engaged with ${Math.max(notesHistory.length, watchHistory.length)} educational lectures. Let's make today productive!`

@@ -248,12 +248,12 @@ export default function AssistantFullScreen({ currentUser }) {
             {activeThread ? (
               <div className="flex items-center gap-2 min-w-0">
                 <FileText className={`w-4 h-4 shrink-0 select-none ${isDark ? 'text-zinc-500' : 'text-orange-500'}`} />
-                <h2 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-150' : 'text-zinc-900'}`}>
+                <h1 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-150' : 'text-zinc-900'}`}>
                   {activeThread.title}
-                </h2>
+                </h1>
               </div>
             ) : (
-              <span className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Guruji's Study Desk</span>
+              <h1 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Guruji's Study Desk</h1>
             )}
           </div>
 

@@ -1,5 +1,6 @@
 export * from './companyConstants.js';
 export * from './routerConstants.js';
+export * from './seoConstants.js';
 export {
   LEGAL_POLICIES_DEFAULTS,
   LEGAL_POLICY_SLUGS,
@@ -9,10 +10,4 @@ export {
   LEGAL_NAV_ITEMS,
   LEGAL_POLICIES_COLLECTION,
 } from './legalPoliciesDefaults.js';
-export {
-  DEFAULT_IMAGE,
-  DEFAULT_ROBOTS,
-  DEFAULT_TWITTER_CARD,
-  SEO_PAGE_CONFIGS,
-} from './seoConstants.js';
 

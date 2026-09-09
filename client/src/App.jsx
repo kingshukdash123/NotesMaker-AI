@@ -370,9 +370,10 @@ function MainApp() {
             }`}>
             <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
               {/* Brand */}
-              <button
-                type="button"
-                onClick={() => {
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
                   resetActiveVideo();
                   setActiveSection('dashboard');
                 }}
@@ -381,19 +382,22 @@ function MainApp() {
                 title="Go to Home"
               >
                 &copy; {new Date().getFullYear()} Pathshala A<i>I</i> &mdash; All Rights Reserved
-              </button>
+              </a>
               {/* Legal Links */}
-              <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+              <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1" aria-label="Legal & Policies">
                 {LEGAL_NAV_ITEMS.map(({ slug, shortLabel, label }) => (
-                  <button
+                  <a
                     key={slug}
-                    type="button"
-                    onClick={() => setActiveSection(slug)}
+                    href={slug === 'legal' ? '/privacy' : `/${slug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveSection(slug);
+                    }}
                     className={`text-[11px] transition hover:underline underline-offset-2 cursor-pointer ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-400 hover:text-zinc-900'
                       }`}
                   >
                     {shortLabel || label}
-                  </button>
+                  </a>
                 ))}
               </nav>
             </div>
@@ -449,7 +453,11 @@ function MainApp() {
             >
               <img
                 src="/nova.png"
-                alt="Guruji"
+                alt="Ask Guruji — AI Academic Mentor"
+                width="52"
+                height="52"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover select-none pointer-events-none"
               />
             </button>

@@ -37,9 +37,10 @@ export default function SearchResultCard({
         {metadata.thumbnail ? (
           <img
             src={metadata.thumbnail}
-            alt={metadata.title || ''}
+            alt={metadata.title || 'Educational Lecture Thumbnail'}
             className="w-full h-full object-cover transition-transform duration-250 group-hover:scale-[1.02]"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className={`w-full h-full flex items-center justify-center ${

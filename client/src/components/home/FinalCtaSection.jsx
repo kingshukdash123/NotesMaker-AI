@@ -22,7 +22,11 @@ export default function FinalCtaSection({ isDark, onOpenAuthModal, headingClass,
         <div className="relative z-10 flex justify-center">
           <img
             src="/nova.png"
-            alt="Guruji Mentor"
+            alt="Guruji — AI Academic Mentor"
+            width="64"
+            height="64"
+            loading="lazy"
+            decoding="async"
             className="w-16 h-16 rounded-full object-cover border-2 border-orange-500 shadow-lg shadow-orange-500/25"
           />
         </div>

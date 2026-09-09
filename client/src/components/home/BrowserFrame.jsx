@@ -9,7 +9,7 @@ export default function BrowserFrame({ src, alt, className = '' }) {
           <span className="text-[10px] text-zinc-500 font-mono">pathshalaai.co.in</span>
         </div>
       </div>
-      <img src={src} alt={alt} className="w-full h-auto object-cover object-top block" loading="lazy" />
+      <img src={src} alt={alt} className="w-full h-auto object-cover object-top block" loading="lazy" decoding="async" />
     </div>
   );
 }

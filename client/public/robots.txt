@@ -1,0 +1,23 @@
+# Pathshala AI robots.txt
+# https://pathshalaai.co.in/robots.txt
+
+User-agent: *
+Allow: /
+Allow: /discover
+Allow: /library
+Allow: /planner
+Allow: /assistant
+Allow: /legal
+Allow: /privacy
+Allow: /terms
+Allow: /disclaimer
+Allow: /cookies
+Allow: /refund
+
+# Protect private authenticated settings and internal endpoints
+Disallow: /settings
+Disallow: /api/
+Disallow: /_api/
+
+# XML Sitemap
+Sitemap: https://pathshalaai.co.in/sitemap.xml

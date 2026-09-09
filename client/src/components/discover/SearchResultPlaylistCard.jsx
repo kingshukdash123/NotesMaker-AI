@@ -22,9 +22,10 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
         {playlist.thumbnail ? (
           <img
             src={playlist.thumbnail}
-            alt={playlist.title}
+            alt={playlist.title || 'Course Playlist Thumbnail'}
             className="w-full h-full object-cover transition-transform duration-250 group-hover:scale-[1.02]"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className={`w-full h-full flex items-center justify-center ${

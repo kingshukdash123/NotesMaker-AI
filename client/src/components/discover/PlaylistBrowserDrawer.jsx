@@ -321,9 +321,10 @@ export default function PlaylistBrowserDrawer({
                 }`}>
                   <img
                     src={vid.thumbnail}
-                    alt={vid.title}
+                    alt={vid.title || 'Playlist Lecture Video Thumbnail'}
                     className="w-full h-full object-cover group-hover:scale-[1.02] transition duration-200"
                     loading="lazy"
+                    decoding="async"
                   />
                   {/* Subtle hover play overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
