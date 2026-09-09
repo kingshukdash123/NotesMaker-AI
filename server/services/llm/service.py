@@ -14,23 +14,19 @@ logger = get_logger(__name__)
 class LLMService:
 
     @classmethod
-    def get_embeddings(cls, google_api_key: Optional[str] = None, model_name: str = EMBEDDING_MODEL):
+    def get_embeddings(cls, model_name: str = EMBEDDING_MODEL):
         """
-        Dynamically initializes and returns the Google Generative AI Embeddings.
+        Dynamically initializes and returns the Google Generative AI Embeddings using server environment settings.
         """
         try:
-            # If no user-provided key, fall back to environment variables
-            if not google_api_key:
-                google_api_key = settings.GEMINI_API_KEY
-
-
+            google_api_key = settings.GEMINI_API_KEY
 
             if not google_api_key:
                 logger.error("Gemini API key is missing for embeddings.")
                 raise PathshalaError(
-                    message="Gemini API key is missing. Please set it in Settings.",
+                    message="Gemini API key is missing. Please configure GEMINI_API_KEY in server environment.",
                     code="MISSING_API_KEY",
-                    status_code=400,
+                    status_code=500,
                 )
 
             logger.info(f"Initializing Gemini Embeddings model '{model_name}'.")
@@ -50,32 +46,25 @@ class LLMService:
                 status_code=500,
             ) from e
 
-
-
     @classmethod
     def get_gemini_llm(
         cls,
-        google_api_key: Optional[str] = None,
         model_name: str = "gemini-3.5-flash-lite",
         temperature: float = 0.2,
         max_retries: int = MAX_RETRIES,
     ):
         """
-        Dynamically initializes and returns the Gemini LLM.
+        Dynamically initializes and returns the Gemini LLM using server environment settings.
         """
         try:
-            # If no user-provided key, fall back to environment variables
-            if not google_api_key:
-                google_api_key = settings.GEMINI_API_KEY
-
-
+            google_api_key = settings.GEMINI_API_KEY
 
             if not google_api_key:
                 logger.error("Gemini API key is missing.")
                 raise PathshalaError(
-                    message="Gemini API key is missing. Please set it in Settings.",
+                    message="Gemini API key is missing. Please configure GEMINI_API_KEY in server environment.",
                     code="MISSING_API_KEY",
-                    status_code=400,
+                    status_code=500,
                 )
 
             logger.info(f"Initializing Gemini model '{model_name}' (temp: {temperature}, retries: {max_retries}).")
@@ -86,7 +75,6 @@ class LLMService:
                 temperature=temperature,
                 max_retries=max_retries,
             )
-
 
         except Exception as e:
             if isinstance(e, PathshalaError):
@@ -101,26 +89,23 @@ class LLMService:
     @classmethod
     def get_groq_llm(
         cls,
-        groq_api_key: Optional[str] = None,
         model_name: str = CHAT_MODEL,
         temperature: float = 0.2,
         max_retries: int = MAX_RETRIES,
         fallback_models: Optional[List[str]] = None,
     ):
         """
-        Dynamically initializes and returns the Groq LLM with centralized fallbacks.
+        Dynamically initializes and returns the Groq LLM with centralized fallbacks using server environment settings.
         """
         try:
-            # If no user-provided key, fall back to environment variables
-            if not groq_api_key:
-                groq_api_key = settings.GROQ_API_KEY
+            groq_api_key = settings.GROQ_API_KEY
 
             if not groq_api_key:
                 logger.error("Groq API key is missing.")
                 raise PathshalaError(
-                    message="Groq API key is missing. Please set it in Settings.",
+                    message="Groq API key is missing. Please configure GROQ_API_KEY in server environment.",
                     code="MISSING_GROQ_API_KEY",
-                    status_code=400,
+                    status_code=500,
                 )
 
             logger.info(f"Initializing Groq model '{model_name}' (temp: {temperature}, retries: {max_retries}).")
@@ -161,5 +146,3 @@ class LLMService:
                 code="GROQ_INITIALIZATION_ERROR",
                 status_code=500,
             ) from e
-
-

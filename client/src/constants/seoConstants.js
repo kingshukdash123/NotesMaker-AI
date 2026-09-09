@@ -70,9 +70,9 @@ export const SEO_PAGE_CONFIGS = {
     path: '/assistant',
   },
   settings: {
-    title: 'Settings — Mentor Profile, API Keys & Theme | Pathshala AI',
-    description: 'Configure your personalized Guruji study mentor parameters, custom Google Gemini and Groq API keys, and theme mode.',
-    keywords: 'Pathshala AI settings, Guruji preferences, API keys, student profile, theme settings',
+    title: 'Settings — Mentor Profile & Theme | Pathshala AI',
+    description: 'Configure your personalized Guruji study mentor parameters and theme mode.',
+    keywords: 'Pathshala AI settings, Guruji preferences, student profile, theme settings',
     path: '/settings',
   },
 

@@ -1,24 +1,19 @@
 import { useState, useEffect } from 'react';
 import {
   GraduationCap,
-  Key,
   Palette,
   Save,
   Loader2,
   CheckCircle2,
   AlertCircle,
-  ExternalLink,
   BookOpen,
   Target,
   Lightbulb,
   Moon,
   Sun,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { saveUserApiKeys, getUserApiKeys } from '../services/firebase/notesService';
 import {
   EDUCATION_LEVELS,
   FIELDS_OF_STUDY,
@@ -37,7 +32,6 @@ const TONE_OPTIONS = MENTOR_TONES.map((t) => t.id);
 
 const TABS = [
   { id: 'mentor', label: 'Mentor Profile', icon: GraduationCap },
-  { id: 'keys', label: 'API Keys', icon: Key },
   { id: 'appearance', label: 'Appearance', icon: Palette },
 ];
 
@@ -57,16 +51,6 @@ export default function SettingsPage() {
   const [prefSuccess, setPrefSuccess] = useState('');
   const [prefError, setPrefError] = useState('');
 
-  // ─── API Keys State ────────────────────────────────────────────────────────
-  const [googleApiKey, setGoogleApiKey] = useState('');
-  const [groqApiKey, setGroqApiKey] = useState('');
-  const [showGoogle, setShowGoogle] = useState(false);
-  const [showGroq, setShowGroq] = useState(false);
-  const [isSavingKeys, setIsSavingKeys] = useState(false);
-  const [isFetchingKeys, setIsFetchingKeys] = useState(false);
-  const [keysError, setKeysError] = useState('');
-  const [keysSuccess, setKeysSuccess] = useState('');
-
   // Load preferences from user profile
   useEffect(() => {
     if (userProfile?.preferences) {
@@ -77,32 +61,6 @@ export default function SettingsPage() {
       setMentorTone(userProfile.preferences.mentorTone || DEFAULT_STUDENT_PREFERENCES.mentorTone);
     }
   }, [userProfile]);
-
-  // Load user API keys
-  useEffect(() => {
-    if (!currentUser) return;
-    let isMounted = true;
-    const loadKeys = async () => {
-      setIsFetchingKeys(true);
-      setKeysError('');
-      try {
-        const keys = await getUserApiKeys(currentUser.uid);
-        if (isMounted && keys) {
-          setGoogleApiKey(keys.googleApiKey || '');
-          setGroqApiKey(keys.groqApiKey || '');
-        }
-      } catch (err) {
-        console.error('Failed to load user API keys:', err);
-        if (isMounted) setKeysError('Failed to load saved API keys.');
-      } finally {
-        if (isMounted) setIsFetchingKeys(false);
-      }
-    };
-    loadKeys();
-    return () => {
-      isMounted = false;
-    };
-  }, [currentUser]);
 
   const handleSavePreferences = async (e) => {
     if (e) e.preventDefault();
@@ -130,31 +88,9 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveApiKeys = async (e) => {
-    if (e) e.preventDefault();
-    if (!currentUser) return;
-
-    setIsSavingKeys(true);
-    setKeysError('');
-    setKeysSuccess('');
-
-    try {
-      await saveUserApiKeys(currentUser.uid, googleApiKey.trim(), groqApiKey.trim());
-      setKeysSuccess('API keys updated successfully!');
-      setTimeout(() => setKeysSuccess(''), 3000);
-    } catch (err) {
-      console.error('Failed to save API keys:', err);
-      setKeysError('Failed to save API keys. Please try again.');
-    } finally {
-      setIsSavingKeys(false);
-    }
-  };
-
   // ─── Theme Colors matching Legal Docs / PolicyPage ────────────────────────
   const bg = isDark ? 'bg-zinc-950' : 'bg-white';
-  const cardBg = isDark ? 'bg-zinc-900/60 border-zinc-800/80' : 'bg-white border-zinc-200 shadow-xs';
   const textPrimary = isDark ? 'text-zinc-50' : 'text-zinc-900';
-  const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
   const textMuted = isDark ? 'text-zinc-500' : 'text-zinc-500';
   const inputBg = isDark ? 'bg-zinc-900 border-zinc-800 placeholder-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-400';
 
@@ -165,7 +101,7 @@ export default function SettingsPage() {
         {/* ── Page Header using Reusable DocPageHeader ── */}
         <DocPageHeader
           title="Application Settings"
-          subtitle="Configure your Guruji mentor persona, personal API configurations, and theme appearance."
+          subtitle="Configure your Guruji mentor persona and theme appearance."
         />
 
         {/* ── Main Tab Switcher using Reusable TabPillSwitcher ── */}
@@ -178,7 +114,6 @@ export default function SettingsPage() {
         {/* ── Tab Context Subtitle ── */}
         <div className={`text-xs ${textMuted}`}>
           {activeTab === 'mentor' && 'Adjust your academic preferences, focus milestones, and mentor interaction style.'}
-          {activeTab === 'keys' && 'Provide your personal Google Gemini and Groq API keys for dedicated high-throughput quotas.'}
           {activeTab === 'appearance' && 'Customize theme mode and color aesthetics.'}
         </div>
 
@@ -364,132 +299,7 @@ export default function SettingsPage() {
           )}
 
           {/* ════════════════════════════════════════════════════════════════
-              TAB 2: API KEYS
-          ════════════════════════════════════════════════════════════════ */}
-          {activeTab === 'keys' && (
-            <div className="space-y-5">
-              {/* Feedback Alerts */}
-              {keysSuccess && (
-                <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
-                  isDark ? 'bg-orange-950/60 border-orange-500/50 text-orange-200' : 'bg-white border border-zinc-200 shadow-xs text-zinc-900'
-                }`}>
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-orange-500" />
-                  <span className="font-semibold">{keysSuccess}</span>
-                </div>
-              )}
-              {keysError && (
-                <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 animate-fadeIn ${
-                  isDark ? 'bg-red-950/50 border-red-500/40 text-red-200' : 'bg-red-50 border-red-200 text-red-950'
-                }`}>
-                  <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
-                  <span className="font-semibold">{keysError}</span>
-                </div>
-              )}
-
-              {isFetchingKeys ? (
-                <div className={`rounded-xl border p-12 flex flex-col items-center justify-center gap-3 ${cardBg}`}>
-                  <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
-                  <span className={`text-xs font-medium ${textMuted}`}>Loading saved API configurations...</span>
-                </div>
-              ) : (
-                <form onSubmit={handleSaveApiKeys} className="space-y-5">
-                  {/* Google Gemini Key */}
-                  <DocSectionCard
-                    title="Google Gemini API Key"
-                    icon={Key}
-                    subtitle="Used for comprehensive notes generation, high-yield concept breakdowns, and study materials. If left blank, shared system quotas will be utilized."
-                    headerAction={
-                      <a
-                        href="https://aistudio.google.com/api-keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`text-xs flex items-center gap-1 font-semibold underline underline-offset-2 transition ${
-                          isDark ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-900'
-                        }`}
-                      >
-                        Get Key <ExternalLink className="w-3 h-3" />
-                      </a>
-                    }
-                  >
-                    <div className="relative">
-                      <Key className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-                      <input
-                        type={showGoogle ? 'text' : 'password'}
-                        value={googleApiKey}
-                        onChange={(e) => setGoogleApiKey(e.target.value)}
-                        placeholder="AIzaSy... (Gemini Key)"
-                        className={`w-full border rounded-xl pl-10 pr-10 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition font-mono ${inputBg} ${textPrimary}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowGoogle(!showGoogle)}
-                        className={`btn-icon absolute right-2.5 top-1/2 -translate-y-1/2 !p-1.5 cursor-pointer ${
-                          isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700'
-                        }`}
-                        title={showGoogle ? 'Hide Key' : 'Show Key'}
-                      >
-                        {showGoogle ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </DocSectionCard>
-
-                  {/* Groq Cloud Key */}
-                  <DocSectionCard
-                    title="Groq Cloud API Key"
-                    icon={Key}
-                    subtitle="Ultra-fast inference provider used for instant Q&A responses, video summaries, and interactive mentor chat."
-                    headerAction={
-                      <a
-                        href="https://console.groq.com/keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`text-xs flex items-center gap-1 font-semibold underline underline-offset-2 transition ${
-                          isDark ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-900'
-                        }`}
-                      >
-                        Get Key <ExternalLink className="w-3 h-3" />
-                      </a>
-                    }
-                  >
-                    <div className="relative">
-                      <Key className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-                      <input
-                        type={showGroq ? 'text' : 'password'}
-                        value={groqApiKey}
-                        onChange={(e) => setGroqApiKey(e.target.value)}
-                        placeholder="gsk_... (Groq Key)"
-                        className={`w-full border rounded-xl pl-10 pr-10 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition font-mono ${inputBg} ${textPrimary}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowGroq(!showGroq)}
-                        className={`btn-icon absolute right-2.5 top-1/2 -translate-y-1/2 !p-1.5 cursor-pointer ${
-                          isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700'
-                        }`}
-                        title={showGroq ? 'Hide Key' : 'Show Key'}
-                      >
-                        {showGroq ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </DocSectionCard>
-
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={isSavingKeys}
-                      className="btn-primary py-2.5 px-6 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md"
-                    >
-                      {isSavingKeys ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                      <span>Save API Configurations</span>
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          )}
-
-          {/* ════════════════════════════════════════════════════════════════
-              TAB 3: APPEARANCE
+              TAB 2: APPEARANCE
           ════════════════════════════════════════════════════════════════ */}
           {activeTab === 'appearance' && (
             <div className="space-y-5">

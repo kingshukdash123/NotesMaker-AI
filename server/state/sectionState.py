@@ -10,7 +10,6 @@ class ChapterState(TypedDict):
     chapter_plan: ChapterPlan
     transcript_segments: list[Any]
     generated_sections: Optional[list[GeneratedSection]]
-    google_api_key: Optional[str]
     task_id: Optional[str]
     audience: Optional[str]
     note_style: Optional[str]

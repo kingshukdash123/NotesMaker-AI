@@ -13,7 +13,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
-import { NoteModel, UserApiKeyModel, VideoQnAModel } from '../../models';
+import { NoteModel, VideoQnAModel } from '../../models';
 
 /**
  * Saves a completed note generation task into Firestore.
@@ -87,47 +87,6 @@ export async function deleteNotes(userId, noteId) {
   }
 
   await deleteDoc(docRef);
-}
-
-/**
- * Saves or updates user API keys in Firestore.
- * @param {string} userId - Auth user ID (UID)
- * @param {string} googleApiKey - Gemini API Key
- * @param {string} groqApiKey - Groq API Key
- */
-export async function saveUserApiKeys(userId, googleApiKey, groqApiKey) {
-  if (!userId) throw new Error('User must be logged in to save API keys.');
-
-  const model = new UserApiKeyModel({
-    userId,
-    googleApiKey,
-    groqApiKey,
-  });
-
-  const docRef = doc(db, 'user_api_keys', userId);
-  await setDoc(docRef, model.toFirestore(), { merge: true });
-}
-
-/**
- * Retrieves the user's API keys from Firestore.
- * @param {string} userId - Auth user ID (UID)
- * @returns {Promise<{googleApiKey: string, groqApiKey: string}>} The API keys object
- */
-export async function getUserApiKeys(userId) {
-  if (!userId) return { googleApiKey: '', groqApiKey: '' };
-
-  const docRef = doc(db, 'user_api_keys', userId);
-  const docSnap = await getDoc(docRef);
-
-  if (docSnap.exists()) {
-    const model = UserApiKeyModel.fromFirestore(docSnap);
-    return {
-      googleApiKey: model?.googleApiKey || '',
-      groqApiKey: model?.groqApiKey || '',
-    };
-  }
-
-  return { googleApiKey: '', groqApiKey: '' };
 }
 
 /**

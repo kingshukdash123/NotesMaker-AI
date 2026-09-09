@@ -45,9 +45,7 @@ def chapter_writer(state: ChapterState) -> dict:
         )
 
         # 3. Call the ChapterWriterService
-        service = ChapterWriterService(
-            google_api_key=state.get("google_api_key"),
-        )
+        service = ChapterWriterService()
 
         generated_sections = service.run(
             lecture_outline=state["lecture_outline"],

@@ -15,7 +15,7 @@ from pydantic import BaseModel, HttpUrl
 
 import hashlib
 from utils.logger import get_logger, current_task_id
-from services.firebase.firestore import get_user_api_keys, get_cached_search, save_cached_search
+from services.firebase.firestore import get_cached_search, save_cached_search
 from services.rag.service import RAGService
 from services.assistant.service import AssistantService
 from services.youtube.metadata import get_video_metadata
@@ -60,8 +60,7 @@ class GenerateNotesRequest(BaseModel):
 
 async def run_pipeline_task(
     task_id: str,
-    url: str,
-    google_api_key: Optional[str] = None
+    url: str
 ):
     """
     Asynchronously executes the LangGraph notes generation pipeline,
@@ -75,7 +74,6 @@ async def run_pipeline_task(
         # ainvoke is the standard async method for LangGraph compilation graphs
         result = await graph.ainvoke({
             "youtube_url": url,
-            "google_api_key": google_api_key,
             "task_id": task_id,
         })
         
@@ -260,22 +258,6 @@ async def generate_notes(
     except Exception as check_err:
         logger.warning(f"Metadata live check skipped due to error: {check_err}")
     
-    # Parse Firebase Authorization ID Token if present
-    id_token = None
-    if authorization and authorization.startswith("Bearer "):
-        id_token = authorization.split("Bearer ")[1]
-        
-    # Fetch user API keys from Firestore
-    google_api_key = None
-    if x_user_id:
-        try:
-            keys = await get_user_api_keys(x_user_id, id_token)
-            google_api_key = keys.get("google_api_key")
-        except Exception as e:
-            logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
-
-    
-    
     # Prune tasks older than expiration duration to keep memory usage low
     now = time.time()
     for expired_id in [tid for tid, t in list(tasks.items()) if now - t.get("created_at", now) > TASK_EXPIRATION_SECONDS]:
@@ -294,7 +276,7 @@ async def generate_notes(
     # Run the pipeline in the background using asyncio.create_task.
     # Unlike FastAPI BackgroundTasks, create_task runs completely concurrently
     # and plays perfectly with standard contextvars.
-    asyncio.create_task(run_pipeline_task(task_id, url, google_api_key))
+    asyncio.create_task(run_pipeline_task(task_id, url))
     
     logger.info(f"Dispatched background task {task_id} for URL {url}")
     return {"task_id": task_id, "status": "PROCESSING"}
@@ -318,25 +300,9 @@ async def ask_question(
     """
     logger.info(f"Q&A request received for video: {request.video_id}")
 
-    # Parse Firebase Authorization ID Token if present
-    id_token = None
-    if authorization and authorization.startswith("Bearer "):
-        id_token = authorization.split("Bearer ")[1]
-
-    # Fetch user API keys from Firestore if authenticated
-    google_api_key = None
-    groq_api_key = None
-    if x_user_id:
-        try:
-            keys = await get_user_api_keys(x_user_id, id_token)
-            google_api_key = keys.get("google_api_key")
-            groq_api_key = keys.get("groq_api_key")
-        except Exception as e:
-            logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
-
     async def stream_generator():
         try:
-            rag_service = RAGService(google_api_key=google_api_key, groq_api_key=groq_api_key)
+            rag_service = RAGService()
             async for chunk in rag_service.answer_question_stream(
                 video_id=request.video_id,
                 question=request.question,
@@ -369,23 +335,9 @@ async def assistant_chat(
     """
     logger.info(f"Personal Assistant chat request received for user: {x_user_id}")
 
-    # Parse Firebase Authorization ID Token if present
-    id_token = None
-    if authorization and authorization.startswith("Bearer "):
-        id_token = authorization.split("Bearer ")[1]
-
-    # Fetch user API keys from Firestore if authenticated
-    groq_api_key = None
-    if x_user_id:
-        try:
-            keys = await get_user_api_keys(x_user_id, id_token)
-            groq_api_key = keys.get("groq_api_key")
-        except Exception as e:
-            logger.error(f"Error retrieving user API keys from Firestore: {str(e)}")
-
     async def stream_generator():
         try:
-            assistant_service = AssistantService(groq_api_key=groq_api_key)
+            assistant_service = AssistantService()
             async for chunk in assistant_service.chat_stream(
                 messages=request.messages,
                 summary=request.summary,

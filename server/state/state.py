@@ -37,6 +37,4 @@ class NotesState(TypedDict):
     # Draft
     draft_notes: DraftNotes
 
-    # User API Keys
-    google_api_key: Optional[str]
     task_id: Optional[str]

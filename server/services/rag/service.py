@@ -21,19 +21,12 @@ class RAGService:
     Queries Pinecone for transcripts within a specific video namespace and answers using Groq model (openai/gpt-oss-20b).
     """
 
-    def __init__(self, google_api_key: Optional[str] = None, groq_api_key: Optional[str] = None):
-        self.google_api_key = google_api_key
-        self.groq_api_key = groq_api_key
-
+    def __init__(self):
         # Initialize langchain-google-genai embeddings
-        self.embeddings = LLMService.get_embeddings(
-            google_api_key=self.google_api_key
-        )
-
+        self.embeddings = LLMService.get_embeddings()
 
         # Initialize Groq Chat model
         self.llm = LLMService.get_groq_llm(
-            groq_api_key=groq_api_key,
             model_name=CHAT_MODEL
         )
 

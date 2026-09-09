@@ -15,7 +15,6 @@ def vector_indexer_node(state: dict) -> dict:
 
     metadata = state.get("metadata", {})
     video_id = metadata.get("video_id")
-    google_api_key = state.get("google_api_key")
     merged_transcript = state.get("merged_transcript", [])
 
     if not video_id:
@@ -30,7 +29,7 @@ def vector_indexer_node(state: dict) -> dict:
     def run_indexing():
         try:
             logger.info("[stage: indexing] Initializing Pinecone vector indexing...")
-            indexer = PineconeIndexer(google_api_key=google_api_key)
+            indexer = PineconeIndexer()
             
             logger.info("[stage: indexing] Beginning embedding and upload of transcript paragraphs...")
             indexer.index_transcript(video_id=video_id, segments=merged_transcript)

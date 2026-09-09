@@ -11,9 +11,7 @@ def orchestrator(state: NotesState) -> NotesState:
     logger.info("Analyzing curriculum and planning lecture outline.")
 
     try:
-        service = OrchestratorService(
-            google_api_key=state.get("google_api_key"),
-        )
+        service = OrchestratorService()
 
         # Format transcript as plain text to eliminate JSON formatting token overhead
         formatted_transcript = "\n".join(

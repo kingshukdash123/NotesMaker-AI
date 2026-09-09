@@ -13,8 +13,8 @@ logger = get_logger(__name__)
 
 class OrchestratorService:
 
-    def __init__(self, google_api_key=None):
-        self.llm = LLMService.get_gemini_llm(google_api_key, model_name=ORCHESTRATOR_MODEL)
+    def __init__(self):
+        self.llm = LLMService.get_gemini_llm(model_name=ORCHESTRATOR_MODEL)
 
 
         self.prompt = ChatPromptTemplate.from_template(ORCHESTRATOR_PROMPT)

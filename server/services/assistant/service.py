@@ -12,11 +12,9 @@ logger = get_logger(__name__)
 
 
 class AssistantService:
-    def __init__(self, groq_api_key: Optional[str] = None):
-        self.groq_api_key = groq_api_key
+    def __init__(self):
         # Initialize Groq Chat model
         self.llm = LLMService.get_groq_llm(
-            groq_api_key=groq_api_key,
             model_name=CHAT_MODEL
         )
 

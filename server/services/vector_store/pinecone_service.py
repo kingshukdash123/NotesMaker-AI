@@ -19,13 +19,9 @@ class PineconeIndexer:
     Specifically rate-limits Google Gemini Embedding generation to stay below the 30K TPM free tier limit.
     """
 
-    def __init__(self, google_api_key: Optional[str] = None):
-        self.google_api_key = google_api_key
-
+    def __init__(self):
         # Initialize langchain-google-genai embeddings (Gemini Embedding 2 outputs 3072 dimensions)
-        self.embeddings = LLMService.get_embeddings(
-            google_api_key=self.google_api_key
-        )
+        self.embeddings = LLMService.get_embeddings()
 
 
         # Connect to Pinecone
