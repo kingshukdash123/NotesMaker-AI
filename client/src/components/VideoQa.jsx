@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send, AlertCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
+import { checkCanChat, formatProcessErrorMessage } from '../services/firebase/usageService';
 import { askVideoQuestionStream } from '../services/server/api';
 import { saveVideoQnAChat, getVideoQnAChat } from '../services/firebase/notesService';
 import MarkdownRenderer from './common/MarkdownRenderer';
 
 export default function VideoQa({ videoId, currentUser }) {
   const { isDark } = useTheme();
+  const { userProfile } = useAuth();
+  const { monthlyUsage, openUpgradeModal } = useApp();
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,10 +78,18 @@ export default function VideoQa({ videoId, currentUser }) {
     e.preventDefault();
     if (!question.trim() || !videoId) return;
 
+    // Check Chat Quota
+    const chatCheck = checkCanChat(userProfile, monthlyUsage);
+    if (!chatCheck.allowed) {
+      openUpgradeModal(chatCheck.reason);
+      return;
+    }
+
     const currentQuestion = question.trim();
     setQuestion('');
     setError(null);
     setIsLoading(true);
+
 
     const chatHistory = getCleanChatHistory(messages);
 
@@ -130,7 +143,9 @@ export default function VideoQa({ videoId, currentUser }) {
         // Error callback
         (err) => {
           console.error('Streaming error in VideoQa:', err);
-          setError(err.message || 'Failed to get answer from video companion.');
+          const rawErr = err.message || 'Failed to get answer from Guruji.';
+          const cleanErr = formatProcessErrorMessage(rawErr);
+          setError(cleanErr);
           setIsLoading(false);
           setMessages((prev) => {
             const next = [...prev];
@@ -138,7 +153,9 @@ export default function VideoQa({ videoId, currentUser }) {
             if (lastIndex >= 0 && next[lastIndex].sender === 'assistant') {
               next[lastIndex] = {
                 ...next[lastIndex],
-                text: `Sorry, I encountered an error: ${err.message || 'Could not complete response.'}`,
+                text: cleanErr.includes('high demand')
+                  ? 'Guruji is currently experiencing high demand. Please try asking again in a moment.'
+                  : `Sorry, I encountered an error: ${rawErr}`,
                 isError: true
               };
             }
@@ -150,7 +167,9 @@ export default function VideoQa({ videoId, currentUser }) {
       );
     } catch (err) {
       console.error('Error starting video question stream:', err);
-      setError(err.message || 'Failed to connect to video Q&A service.');
+      const rawErr = err.message || 'Failed to connect to Guruji Q&A service.';
+      const cleanErr = formatProcessErrorMessage(rawErr);
+      setError(cleanErr);
       setIsLoading(false);
       setMessages((prev) => {
         const next = [...prev];
@@ -158,7 +177,9 @@ export default function VideoQa({ videoId, currentUser }) {
         if (lastIndex >= 0 && next[lastIndex].sender === 'assistant') {
           next[lastIndex] = {
             ...next[lastIndex],
-            text: `Error: ${err.message || 'Could not send message.'}`,
+            text: cleanErr.includes('high demand')
+              ? 'Guruji is currently experiencing high demand. Please try asking again in a moment.'
+              : `Error: ${rawErr}`,
             isError: true
           };
         }
@@ -178,9 +199,9 @@ export default function VideoQa({ videoId, currentUser }) {
           }`}>
             <MessageSquare className="w-6 h-6 text-orange-500" />
           </div>
-          <h3 className={`text-base font-bold mb-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Q&A Companion Idle</h3>
+          <h3 className={`text-base font-bold mb-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Guruji Q&amp;A Idle</h3>
           <p className={`text-xs max-w-xs leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-            Please generate notes or select a study guide from your history to start asking questions about the video.
+            Please generate notes or select a study guide from your history to start asking Guruji questions about the video.
           </p>
         </div>
       </div>

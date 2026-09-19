@@ -186,7 +186,7 @@ export default function Header({
               alt="Pathshala AI Logo"
               width="24"
               height="24"
-              fetchpriority="high"
+              fetchPriority="high"
               className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0"
             />
             <div className="flex items-center gap-1 sm:gap-1.5">

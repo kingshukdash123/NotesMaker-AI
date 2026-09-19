@@ -8,6 +8,7 @@ import CustomDialogModal from './components/layout/CustomDialogModal';
 import OnboardingModal from './components/layout/OnboardingModal';
 import AuthModal from './components/AuthModal';
 import ApiDisconnectModal from './components/ApiDisconnectModal';
+import UpgradeModal from './components/common/UpgradeModal';
 import RightAssistantSidebar from './components/chat/RightAssistantSidebar';
 import HomeSection from './components/layout/HomeSection';
 
@@ -19,11 +20,13 @@ import PlannerPage from './pages/PlannerPage';
 import AssistantPage from './pages/AssistantPage';
 import PolicyPage from './pages/PolicyPage';
 import SettingsPage from './pages/SettingsPage';
+import BillingPage from './pages/BillingPage';
 
 // Context
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PlansProvider } from './context/PlansContext';
 import { fetchYoutubeMetadata } from './services/server/api';
 import { checkServerHealth, subscribeToApiDisconnect } from './services/server/serverHealth';
 import { logUserActivity } from './services/firebase/activityService';
@@ -65,7 +68,9 @@ function MainApp() {
     setActiveVideoMetadata,
     resetActiveVideo,
     isVideoFullscreen,
-    isSidebarCollapsed
+    isSidebarCollapsed,
+    upgradeModalState,
+    closeUpgradeModal,
   } = useApp();
 
   // Navigation & Drawer States
@@ -343,6 +348,13 @@ function MainApp() {
       {/* Custom Dialog Modal (Confirm/Alert) */}
       <CustomDialogModal />
 
+      {/* Subscription Upgrade Modal */}
+      <UpgradeModal
+        isOpen={upgradeModalState.isOpen}
+        onClose={closeUpgradeModal}
+        reason={upgradeModalState.reason}
+      />
+
       {/* Main Content Area */}
       {!currentUser ? (
         <>
@@ -455,6 +467,7 @@ function MainApp() {
               {activeSection === 'library' && <LibraryPage />}
               {activeSection === 'planner' && <PlannerPage />}
               {activeSection === 'assistant' && <AssistantPage />}
+              {activeSection === 'billing' && <BillingPage />}
               {activeSection === 'settings' && <SettingsPage />}
               {LEGAL_SECTIONS.has(activeSection) && <PolicyPage slug={activeSection} />}
             </div>
@@ -504,9 +517,11 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppProvider>
-          <MainApp />
-        </AppProvider>
+        <PlansProvider>
+          <AppProvider>
+            <MainApp />
+          </AppProvider>
+        </PlansProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -94,11 +94,11 @@ export default function ComparisonSection({ isDark, headingClass, subClass }) {
               <ul className="space-y-3 pt-2">
                 {[
                   '100% Distraction-Free (Zero ads, popups, or recommendation clutter)',
-                  'Instant structured lecture notes + LaTeX math equations + timestamps',
-                  '24/7 Context-aware Guruji AI Mentor with deep video comprehension',
+                  'Instant structured lecture notes + math equations + timestamps',
+                  '24/7 Context-aware Guruji with deep video comprehension',
                   'Automated subject playlists with syllabus mastery checkmarks',
                   'Integrated daily study planner with priority task scheduling',
-                  '99.4% LaTeX-accurate mathematical & scientific formula precision',
+                  '99.4% accurate mathematical & scientific formula precision',
                   'Direct Hinglish & English interactive explanations anytime'
                 ].map(item => (
                   <li key={item} className={`flex items-start gap-2.5 text-xs sm:text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>

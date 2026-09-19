@@ -45,6 +45,14 @@ export const MENTOR_TONES = [
   { id: 'Calm & Structured Guide (Patient & Clear)', label: 'Calm & Structured Guide', desc: 'Patient, methodical explanations without rushing' },
 ];
 
+export const DEFAULT_SUBSCRIPTION = {
+  planId: 'starter', // 'starter' | 'learner' | 'scholar'
+  status: 'active', // 'active' | 'trial' | 'expired' | 'canceled'
+  startedAt: null,
+  validUntil: null,
+  updatedAt: null,
+};
+
 export class UserModel {
   constructor({
     uid = '',
@@ -52,6 +60,7 @@ export class UserModel {
     phoneNumber = '',
     email = null,
     preferences = null,
+    subscription = null,
     hasCompletedOnboarding = false,
     createdAt = null,
     updatedAt = null,
@@ -62,6 +71,7 @@ export class UserModel {
     this.phoneNumber = phoneNumber || '';
     this.email = email || null;
     this.preferences = UserModel.normalizePreferences(preferences);
+    this.subscription = UserModel.normalizeSubscription(subscription);
     this.hasCompletedOnboarding = Boolean(hasCompletedOnboarding);
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
@@ -82,6 +92,7 @@ export class UserModel {
       phoneNumber: data.phoneNumber || '',
       email: data.email || null,
       preferences: data.preferences || null,
+      subscription: data.subscription || null,
       hasCompletedOnboarding: data.hasCompletedOnboarding ?? false,
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt || null,
       updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt || null,
@@ -116,6 +127,7 @@ export class UserModel {
       phoneNumber: (this.phoneNumber || '').trim(),
       email: this.email ? this.email.trim().toLowerCase() : null,
       preferences: UserModel.normalizePreferences(this.preferences),
+      subscription: UserModel.normalizeSubscription(this.subscription),
       hasCompletedOnboarding: Boolean(this.hasCompletedOnboarding),
       updatedAt: serverTimestamp(),
     };
@@ -139,6 +151,7 @@ export class UserModel {
       phoneNumber: this.phoneNumber,
       email: this.email,
       preferences: { ...this.preferences },
+      subscription: { ...this.subscription },
       hasCompletedOnboarding: this.hasCompletedOnboarding,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
@@ -157,6 +170,21 @@ export class UserModel {
       targetGoal: prefs?.targetGoal || DEFAULT_STUDENT_PREFERENCES.targetGoal,
       explanationStyle: prefs?.explanationStyle || DEFAULT_STUDENT_PREFERENCES.explanationStyle,
       mentorTone: prefs?.mentorTone || DEFAULT_STUDENT_PREFERENCES.mentorTone,
+    };
+  }
+
+  /**
+   * Merges and sanitizes subscription data with safe defaults
+   * @param {Object} [sub]
+   * @returns {Object}
+   */
+  static normalizeSubscription(sub) {
+    return {
+      planId: sub?.planId || DEFAULT_SUBSCRIPTION.planId,
+      status: sub?.status || DEFAULT_SUBSCRIPTION.status,
+      startedAt: sub?.startedAt || DEFAULT_SUBSCRIPTION.startedAt,
+      validUntil: sub?.validUntil || DEFAULT_SUBSCRIPTION.validUntil,
+      updatedAt: sub?.updatedAt || DEFAULT_SUBSCRIPTION.updatedAt,
     };
   }
 

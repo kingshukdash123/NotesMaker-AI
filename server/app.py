@@ -1,7 +1,5 @@
 import os
-
-os.environ["PATHSHALA_MODE"] = "API"
-
+import time
 import asyncio
 import uuid
 import json
@@ -23,7 +21,17 @@ from services.youtube.search import search_youtube_videos
 from services.youtube.playlist import get_youtube_playlist_items, get_all_youtube_playlist_items
 from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
-import time
+from services.firebase.plan_service import (
+    get_dynamic_plans,
+    seed_default_plans_if_empty,
+    get_plan_limits_sync as get_plan_limits,
+    PLAN_STARTER,
+)
+from services.firebase.usage_service import (
+    increment_user_usage,
+    check_can_ask_question,
+    check_can_generate_notes,
+)
 from config.settings import settings
 from config.constants import (
     API_TITLE,
@@ -49,6 +57,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Initializes dynamic subscription plans cache and ensures Firestore collection is seeded."""
+    logger.info("Initializing dynamic subscription plans from Firestore...")
+    asyncio.create_task(get_dynamic_plans(force_refresh=True))
 
 # In-memory store for tracking task states
 # Structure: { task_id: { "status": str, "youtube_url": str, "metadata": dict, "result": dict, "error": str } }
@@ -238,12 +252,14 @@ async def generate_notes(
 ):
     """
     Starts the notes generation process in the background.
-    Returns a task ID immediately, allowing the client to query status and stream logs.
+    Validates user subscription limits and duration caps before starting.
+    Returns a task ID immediately.
     """
     task_id = str(uuid.uuid4())
     url = str(request.youtube_url)
+    priority_flag = False
 
-    # 0. Live Stream Guard: Block notes generation if video is currently an active live stream
+    # 0. Live Stream Guard & Duration / Plan Validation
     try:
         video_id = extract_video_id(url)
         meta = await asyncio.to_thread(get_video_metadata, video_id)
@@ -253,10 +269,17 @@ async def generate_notes(
                 status_code=400,
                 detail="Cannot generate notes for an ongoing live stream. Please wait until the livestream has ended and been archived by YouTube.",
             )
+
+        # 1. Plan Limits & Monthly Quota Validation
+        duration_sec = meta.get("duration", 0) if meta else 0
+        allowed, reason, priority_flag = await check_can_generate_notes(x_user_id, duration_sec)
+        if not allowed:
+            raise HTTPException(status_code=403, detail=reason)
+
     except HTTPException:
         raise
     except Exception as check_err:
-        logger.warning(f"Metadata live check skipped due to error: {check_err}")
+        logger.warning(f"Metadata or limit check error: {check_err}")
     
     # Prune tasks older than expiration duration to keep memory usage low
     now = time.time()
@@ -270,16 +293,19 @@ async def generate_notes(
         "metadata": None,
         "result": None,
         "error": None,
+        "priority": priority_flag,
         "created_at": now
     }
     
+    # Track usage increment asynchronously
+    if x_user_id:
+        asyncio.create_task(increment_user_usage(x_user_id, "notesGenerated", 1))
+
     # Run the pipeline in the background using asyncio.create_task.
-    # Unlike FastAPI BackgroundTasks, create_task runs completely concurrently
-    # and plays perfectly with standard contextvars.
     asyncio.create_task(run_pipeline_task(task_id, url))
     
-    logger.info(f"Dispatched background task {task_id} for URL {url}")
-    return {"task_id": task_id, "status": "PROCESSING"}
+    logger.info(f"Dispatched background task {task_id} for URL {url} (user: {x_user_id}, priority: {priority_flag})")
+    return {"task_id": task_id, "status": "PROCESSING", "priority": priority_flag}
 
 
 class QARequest(BaseModel):
@@ -296,9 +322,16 @@ async def ask_question(
 ):
     """
     Endpoint to ask questions about a video using RAG search over transcript.
-    Streams back JSON lines with chunk updates.
+    Streams back JSON lines with chunk updates and tracks usage.
     """
-    logger.info(f"Q&A request received for video: {request.video_id}")
+    logger.info(f"Q&A request received for video: {request.video_id} (user: {x_user_id})")
+
+    # Validate chat quota before processing
+    if x_user_id:
+        allowed, reason = await check_can_ask_question(x_user_id)
+        if not allowed:
+            raise HTTPException(status_code=403, detail=reason)
+        asyncio.create_task(increment_user_usage(x_user_id, "videoQaQuestions", 1))
 
     async def stream_generator():
         try:
@@ -335,6 +368,13 @@ async def assistant_chat(
     """
     logger.info(f"Personal Assistant chat request received for user: {x_user_id}")
 
+    # Validate chat quota before processing
+    if x_user_id:
+        allowed, reason = await check_can_ask_question(x_user_id)
+        if not allowed:
+            raise HTTPException(status_code=403, detail=reason)
+        asyncio.create_task(increment_user_usage(x_user_id, "assistantQuestions", 1))
+
     async def stream_generator():
         try:
             assistant_service = AssistantService()
@@ -350,6 +390,7 @@ async def assistant_chat(
             yield json.dumps({"type": "error", "data": str(e)}) + "\n"
 
     return StreamingResponse(stream_generator(), media_type="text/event-stream")
+
 
 
 

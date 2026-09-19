@@ -35,7 +35,7 @@ export default function LibraryPage() {
     libraryTab, 
     setLibraryTab, 
     loadVideo, 
-    setActiveSection 
+    setActiveSection,
   } = useApp();
 
   const [savedVideos, setSavedVideos] = useState([]);
@@ -68,6 +68,10 @@ export default function LibraryPage() {
   }, [fetchLibraryData]);
 
   // Playlist CRUD operations
+  const handleOpenCreatePlaylistModal = () => {
+    setIsPlaylistModalOpen(true);
+  };
+
   const handleCreatePlaylist = async (name) => {
     if (!currentUser) return;
     try {
@@ -92,54 +96,38 @@ export default function LibraryPage() {
   };
 
   const handleRenamePlaylist = async (playlistId, newName) => {
-    if (!currentUser || !newName?.trim()) return;
+    if (!currentUser) return;
     try {
-      await renamePlaylist(currentUser.uid, playlistId, newName.trim());
-      setPlaylists(prev => prev.map(p => p.id === playlistId ? { ...p, name: newName.trim() } : p));
+      await renamePlaylist(currentUser.uid, playlistId, newName);
+      setPlaylists(prev => prev.map(p => (p.id === playlistId ? { ...p, name: newName } : p)));
     } catch (err) {
       console.error('Error renaming playlist:', err);
     }
   };
 
-  // Video operations
+  // Video Actions
   const handleRemoveVideo = async (videoId) => {
-    if (!currentUser) return;
+    if (!currentUser || !videoId) return;
     try {
       await removeVideoFromLibrary(currentUser.uid, videoId);
       setSavedVideos(prev => prev.filter(v => v.videoId !== videoId));
-      fetchLibraryData();
     } catch (err) {
-      console.error('Error removing video:', err);
+      console.error('Error removing video from library:', err);
     }
   };
 
-  // Toggle Save/Bookmark state of a video in library
-  const handleToggleSaveVideo = async (video) => {
+  const handleToggleSaveVideo = async (videoId, videoUrl, metadata, hasNotes) => {
     if (!currentUser) return;
-    const isCurrentlySaved = savedVideos.some(v => v.videoId === video.videoId);
+    const isCurrentlySaved = savedVideos.some(v => v.videoId === videoId);
     try {
       if (isCurrentlySaved) {
-        await removeVideoFromLibrary(currentUser.uid, video.videoId);
-        setSavedVideos(prev => prev.filter(v => v.videoId !== video.videoId));
+        await removeVideoFromLibrary(currentUser.uid, videoId);
+        setSavedVideos(prev => prev.filter(v => v.videoId !== videoId));
       } else {
-        const metadata = video.metadata || {
-          title: video.title || 'YouTube Video',
-          channel: video.channel || 'Unknown Creator',
-          thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`
-        };
-        await saveVideoToLibrary(
-          currentUser.uid,
-          video.videoId,
-          video.videoUrl || `https://www.youtube.com/watch?v=${video.videoId}`,
-          metadata
-        );
+        await saveVideoToLibrary(currentUser.uid, videoId, videoUrl, metadata, hasNotes);
         setSavedVideos(prev => [
-          ...prev,
-          {
-            videoId: video.videoId,
-            videoUrl: video.videoUrl || `https://www.youtube.com/watch?v=${video.videoId}`,
-            metadata,
-          }
+          { videoId, videoUrl, metadata, hasNotes, savedAt: new Date() },
+          ...prev
         ]);
       }
     } catch (err) {
@@ -149,6 +137,7 @@ export default function LibraryPage() {
 
   const handleTogglePlaylistAssociation = async (videoId, playlistId, alreadyAssociated, videoData = null) => {
     if (!currentUser) return;
+
     try {
       const videoEntry = {
         videoId,
@@ -352,7 +341,7 @@ export default function LibraryPage() {
             <PlaylistsTab
               playlists={playlists}
               savedVideos={savedVideos}
-              onCreatePlaylistOpen={() => setIsPlaylistModalOpen(true)}
+              onCreatePlaylistOpen={handleOpenCreatePlaylistModal}
               onDeletePlaylist={handleDeletePlaylist}
               onOpenVideo={handleOpenVideo}
               onRemoveVideo={handleRemoveVideo}

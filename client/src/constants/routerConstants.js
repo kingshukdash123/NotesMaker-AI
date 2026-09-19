@@ -15,6 +15,7 @@ export const VALID_CORE_SECTIONS = new Set([
   'assistant',
   'watch',
   'settings',
+  'billing',
 ]);
 
 /** All valid URL top-level sections (core app + legal pages) */

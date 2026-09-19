@@ -183,34 +183,31 @@ export default function Sidebar({
 
         {/* Footer controls: Billing, Refer, Legal, Settings */}
         <div className={`pt-3 border-t space-y-1.5 ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
-          {/* Billing & Plans Tab (Disabled / Maintenance) */}
+          {/* Billing & Usage Tab */}
           <button
             type="button"
-            disabled
-            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 ${
+            onClick={() => {
+              if (activeVideoId) {
+                resetActiveVideo();
+              }
+              setActiveSection('billing');
+              setIsSidebarMobileOpen(false);
+            }}
+            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
               isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
             } ${
-              isDark
-                ? 'text-zinc-500 hover:text-zinc-400 bg-zinc-900/10'
-                : 'text-zinc-400 hover:text-zinc-500 bg-zinc-50/50'
+              activeSection === 'billing'
+                ? isDark
+                  ? 'bg-orange-950/20 text-orange-400 font-bold'
+                  : 'bg-zinc-100 text-zinc-900 font-bold'
+                : isDark
+                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
-            title="Billing & Plans (Under Maintenance)"
+            title="Billing & Resource Usage"
           >
-            <div className="relative shrink-0 flex items-center justify-center">
-              <CreditCard className="w-4 h-4 shrink-0" />
-              {isSidebarCollapsed && (
-                <span className={`hidden lg:block absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1.5 ${isDark ? 'ring-zinc-950' : 'ring-white'}`} />
-              )}
-            </div>
-            <span className={`truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>Billing &amp; Plans</span>
-            <span className={`${isSidebarCollapsed ? 'lg:hidden' : ''} ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 ${
-              isDark 
-                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
-                : 'bg-amber-50 text-amber-700 border border-amber-200'
-            }`}>
-              <Wrench className="w-2.5 h-2.5 shrink-0" />
-              <span>Soon</span>
-            </span>
+            <CreditCard className="w-4 h-4 shrink-0" />
+            <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>Billing &amp; Usage</span>
           </button>
 
           {/* Refer & Rewards Tab (Disabled / Maintenance) */}

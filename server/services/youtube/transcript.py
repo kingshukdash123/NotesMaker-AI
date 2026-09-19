@@ -8,7 +8,6 @@ from utils.exceptions import PathshalaError
 from utils.logger import get_logger
 from model.transcript import TranscriptSegment
 from services.firebase.firestore import get_cached_transcript, save_cached_transcript
-from config.constants import MAX_VIDEO_DURATION_SECONDS
 from config.settings import settings
 
 
@@ -148,24 +147,12 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
     cached_transcript = get_cached_transcript(video_id)
     if cached_transcript is not None:
         logger.info("Found cached transcript. Using cache.")
-        if cached_transcript:
-            last_segment = cached_transcript[-1]
-            video_duration_sec = last_segment.get("end", 0.0)
-            if video_duration_sec > MAX_VIDEO_DURATION_SECONDS:
-                logger.error("Cached video duration of %s seconds exceeds limit.", video_duration_sec)
-                raise PathshalaError(
-                    message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
-                    code="VIDEO_TOO_LONG",
-                    status_code=400,
-                )
-
         return cached_transcript
 
     # 1. Fetch transcript since not cached
     api_key = settings.TRANSCRIPT_API_KEY
     is_cloud = settings.ENV == "production"
     transcript = None
-
 
     if is_cloud and api_key:
         logger.info("Routing directly to metadata service.")
@@ -209,18 +196,5 @@ def get_transcript(video_id: str) -> list[TranscriptSegment]:
             save_cached_transcript(video_id, transcript)
         except Exception as err:
             logger.warning("Failed to save transcript to cache.")
-
-    # 4. Enforce 2-hour video duration limit (7,200 seconds)
-    if transcript:
-        last_segment = transcript[-1]
-        video_duration_sec = last_segment.get("end", 0.0)
-        if video_duration_sec > MAX_VIDEO_DURATION_SECONDS:
-            logger.error("Video duration of %s seconds exceeds limit.", video_duration_sec)
-            raise PathshalaError(
-                message="Video is too long. In this prototype, only videos up to 2 hours are supported.",
-                code="VIDEO_TOO_LONG",
-                status_code=400,
-            )
-
 
     return transcript

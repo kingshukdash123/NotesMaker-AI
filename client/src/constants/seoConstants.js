@@ -124,6 +124,13 @@ export const SEO_PAGE_CONFIGS = {
     path: '/settings',
     robots: NOINDEX_ROBOTS,
   },
+  billing: {
+    title: 'Billing & Usage | Pathshala AI',
+    description: 'Manage your Pathshala AI subscription plan, view resource usage quotas, and upgrade your account.',
+    keywords: 'Pathshala AI billing, subscription plans, resource usage, upgrade plan, student pricing, study quota',
+    path: '/billing',
+    robots: NOINDEX_ROBOTS,
+  },
 
   // --- Legal & Policy Pages ---
   legal: {

@@ -135,7 +135,7 @@ function createWebApplicationSchema() {
     },
     featureList: [
       'Distraction-free educational lecture streaming',
-      'Instant AI lecture notes with LaTeX math equations',
+      'Instant AI lecture notes with mathematical & scientific equations',
       'Clickable video timestamps in notes',
       'Guruji personal AI academic mentorship',
       'Smart study planner with streaks & target checklists',

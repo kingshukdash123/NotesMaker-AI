@@ -30,7 +30,7 @@ const FILTER_TYPES = [
 ];
 
 export default function DiscoverPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const { isDark } = useTheme();
   const {
     activeVideoId,
@@ -43,6 +43,7 @@ export default function DiscoverPage() {
     setSearchType,
     activePlaylistId,
     setActivePlaylistId,
+    openUpgradeModal,
   } = useApp();
 
   const [inputQuery, setInputQuery] = useState(searchQuery || '');
@@ -196,6 +197,7 @@ export default function DiscoverPage() {
   // Batch import complete playlist into user's Library with all pages in strict sequence
   const handleSavePlaylistToLibrary = async (playlistData, currentVideos = []) => {
     if (!currentUser || !playlistData) return;
+
     const targetPlaylistId = playlistData.playlistId || playlistData.id || selectedPlaylistId;
     if (!targetPlaylistId) return;
 
@@ -271,6 +273,7 @@ export default function DiscoverPage() {
   // Handle adding/removing video from a playlist in Discover
   const handleTogglePlaylistAssociation = async (videoId, playlistId, alreadyAssociated, video) => {
     if (!currentUser) return;
+
     try {
       const videoEntry = {
         videoId,
@@ -310,6 +313,7 @@ export default function DiscoverPage() {
 
   const handleCreatePlaylist = async (name) => {
     if (!currentUser) return;
+
     try {
       const id = await createPlaylist(currentUser.uid, name);
       setPlaylists(prev => [
@@ -317,9 +321,10 @@ export default function DiscoverPage() {
         ...prev
       ]);
     } catch (err) {
-      console.error('Failed to create playlist in Discover:', err);
+      console.error('Error creating playlist in Discover:', err);
     }
   };
+
 
   // Change content type filter
   const handleFilterTypeChange = (newType) => {

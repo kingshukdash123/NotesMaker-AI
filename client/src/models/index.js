@@ -10,6 +10,20 @@ export { UserActivityModel } from './userActivityModel';
 export { SearchCacheModel } from './searchCacheModel';
 export { TranscriptModel } from './transcriptModel';
 export { LegalPolicyModel } from './legalPolicyModel';
+export {
+  UsageModel,
+  getUserBillingCycle,
+  getEffectiveSubscription,
+  CYCLE_DAYS,
+  CYCLE_MS,
+} from './usageModel';
+export {
+  PlanModel,
+  PLANS_COLLECTION,
+  PLAN_IDS,
+  PLAN_RANKS,
+  DEFAULT_PLANS,
+} from './planModel';
 export { 
   UserModel, 
   DEFAULT_STUDENT_PREFERENCES, 

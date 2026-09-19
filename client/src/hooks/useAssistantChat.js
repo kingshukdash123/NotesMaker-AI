@@ -8,9 +8,12 @@ import {
 } from '../services/firebase/assistantService';
 import { streamAssistantChat } from '../services/server/assistantApi';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
+import { checkCanChat, formatProcessErrorMessage } from '../services/firebase/usageService';
 
 export function useAssistantChat(currentUser) {
   const { userProfile } = useAuth() || {};
+  const { monthlyUsage, openUpgradeModal } = useApp() || {};
   const [threads, setThreads] = useState([]);
   const [activeThreadId, setActiveThreadId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -25,6 +28,7 @@ export function useAssistantChat(currentUser) {
   useEffect(() => {
     activeThreadIdRef.current = activeThreadId;
   }, [activeThreadId]);
+
 
   // Load threads on mount / auth change
   const loadThreads = useCallback(async () => {
@@ -151,8 +155,20 @@ export function useAssistantChat(currentUser) {
   const sendMessage = useCallback(async (content) => {
     if (!currentUser || !activeThreadId || !content.trim()) return;
 
+    // Check Chat Quota
+    const chatCheck = checkCanChat(userProfile, monthlyUsage);
+    if (!chatCheck.allowed) {
+      if (openUpgradeModal) {
+        openUpgradeModal(chatCheck.reason);
+      } else {
+        setError(chatCheck.reason);
+      }
+      return;
+    }
+
     // Clear error
     setError(null);
+
 
     // Filter out any previous error turn from conversation history
     const cleanHistory = [];
@@ -259,7 +275,9 @@ export function useAssistantChat(currentUser) {
 
     } catch (err) {
       console.error('Streaming failed:', err);
-      setError(err.message || 'An error occurred during response generation.');
+      const rawMsg = err.message || 'An error occurred during response generation.';
+      const cleanMsg = formatProcessErrorMessage(rawMsg);
+      setError(cleanMsg);
       setIsStreaming(false);
 
       // Update the placeholder with error text (in UI only, NOT saved to Firestore)
@@ -268,7 +286,9 @@ export function useAssistantChat(currentUser) {
         if (list.length > 0) {
           const last = list[list.length - 1];
           if (last.role === 'assistant') {
-            last.content = 'An error occurred during response generation. Please check your keys or connection.';
+            last.content = cleanMsg.includes('high demand')
+              ? 'Guruji is currently experiencing high demand. Please try asking again in a moment.'
+              : 'An error occurred during response generation. Please check your connection and try again.';
             last.isError = true;
           }
         }

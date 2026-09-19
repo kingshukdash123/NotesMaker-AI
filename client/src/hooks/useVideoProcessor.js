@@ -3,10 +3,15 @@ import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { startNoteGeneration, getTaskStatus } from '../services/server/api';
 import { saveNotes, getNoteByVideoId } from '../services/firebase/notesService';
+import {
+  checkCanGenerateNotes,
+  isUserPlanLimitError,
+  formatProcessErrorMessage
+} from '../services/firebase/usageService';
 import { useWatchHistory } from './useWatchHistory';
 
 export function useVideoProcessor() {
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const {
     activeVideoId,
     activeVideoUrl,
@@ -19,7 +24,9 @@ export function useVideoProcessor() {
     setVideoProcessError,
     videoPipelineTaskId,
     setVideoPipelineTaskId,
-    setProcessedVideoIds
+    setProcessedVideoIds,
+    monthlyUsage,
+    openUpgradeModal
   } = useApp();
 
   const { logWatchHistory } = useWatchHistory();
@@ -81,6 +88,15 @@ export function useVideoProcessor() {
     if (!currentUser) return;
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
 
+    // Pre-flight validation against user plan limits
+    const duration = metadata?.duration || 0;
+    const planCheck = checkCanGenerateNotes(userProfile, monthlyUsage, duration);
+    if (!planCheck.allowed) {
+      openUpgradeModal(planCheck.reason);
+      setVideoProcessStatus('IDLE');
+      return;
+    }
+
     setVideoProcessStatus('PROCESSING');
     setVideoProcessError(null);
     setActiveVideoNoteResult(null);
@@ -121,7 +137,11 @@ export function useVideoProcessor() {
           } else if (statusData.status === 'FAILED') {
             clearInterval(pollIntervalRef.current);
             setVideoProcessStatus('FAILED');
-            setVideoProcessError(statusData.error || 'Notes generation failed.');
+            const rawErr = statusData.error || 'Notes generation failed.';
+            setVideoProcessError(formatProcessErrorMessage(rawErr));
+            if (isUserPlanLimitError(rawErr)) {
+              openUpgradeModal(rawErr);
+            }
           }
         } catch (pollErr) {
           console.error('Error polling note generation status:', pollErr);
@@ -130,7 +150,11 @@ export function useVideoProcessor() {
 
     } catch (err) {
       setVideoProcessStatus('FAILED');
-      setVideoProcessError(err.message || 'Failed to dispatch note generation task');
+      const rawMsg = err.message || 'Failed to dispatch note generation task';
+      setVideoProcessError(formatProcessErrorMessage(rawMsg));
+      if (isUserPlanLimitError(rawMsg)) {
+        openUpgradeModal(rawMsg);
+      }
     }
   };
 

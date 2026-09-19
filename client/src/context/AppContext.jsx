@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getUserNotes } from '../services/firebase/notesService';
+import { subscribeUserMonthlyUsage } from '../services/firebase/usageService';
+import { UsageModel } from '../models/usageModel';
 import { parseLocation } from '../utils/router';
 
 const AppContext = createContext(null);
@@ -10,7 +12,7 @@ export function useApp() {
 }
 
 export function AppProvider({ children }) {
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   
   // Initialize state directly from the current URL
   const [initialRoute] = useState(() => parseLocation(window.location.pathname, window.location.search));
@@ -23,6 +25,27 @@ export function AppProvider({ children }) {
   const [searchType, setSearchType] = useState(initialRoute.searchType || 'all');
   const [activePlaylistId, setActivePlaylistId] = useState(initialRoute.playlistId || '');
   const [processedVideoIds, setProcessedVideoIds] = useState(new Set());
+
+  // User Monthly Usage State
+  const [monthlyUsage, setMonthlyUsage] = useState(() => new UsageModel());
+  const [isUsageLoading, setIsUsageLoading] = useState(true);
+  
+  // Upgrade Modal State
+  const [upgradeModalState, setUpgradeModalState] = useState({
+    isOpen: false,
+    reason: null,
+  });
+
+  const openUpgradeModal = (reason = null) => {
+    setUpgradeModalState({
+      isOpen: true,
+      reason,
+    });
+  };
+
+  const closeUpgradeModal = () => {
+    setUpgradeModalState({ isOpen: false, reason: null });
+  };
   
   // States for the active video content page (watch/study)
   const [activeVideoId, setActiveVideoId] = useState(initialRoute.videoId || '');
@@ -93,8 +116,13 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!currentUser) {
       setProcessedVideoIds(new Set());
+      setMonthlyUsage(new UsageModel());
+      setIsUsageLoading(false);
       return;
     }
+
+    setIsUsageLoading(true);
+
     const fetchNotesArchive = async () => {
       try {
         const notes = await getUserNotes(currentUser.uid);
@@ -105,7 +133,28 @@ export function AppProvider({ children }) {
       }
     };
     fetchNotesArchive();
-  }, [currentUser]);
+
+    // Subscribe to real-time 30-day billing cycle usage
+    const cyclePeriod = UsageModel.getCurrentPeriod(userProfile);
+    const unsubscribeUsage = subscribeUserMonthlyUsage(
+      currentUser.uid,
+      (usage) => {
+        setMonthlyUsage(usage);
+        setIsUsageLoading(false);
+      },
+      cyclePeriod
+    );
+
+    return () => {
+      unsubscribeUsage();
+    };
+  }, [
+    currentUser,
+    userProfile?.subscription?.startedAt,
+    userProfile?.subscription?.validUntil,
+    userProfile?.subscription?.planId,
+    userProfile?.createdAt
+  ]);
 
   // Helper to load a video into the unified watch/study page
   const loadVideo = (videoId, videoUrl, metadata = null, noteId = null, noteResult = null, tab = 'notes') => {
@@ -205,7 +254,12 @@ export function AppProvider({ children }) {
     processedVideoIds,
     setProcessedVideoIds,
     loadVideo,
-    resetActiveVideo
+    resetActiveVideo,
+    monthlyUsage,
+    isUsageLoading,
+    upgradeModalState,
+    openUpgradeModal,
+    closeUpgradeModal,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
