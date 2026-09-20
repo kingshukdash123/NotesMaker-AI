@@ -116,24 +116,37 @@ export default function LibraryPage() {
     }
   };
 
-  const handleToggleSaveVideo = async (videoId, videoUrl, metadata, hasNotes) => {
-    if (!currentUser) return;
-    const isCurrentlySaved = savedVideos.some(v => v.videoId === videoId);
+  const handleToggleSaveVideo = async (video) => {
+    if (!currentUser || !video?.videoId) return;
+
+    const isCurrentlySaved = savedVideos.some(v => v.videoId === video.videoId);
     try {
       if (isCurrentlySaved) {
-        await removeVideoFromLibrary(currentUser.uid, videoId);
-        setSavedVideos(prev => prev.filter(v => v.videoId !== videoId));
+        await removeVideoFromLibrary(currentUser.uid, video.videoId);
+        setSavedVideos(prev => prev.filter(v => v.videoId !== video.videoId));
       } else {
-        await saveVideoToLibrary(currentUser.uid, videoId, videoUrl, metadata, hasNotes);
+        await saveVideoToLibrary(
+          currentUser.uid,
+          video.videoId,
+          video.videoUrl,
+          video.metadata
+        );
         setSavedVideos(prev => [
-          { videoId, videoUrl, metadata, hasNotes, savedAt: new Date() },
-          ...prev
+          {
+            videoId: video.videoId,
+            videoUrl: video.videoUrl,
+            metadata: video.metadata,
+            savedAt: new Date()
+          },
+          ...prev.filter(v => v.videoId !== video.videoId)
         ]);
       }
     } catch (err) {
       console.error('Error toggling video save:', err);
     }
   };
+
+
 
   const handleTogglePlaylistAssociation = async (videoId, playlistId, alreadyAssociated, videoData = null) => {
     if (!currentUser) return;

@@ -236,31 +236,27 @@ export default function DiscoverPage() {
 
   // Toggle Save/Bookmark state of a search result card
   const handleToggleSaveVideo = async (video) => {
-    if (!currentUser) return;
+    if (!currentUser || !video?.videoId) return;
+
     const isCurrentlySaved = savedVideos.some(v => v.videoId === video.videoId);
     try {
       if (isCurrentlySaved) {
         await removeVideoFromLibrary(currentUser.uid, video.videoId);
         setSavedVideos(prev => prev.filter(v => v.videoId !== video.videoId));
       } else {
-        const metadata = {
-          title: video.title || 'YouTube Video',
-          channel: video.channel || 'Unknown Creator',
-          thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`,
-          is_live: video.isLive
-        };
         await saveVideoToLibrary(
           currentUser.uid,
           video.videoId,
-          `https://www.youtube.com/watch?v=${video.videoId}`,
-          metadata
+          video.videoUrl,
+          video.metadata
         );
+
         setSavedVideos(prev => [
-          ...prev,
+          ...prev.filter(v => v.videoId !== video.videoId),
           {
             videoId: video.videoId,
-            videoUrl: `https://www.youtube.com/watch?v=${video.videoId}`,
-            metadata,
+            videoUrl: video.videoUrl,
+            metadata: video.metadata,
             playlistIds: []
           }
         ]);
@@ -269,6 +265,8 @@ export default function DiscoverPage() {
       console.error('Failed to toggle save video:', err);
     }
   };
+
+
 
   // Handle adding/removing video from a playlist in Discover
   const handleTogglePlaylistAssociation = async (videoId, playlistId, alreadyAssociated, video) => {

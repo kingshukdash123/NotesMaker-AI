@@ -78,9 +78,8 @@ export default function VideoContentPage() {
         await saveVideoToLibrary(
           currentUser.uid, 
           activeVideoId, 
-          activeVideoUrl, 
-          activeVideoMetadata, 
-          processStatus === 'COMPLETED'
+          activeVideoUrl || `https://www.youtube.com/watch?v=${activeVideoId}`, 
+          activeVideoMetadata
         );
         setIsSaved(true);
       }

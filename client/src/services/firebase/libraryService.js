@@ -300,6 +300,10 @@ export async function getVideoPlaylistIds(userId, videoId) {
 
 /**
  * Saves a video to the user's library (Bookmarks / Saved Videos).
+ * @param {string} userId - Auth user ID
+ * @param {string} videoId - YouTube video ID
+ * @param {string} videoUrl - YouTube video URL
+ * @param {Object} metadata - Video metadata ({ title, channel, thumbnail })
  */
 export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata) {
   if (!userId || !videoId) return;
@@ -317,6 +321,8 @@ export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata) {
 
 /**
  * Removes a video from the user's library (Bookmarks / Saved Videos).
+ * @param {string} userId - Auth user ID
+ * @param {string} videoId - YouTube video ID
  */
 export async function removeVideoFromLibrary(userId, videoId) {
   if (!userId || !videoId) return;
@@ -326,6 +332,8 @@ export async function removeVideoFromLibrary(userId, videoId) {
 
 /**
  * Checks if a video is saved in the user's library.
+ * @param {string} userId - Auth user ID
+ * @param {string} videoId - YouTube video ID
  */
 export async function isVideoSaved(userId, videoId) {
   if (!userId || !videoId) return false;
@@ -336,6 +344,7 @@ export async function isVideoSaved(userId, videoId) {
 
 /**
  * Retrieves all saved videos in the user's library.
+ * @param {string} userId - Auth user ID
  * @returns {Promise<Array<SavedVideoModel>>}
  */
 export async function getUserSavedVideos(userId) {
@@ -360,3 +369,5 @@ export async function getUserSavedVideos(userId) {
 
   return savedVideos;
 }
+
+

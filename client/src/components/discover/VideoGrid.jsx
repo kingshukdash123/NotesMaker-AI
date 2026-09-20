@@ -91,7 +91,7 @@ export default function VideoGrid({
             playlists={playlists}
             isSaved={isSaved}
             onOpen={() => onVideoClick(item)}
-            onSave={() => onSaveVideo(item)}
+            onSave={() => onSaveVideo(videoObject)}
             onAddToPlaylist={(videoId, playlistId, alreadyAssociated) =>
               onTogglePlaylistAssociation(videoId, playlistId, alreadyAssociated, item)
             }
