@@ -106,7 +106,8 @@ export function getUserBillingCycle(userProfile = null, now = new Date()) {
   const y = cycleStartDate.getUTCFullYear();
   const m = String(cycleStartDate.getUTCMonth() + 1).padStart(2, '0');
   const d = String(cycleStartDate.getUTCDate()).padStart(2, '0');
-  const periodKey = `${y}-${m}-${d}`;
+  const planId = effectiveSub.planId || 'starter';
+  const periodKey = `${y}-${m}-${d}_${planId}`;
 
   const msLeft = Math.max(0, cycleEndDate.getTime() - nowMs);
   const daysLeft = Math.max(1, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
@@ -126,12 +127,14 @@ export function getUserBillingCycle(userProfile = null, now = new Date()) {
 export class UsageModel {
   constructor({
     period = '',
+    planId = '',
     notesGenerated = 0,
     videoQaQuestions = 0,
     assistantQuestions = 0,
     lastUpdated = null,
   } = {}) {
     this.period = period || UsageModel.getCurrentPeriod();
+    this.planId = planId || '';
     this.notesGenerated = Number(notesGenerated || 0);
     this.videoQaQuestions = Number(videoQaQuestions || 0);
     this.assistantQuestions = Number(assistantQuestions || 0);
@@ -139,7 +142,7 @@ export class UsageModel {
   }
 
   /**
-   * Helper to get standard period key (30-day cycle YYYY-MM-DD or fallback YYYY-MM)
+   * Helper to get standard period key (30-day cycle YYYY-MM-DD_planId)
    * @param {Object} [userProfile]
    * @param {Date} [d]
    * @returns {string}
@@ -151,7 +154,7 @@ export class UsageModel {
     const y = d.getUTCFullYear();
     const m = String(d.getUTCMonth() + 1).padStart(2, '0');
     const day = String(d.getUTCDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    return `${y}-${m}-${day}_starter`;
   }
 
   static fromFirestore(docSnap) {
@@ -160,6 +163,7 @@ export class UsageModel {
 
     return new UsageModel({
       period: docSnap.id,
+      planId: data.planId || '',
       notesGenerated: data.notesGenerated || 0,
       videoQaQuestions: data.videoQaQuestions || 0,
       assistantQuestions: data.assistantQuestions || 0,
@@ -170,6 +174,7 @@ export class UsageModel {
   toFirestore() {
     return {
       period: this.period,
+      planId: this.planId || '',
       notesGenerated: this.notesGenerated,
       videoQaQuestions: this.videoQaQuestions,
       assistantQuestions: this.assistantQuestions,
@@ -180,6 +185,7 @@ export class UsageModel {
   toPlainObject() {
     return {
       period: this.period,
+      planId: this.planId || '',
       notesGenerated: this.notesGenerated,
       videoQaQuestions: this.videoQaQuestions,
       assistantQuestions: this.assistantQuestions,

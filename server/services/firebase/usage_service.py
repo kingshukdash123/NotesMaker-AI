@@ -10,9 +10,9 @@ logger = get_logger(__name__)
 CYCLE_SECONDS = 30 * 24 * 60 * 60
 
 
-def compute_user_billing_period(created_at_val: str | None = None, started_at_val: str | None = None) -> str:
+def compute_user_billing_period(created_at_val: str | None = None, started_at_val: str | None = None, plan_id: str | None = None) -> str:
     """
-    Computes a 30-day rolling billing cycle key (YYYY-MM-DD) based on signup or subscription start.
+    Computes a 30-day rolling billing cycle key (YYYY-MM-DD_planId) based on signup or subscription start.
     Advances every 30 days automatically.
     """
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -35,12 +35,14 @@ def compute_user_billing_period(created_at_val: str | None = None, started_at_va
     elapsed_seconds = max(0.0, (now - base_dt).total_seconds())
     cycle_index = int(elapsed_seconds // CYCLE_SECONDS)
     cycle_start = base_dt + datetime.timedelta(seconds=cycle_index * CYCLE_SECONDS)
-    return f"{cycle_start.year}-{cycle_start.month:02d}-{cycle_start.day:02d}"
+    date_key = f"{cycle_start.year}-{cycle_start.month:02d}-{cycle_start.day:02d}"
+    clean_plan = plan_id or PLAN_STARTER
+    return f"{date_key}_{clean_plan}"
 
 
-def get_current_period() -> str:
+def get_current_period(plan_id: str = PLAN_STARTER) -> str:
     """Returns standard default period string."""
-    return compute_user_billing_period()
+    return compute_user_billing_period(plan_id=plan_id)
 
 
 def compute_effective_subscription(fields: dict) -> dict:
@@ -87,7 +89,7 @@ def compute_effective_subscription(fields: dict) -> dict:
         # Revert to Starter; expiration day is the new billing period start date
         starter_valid_until_dt = valid_until_dt + datetime.timedelta(seconds=CYCLE_SECONDS)
         starter_valid_until_str = starter_valid_until_dt.isoformat().replace("+00:00", "Z")
-        period_key = compute_user_billing_period(started_at_val=valid_until, created_at_val=created_at)
+        period_key = compute_user_billing_period(started_at_val=valid_until, created_at_val=created_at, plan_id=PLAN_STARTER)
         return {
             "planId": PLAN_STARTER,
             "status": "active",
@@ -99,7 +101,7 @@ def compute_effective_subscription(fields: dict) -> dict:
             "originalPlanId": plan_id,
         }
 
-    period_key = compute_user_billing_period(started_at_val=started_at, created_at_val=created_at)
+    period_key = compute_user_billing_period(started_at_val=started_at, created_at_val=created_at, plan_id=plan_id)
     return {
         "planId": plan_id,
         "status": status,
@@ -178,6 +180,8 @@ async def get_user_monthly_usage(user_id: str | None, period: str | None = None)
                 }
     except Exception as e:
         logger.warning(f"Error fetching monthly usage for {user_id}: {e}")
+
+    return {"notesGenerated": 0, "videoQaQuestions": 0, "assistantQuestions": 0}
 
     return {"notesGenerated": 0, "videoQaQuestions": 0, "assistantQuestions": 0}
 
@@ -284,12 +288,14 @@ async def increment_user_usage(user_id: str | None, field_name: str, amount: int
     current_usage = await get_user_monthly_usage(user_id, cur_period)
     new_value = current_usage.get(field_name, 0) + amount
 
-    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/users/{user_id}/usage/{cur_period}?updateMask.fieldPaths={field_name}&updateMask.fieldPaths=period&updateMask.fieldPaths=lastUpdated"
+    plan_id = user_sub.get("planId") or PLAN_STARTER
+    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/users/{user_id}/usage/{cur_period}?updateMask.fieldPaths={field_name}&updateMask.fieldPaths=period&updateMask.fieldPaths=planId&updateMask.fieldPaths=lastUpdated"
     now_str = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
 
     payload = {
         "fields": {
             "period": {"stringValue": cur_period},
+            "planId": {"stringValue": plan_id},
             field_name: {"integerValue": str(new_value)},
             "lastUpdated": {"timestampValue": now_str},
         }

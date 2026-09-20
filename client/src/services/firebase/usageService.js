@@ -28,8 +28,11 @@ export async function getUserMonthlyUsage(userId, period = UsageModel.getCurrent
       return UsageModel.fromFirestore(docSnap);
     }
 
+    // Extract planId from period if present
+    const planId = period.includes('_') ? period.split('_')[1] : '';
+
     // Initialize document if not exists
-    const initialUsage = new UsageModel({ period });
+    const initialUsage = new UsageModel({ period, planId });
     await setDoc(usageDocRef, initialUsage.toFirestore(), { merge: true });
     return initialUsage;
   } catch (error) {
@@ -58,7 +61,8 @@ export function subscribeUserMonthlyUsage(userId, callback, period = UsageModel.
         const usage = UsageModel.fromFirestore(docSnap);
         callback(usage);
       } else {
-        callback(new UsageModel({ period }));
+        const planId = period.includes('_') ? period.split('_')[1] : '';
+        callback(new UsageModel({ period, planId }));
       }
     },
     (err) => {
@@ -84,11 +88,13 @@ export async function incrementUsageCount(
 
   try {
     const usageDocRef = doc(db, 'users', userId, 'usage', period);
+    const planId = period.includes('_') ? period.split('_')[1] : '';
     await setDoc(
       usageDocRef,
       {
         [fieldName]: increment(amount),
         period,
+        planId,
         lastUpdated: serverTimestamp(),
       },
       { merge: true }
@@ -98,9 +104,11 @@ export async function incrementUsageCount(
   }
 }
 
+
 /**
  * Updates a user's subscription plan and status in Firestore.
- * When a user purchases a plan, that purchase date becomes the new starting date for their billing period.
+ * When a user purchases/upgrades a plan, that purchase date becomes the new starting date for their billing period.
+ * Each plan & period maintains its own dedicated usage document in Firestore without overwriting historical records.
  * @param {string} userId
  * @param {Object} subscription - { planId, status, startedAt, validUntil }
  */
@@ -124,6 +132,32 @@ export async function updateUserSubscription(userId, subscription) {
     },
     updatedAt: serverTimestamp(),
   });
+
+  // Calculate dedicated period key for this plan and ensure its usage document exists without overwriting past records
+  const periodKey = UsageModel.getCurrentPeriod(
+    {
+      subscription: {
+        planId,
+        startedAt,
+        validUntil,
+        status: subscription.status || 'active',
+      },
+    },
+    startedAtDate
+  );
+
+  const usageDocRef = doc(db, 'users', userId, 'usage', periodKey);
+  const docSnap = await getDoc(usageDocRef);
+  if (!docSnap.exists()) {
+    await setDoc(usageDocRef, {
+      period: periodKey,
+      planId,
+      notesGenerated: 0,
+      videoQaQuestions: 0,
+      assistantQuestions: 0,
+      lastUpdated: serverTimestamp(),
+    });
+  }
 }
 
 /**
