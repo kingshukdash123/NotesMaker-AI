@@ -20,7 +20,7 @@ import { PLAN_IDS } from '../models';
 import { updateUserSubscription, syncExpiredSubscription } from '../services/firebase/usageService';
 import { getUserBillingCycle, getEffectiveSubscription } from '../models/usageModel';
 import DocPageHeader from '../components/common/DocPageHeader';
-import { PlanCard } from '../components/pricing';
+import { PlanCard, PlanUpgradeModal, PlanQuotaBox } from '../components/pricing';
 import {
   BillingSkeleton,
   UsageCardSkeleton,
@@ -36,6 +36,7 @@ export default function BillingPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
+  const [upgradeModalPlan, setUpgradeModalPlan] = useState(null);
 
   const effectiveSub = getEffectiveSubscription(userProfile);
   const currentPlanId = effectiveSub.planId || PLAN_IDS.STARTER;
@@ -74,7 +75,7 @@ export default function BillingPage() {
     }
   };
 
-  const handleSelectPlan = async (planId) => {
+  const handleSelectPlan = (planId) => {
     if (planId === currentPlanId || isUpdating) return;
     
     // Prevent switching to a lower tier
@@ -83,28 +84,8 @@ export default function BillingPage() {
       return;
     }
 
-    setSelectedPlanId(planId);
-
-    if (currentUser) {
-      setIsUpdating(true);
-      try {
-        const purchaseDate = new Date();
-        const validUntil = new Date(purchaseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-        await updateUserSubscription(currentUser.uid, {
-          planId,
-          status: 'active',
-          startedAt: purchaseDate.toISOString(),
-          validUntil: validUntil.toISOString(),
-        });
-        setSuccessMsg(`Successfully upgraded to ${getPlan(planId).name} Plan!`);
-        setTimeout(() => setSuccessMsg(''), 4000);
-      } catch (err) {
-        console.error('Failed to update subscription:', err);
-      } finally {
-        setIsUpdating(false);
-        setSelectedPlanId(null);
-      }
-    }
+    const targetPlan = getPlan(planId);
+    setUpgradeModalPlan(targetPlan);
   };
 
   const bg = isDark ? 'bg-zinc-950' : 'bg-white';
@@ -140,223 +121,169 @@ export default function BillingPage() {
             </div>
           )}
 
-          {/* ── Top Row: Current Plan & Features (Left) + Monthly Resource Usage (Right) ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
-            
-            {/* 1. Left Card: Current Active Plan */}
-            <div className={`rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4 transition-all duration-200 ${cardBg}`}>
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="flex items-center gap-3 pb-1">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    isDark ? 'bg-zinc-800/60 text-zinc-200' : 'bg-white text-zinc-800 shadow-xs'
-                  }`}>
-                    <Crown className="w-5 h-5 text-orange-500" />
-                  </div>
-                  <div>
-                    <p className={`text-[11px] font-bold uppercase tracking-wider ${textMuted}`}>Your Current Plan</p>
-                    <h3 className={`text-base sm:text-lg font-bold ${textPrimary}`}>{currentPlan.name} Plan</h3>
-                  </div>
-                </div>
-
-                {/* Clean Key Specs & Features Card (No Inner Border) with Increase Badges */}
-                <div className={`p-4 rounded-xl text-xs space-y-2.5 ${subCardBg}`}>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-1.5">
-                      <span className={textMuted}>Note Sessions:</span>
-                      {currentPlan.id !== PLAN_IDS.STARTER && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          isDark ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50'
-                        }`}>
-                          +{currentPlan.limits.monthlyNotesQuota - 10}
-                        </span>
-                      )}
-                    </div>
-                    <span className={`font-semibold ${textPrimary}`}>{currentPlan.limits.monthlyNotesQuota} / mo</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-1.5">
-                      <span className={textMuted}>Max Video Length:</span>
-                      {currentPlan.id !== PLAN_IDS.STARTER && Math.round((currentPlan.limits.maxVideoDurationSeconds || 0) / 3600) > 2 && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          isDark ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50'
-                        }`}>
-                          +{Math.round((currentPlan.limits.maxVideoDurationSeconds || 0) / 3600) - 2} hrs
-                        </span>
-                      )}
-                    </div>
-                    <span className={`font-semibold ${textPrimary}`}>{currentPlan.limits.maxVideoDurationDisplay}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-1.5">
-                      <span className={textMuted}>Guruji Doubts:</span>
-                      {currentPlan.id !== PLAN_IDS.STARTER && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          isDark ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50'
-                        }`}>
-                          +{(currentPlan.limits.monthlyChatQuota - 75).toLocaleString()}
-                        </span>
-                      )}
-                    </div>
-                    <span className={`font-semibold ${textPrimary}`}>{currentPlan.limits.monthlyChatQuota} / mo</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={textMuted}>AI Queue Speed:</span>
-                    <span className={`font-semibold ${currentPlan.limits.priorityQueue ? 'text-orange-500 dark:text-orange-400' : textPrimary}`}>
-                      {currentPlan.limits.priorityQueue ? '⚡ Fast-Track Priority' : 'Standard'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={textMuted}>Subject Playlists:</span>
-                    <span className="font-semibold text-emerald-500">Unlimited</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={textMuted}>Study History Archive:</span>
-                    <span className="font-semibold text-emerald-500">Unlimited</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={textMuted}>Daily Study Planner:</span>
-                    <span className="font-semibold text-emerald-500">Unlimited</span>
-                  </div>
-                </div>
+          {/* ── Section 1: Your Plan & Usage ── */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-0.5">
+              <div className="flex items-center gap-2">
+                <span className="w-1 h-4 rounded-full bg-orange-500 shrink-0" />
+                <Crown className="w-4 h-4 text-orange-500 shrink-0" />
+                <h2 className={`text-base font-bold ${textPrimary}`}>
+                  Your Plan &amp; Usage
+                </h2>
               </div>
+              <p className={`text-xs ${textSecondary}`}>
+                Review your current tier limits and monthly quota consumption.
+              </p>
             </div>
 
-            {/* 2. Right Card: Live Usage & Quota Meter (or Skeleton while fetching) */}
-            {isUsageLoading ? (
-              <UsageCardSkeleton isDark={isDark} cardBg={cardBg} subCardBg={subCardBg} />
-            ) : (
+            {/* Top Row: Current Plan & Features (Left) + Monthly Resource Usage (Right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
+              
+              {/* 1. Left Card: Current Active Plan */}
               <div className={`rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4 transition-all duration-200 ${cardBg}`}>
                 <div className="space-y-4">
-                  {/* Header (Responsive for mobile screens) */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pb-1">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                        isDark ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-orange-50 border-orange-200 text-orange-600'
-                      }`}>
-                        <CreditCard className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className={`text-base sm:text-lg font-bold leading-tight ${textPrimary}`}>Monthly Resource Usage</h3>
-                        <p className={`text-xs ${textSecondary}`}>Real-time quota tracking</p>
-                      </div>
-                    </div>
-
-                    <div className={`flex items-center sm:flex-col sm:items-end justify-between sm:justify-center gap-1 sm:gap-0.5 pt-2 sm:pt-0 border-t sm:border-t-0 ${
-                      isDark ? 'border-zinc-800/50' : 'border-zinc-200/70'
+                  {/* Header */}
+                  <div className="flex items-center gap-3 pb-1">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      isDark ? 'bg-zinc-800/60 text-zinc-200' : 'bg-white text-zinc-800 shadow-xs'
                     }`}>
-                      <div className={`text-xs ${textMuted} flex items-center gap-1.5`}>
-                        <span>Cycle:</span>
-                        <span className={`font-semibold ${textPrimary}`}>{billingCycle.formattedRange}</span>
-                      </div>
-                      <span className={`text-[10px] ${isDark ? 'border-zinc-800/50' : 'border-zinc-200/70'}`}>
-                        {billingCycle.daysLeft} {billingCycle.daysLeft === 1 ? 'day' : 'days'} left
-                      </span>
+                      <Crown className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <div>
+                      <p className={`text-[11px] font-bold uppercase tracking-wider ${textMuted}`}>Your Current Plan</p>
+                      <h3 className={`text-base sm:text-lg font-bold ${textPrimary}`}>{currentPlan.name} Plan</h3>
                     </div>
                   </div>
 
-                  {/* Meter 1: Notes Sessions (No Inner Border) */}
-                  <div className={`p-3.5 rounded-xl space-y-2 ${subCardBg}`}>
-                    <div className="flex items-center justify-between gap-2 text-xs">
-                      <span className={`font-medium ${textPrimary} truncate`}>Lecture Notes</span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
-                          notesLeft > 0
-                            ? isDark ? 'bg-zinc-900 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
-                            : isDark ? 'bg-red-950/80 text-red-400 border border-red-900/50' : 'bg-red-100 text-red-800 border border-red-200'
-                        }`}>
-                          {notesLeft > 0 ? `${notesLeft} left` : 'Limit Reached'}
-                        </span>
-                        <span className={`font-mono text-xs font-semibold shrink-0 whitespace-nowrap ${textPrimary}`}>
-                          {notesUsed} / {notesQuota} used
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          notesPercent >= 100
-                            ? 'bg-red-500'
-                            : isDark
-                            ? 'bg-white'
-                            : 'bg-zinc-950'
-                        }`}
-                        style={{
-                          width: `${notesPercent}%`,
-                          backgroundColor: notesPercent >= 100 ? '#ef4444' : (isDark ? '#ffffff' : '#000000'),
-                        }}
-                      />
-                    </div>
-
-                    <p className={`text-[11px] leading-relaxed ${textMuted}`}>
-                      Generates structured lecture outlines, smart chapter takeaways, and formula breakdowns.
-                    </p>
-                  </div>
-
-                  {/* Meter 2: Mentor Doubts (No Inner Border) */}
-                  <div className={`p-3.5 rounded-xl space-y-2 ${subCardBg}`}>
-                    <div className="flex items-center justify-between gap-2 text-xs">
-                      <span className={`font-medium ${textPrimary} truncate`}>Guruji Doubts</span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
-                          qaLeft > 0
-                            ? isDark ? 'bg-zinc-900 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
-                            : isDark ? 'bg-red-950/80 text-red-400 border border-red-900/50' : 'bg-red-100 text-red-800 border border-red-200'
-                        }`}>
-                          {qaLeft > 0 ? `${qaLeft} left` : 'Limit Reached'}
-                        </span>
-                        <span className={`font-mono text-xs font-semibold shrink-0 whitespace-nowrap ${textPrimary}`}>
-                          {qaUsed} / {qaQuota} used
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          qaPercent >= 100
-                            ? 'bg-red-500'
-                            : isDark
-                            ? 'bg-white'
-                            : 'bg-zinc-950'
-                        }`}
-                        style={{
-                          width: `${qaPercent}%`,
-                          backgroundColor: qaPercent >= 100 ? '#ef4444' : (isDark ? '#ffffff' : '#000000'),
-                        }}
-                      />
-                    </div>
-
-                    <p className={`text-[11px] leading-relaxed ${textMuted}`}>
-                      Ask conceptual doubt questions to Guruji and get real-time lecture Q&amp;A.
-                    </p>
-                  </div>
-
+                  {/* Clean Key Specs & Features Card (No Inner Border) with Increase Badges */}
+                  <PlanQuotaBox plan={currentPlan} isDark={isDark} />
                 </div>
               </div>
-            )}
 
+              {/* 2. Right Card: Live Usage & Quota Meter (or Skeleton while fetching) */}
+              {isUsageLoading ? (
+                <UsageCardSkeleton isDark={isDark} cardBg={cardBg} subCardBg={subCardBg} />
+              ) : (
+                <div className={`rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4 transition-all duration-200 ${cardBg}`}>
+                  <div className="space-y-4">
+                    {/* Header (Responsive for mobile screens) */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pb-1">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                          isDark ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-orange-50 border-orange-200 text-orange-600'
+                        }`}>
+                          <CreditCard className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className={`text-base sm:text-lg font-bold leading-tight ${textPrimary}`}>Monthly Resource Usage</h3>
+                          <p className={`text-xs ${textSecondary}`}>Real-time quota tracking</p>
+                        </div>
+                      </div>
+
+                      <div className={`flex items-center sm:flex-col sm:items-end justify-between sm:justify-center gap-1 sm:gap-0.5 pt-2 sm:pt-0 border-t sm:border-t-0 ${
+                        isDark ? 'border-zinc-800/50' : 'border-zinc-200/70'
+                      }`}>
+                        <div className={`text-xs ${textMuted} flex items-center gap-1.5`}>
+                          <span>Cycle:</span>
+                          <span className={`font-semibold ${textPrimary}`}>{billingCycle.formattedRange}</span>
+                        </div>
+                        <span className={`text-[10px] ${isDark ? 'border-zinc-800/50' : 'border-zinc-200/70'}`}>
+                          {billingCycle.daysLeft} {billingCycle.daysLeft === 1 ? 'day' : 'days'} left
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Meter 1: Notes Sessions (No Inner Border) */}
+                    <div className={`p-3.5 rounded-xl space-y-2 ${subCardBg}`}>
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className={`font-medium ${textPrimary} truncate`}>Lecture Notes</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
+                            notesLeft > 0
+                              ? isDark ? 'bg-zinc-900 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
+                              : isDark ? 'bg-red-950/80 text-red-400 border border-red-900/50' : 'bg-red-100 text-red-800 border border-red-200'
+                          }`}>
+                            {notesLeft > 0 ? `${notesLeft} left` : 'Limit Reached'}
+                          </span>
+                          <span className={`font-mono text-xs font-semibold shrink-0 whitespace-nowrap ${textPrimary}`}>
+                            {notesUsed} / {notesQuota} used
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            notesPercent >= 100
+                              ? 'bg-red-500'
+                              : isDark
+                              ? 'bg-white'
+                              : 'bg-zinc-950'
+                          }`}
+                          style={{
+                            width: `${notesPercent}%`,
+                            backgroundColor: notesPercent >= 100 ? '#ef4444' : (isDark ? '#ffffff' : '#000000'),
+                          }}
+                        />
+                      </div>
+
+                      <p className={`text-[11px] leading-relaxed ${textMuted}`}>
+                        Generates structured lecture outlines, smart chapter takeaways, and formula breakdowns.
+                      </p>
+                    </div>
+
+                    {/* Meter 2: Mentor Doubts (No Inner Border) */}
+                    <div className={`p-3.5 rounded-xl space-y-2 ${subCardBg}`}>
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className={`font-medium ${textPrimary} truncate`}>Guruji Doubts</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
+                            qaLeft > 0
+                              ? isDark ? 'bg-zinc-900 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
+                              : isDark ? 'bg-red-950/80 text-red-400 border border-red-900/50' : 'bg-red-100 text-red-800 border border-red-200'
+                          }`}>
+                            {qaLeft > 0 ? `${qaLeft} left` : 'Limit Reached'}
+                          </span>
+                          <span className={`font-mono text-xs font-semibold shrink-0 whitespace-nowrap ${textPrimary}`}>
+                            {qaUsed} / {qaQuota} used
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            qaPercent >= 100
+                              ? 'bg-red-500'
+                              : isDark
+                              ? 'bg-white'
+                              : 'bg-zinc-950'
+                          }`}
+                          style={{
+                            width: `${qaPercent}%`,
+                            backgroundColor: qaPercent >= 100 ? '#ef4444' : (isDark ? '#ffffff' : '#000000'),
+                          }}
+                        />
+                      </div>
+
+                      <p className={`text-[11px] leading-relaxed ${textMuted}`}>
+                        Ask conceptual doubt questions to Guruji and get real-time lecture Q&amp;A.
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
 
-          {/* ── Section Divider & Upgrade Subheading ── */}
-          <div className="pt-8 pb-4 sm:pt-10 sm:pb-6 space-y-8">
+          {/* ── Section Divider ── */}
+          <div className="pt-2 sm:pt-4">
             <hr className={`border-t ${isDark ? 'border-zinc-800' : 'border-zinc-200'}`} />
-
-            {isLimitReached && (
-              <div className="flex items-center justify-center text-center px-4">
-                <h3 className={`text-xl sm:text-2xl md:text-3xl font-bold tracking-tight m-0 text-center ${
-                  isDark ? 'text-zinc-100' : 'text-zinc-900'
-                }`}>
-                  To get more quota and increase your study productivity, <span className="text-orange-500">upgrade your plan below</span>.
-                </h3>
-              </div>
-            )}
           </div>
 
-          {/* ── Section: Available Subscription Plans ── */}
+          {/* ── Section 2: Available Subscription Plans ── */}
           <div id="available-plans-section" className="space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-0.5">
               <div className="flex items-center gap-2">
@@ -367,7 +294,7 @@ export default function BillingPage() {
                 </h2>
               </div>
               <p className={`text-xs ${textSecondary}`}>
-                Choose a plan that fits your study schedule. Upgrade anytime.
+                To get more quota and increase your study productivity, <span className="text-orange-500 font-semibold">upgrade your plan below</span>.
               </p>
             </div>
 
@@ -409,6 +336,17 @@ export default function BillingPage() {
           <div className="h-8" />
         </div>
       </div>
+
+      {/* ── 3-Second Countdown & Confetti Purchase Upgrade Modal ── */}
+      <PlanUpgradeModal
+        isOpen={Boolean(upgradeModalPlan)}
+        onClose={() => setUpgradeModalPlan(null)}
+        plan={upgradeModalPlan}
+        onSuccess={(upgradedPlan) => {
+          setSuccessMsg(`Successfully upgraded to ${upgradedPlan.name} Plan!`);
+          setTimeout(() => setSuccessMsg(''), 5000);
+        }}
+      />
     </div>
   );
 }

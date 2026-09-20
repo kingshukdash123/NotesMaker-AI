@@ -2,10 +2,26 @@ import React from 'react';
 import CurvyUnderline from './CurvyUnderline';
 import LimitedTimeTimer from './LimitedTimeTimer';
 import { usePlans } from '../../context/PlansContext';
+import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import { PlanCard } from '../pricing';
 
 export default function PricingSection({ isDark, onOpenAuthModal, headingClass, subClass }) {
   const { plansList } = usePlans();
+  const { currentUser } = useAuth() || {};
+  const { setActiveSection } = useApp() || {};
+
+  const handleSelect = (planId) => {
+    if (currentUser) {
+      if (setActiveSection) {
+        setActiveSection('billing');
+      }
+    } else {
+      if (onOpenAuthModal) {
+        onOpenAuthModal('signup');
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -29,11 +45,10 @@ export default function PricingSection({ isDark, onOpenAuthModal, headingClass, 
             key={plan.id}
             plan={plan}
             isDark={isDark}
-            onSelect={() => onOpenAuthModal('signup')}
+            onSelect={() => handleSelect(plan.id)}
           />
         ))}
       </div>
     </div>
   );
 }
-

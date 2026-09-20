@@ -16,6 +16,8 @@ import {
 } from '../../models';
 
 
+let _activePlansCache = { ...DEFAULT_PLANS };
+
 /**
  * Returns the numeric rank for plan hierarchy (0 = Starter, 1 = Learner, 2 = Scholar).
  * @param {string} [planId]
@@ -23,17 +25,21 @@ import {
  */
 export function getPlanRank(planId) {
   if (!planId) return 0;
+  if (_activePlansCache[planId]?.rank !== undefined) {
+    return Number(_activePlansCache[planId].rank);
+  }
   return PLAN_RANKS[planId] ?? 0;
 }
 
 /**
  * Returns the plan config for a given plan ID, defaulting to Starter.
+ * Uses live Firestore cached plans.
  * @param {string} [planId]
  * @returns {Object}
  */
 export function getPlan(planId) {
-  if (!planId) return DEFAULT_PLANS[PLAN_IDS.STARTER];
-  return DEFAULT_PLANS[planId] || DEFAULT_PLANS[PLAN_IDS.STARTER];
+  if (!planId) return _activePlansCache[PLAN_IDS.STARTER] || DEFAULT_PLANS[PLAN_IDS.STARTER];
+  return _activePlansCache[planId] || _activePlansCache[PLAN_IDS.STARTER] || DEFAULT_PLANS[PLAN_IDS.STARTER];
 }
 
 /**
@@ -129,7 +135,9 @@ export async function fetchPlansFromFirestore() {
       }
     });
 
-    return Object.keys(plansMap).length > 0 ? plansMap : DEFAULT_PLANS;
+    const result = Object.keys(plansMap).length > 0 ? { ...DEFAULT_PLANS, ...plansMap } : DEFAULT_PLANS;
+    _activePlansCache = result;
+    return result;
   } catch (error) {
     console.error('Error fetching plans from Firestore:', error);
     return DEFAULT_PLANS;
@@ -160,10 +168,12 @@ export function subscribePlansFromFirestore(callback) {
 
         // Ensure default IDs exist if partial snapshot
         const mergedPlans = { ...DEFAULT_PLANS, ...plansMap };
+        _activePlansCache = mergedPlans;
         callback(mergedPlans);
       } else {
         // If collection is empty, trigger seed and return defaults
         seedDefaultPlansIfEmpty();
+        _activePlansCache = DEFAULT_PLANS;
         callback(DEFAULT_PLANS);
       }
     },

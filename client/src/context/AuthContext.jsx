@@ -10,6 +10,7 @@ import { auth } from '../services/firebase/firebaseConfig';
 import { 
   createUserProfile, 
   getUserProfile, 
+  subscribeUserProfile,
   checkPhoneRegistered,
   updateUserProfile,
   updateUserPreferences,
@@ -216,23 +217,36 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let unsubscribeProfile = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       if (user) {
-        try {
-          const profile = await getUserProfile(user.uid);
-          setUserProfile(profile);
-        } catch (err) {
-          console.error('Failed to load user profile on auth state change:', err);
-        }
+        unsubscribeProfile = subscribeUserProfile(
+          user.uid,
+          (profile) => {
+            setUserProfile(profile);
+            setLoading(false);
+          },
+          (err) => {
+            setLoading(false);
+          }
+        );
       } else {
         setUserProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
-      unsubscribe();
+      if (unsubscribeProfile) unsubscribeProfile();
+      unsubscribeAuth();
       clearRecaptcha();
     };
   }, []);

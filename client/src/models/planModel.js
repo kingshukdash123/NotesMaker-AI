@@ -194,32 +194,35 @@ export class PlanModel {
   }
 
   /**
-   * Returns the notes quota delta compared to Starter baseline (10 notes).
-   * @param {number} [baseline=10]
+   * Returns the notes quota delta compared to Starter baseline.
+   * @param {number} [baseline]
    * @returns {number}
    */
-  getNotesQuotaIncrease(baseline = 10) {
+  getNotesQuotaIncrease(baseline) {
     if (this.id === PLAN_IDS.STARTER) return 0;
-    return Math.max(0, (this.limits?.monthlyNotesQuota || 0) - baseline);
+    const base = baseline !== undefined ? baseline : (DEFAULT_PLANS[PLAN_IDS.STARTER]?.limits?.monthlyNotesQuota || 0);
+    return Math.max(0, (this.limits?.monthlyNotesQuota || 0) - base);
   }
 
   /**
-   * Returns the video hours delta compared to Starter baseline (2 hours).
-   * @param {number} [baseline=2]
+   * Returns the video hours delta compared to Starter baseline.
+   * @param {number} [baseline]
    * @returns {number}
    */
-  getVideoHoursIncrease(baseline = 2) {
+  getVideoHoursIncrease(baseline) {
     if (this.id === PLAN_IDS.STARTER) return 0;
-    return Math.max(0, this.getVideoDurationHours() - baseline);
+    const base = baseline !== undefined ? baseline : Math.round((DEFAULT_PLANS[PLAN_IDS.STARTER]?.limits?.maxVideoDurationSeconds || 0) / 3600);
+    return Math.max(0, this.getVideoDurationHours() - base);
   }
 
   /**
-   * Returns the monthly chat quota delta compared to Starter baseline (75 chats).
-   * @param {number} [baseline=75]
+   * Returns the monthly chat quota delta compared to Starter baseline.
+   * @param {number} [baseline]
    * @returns {number}
    */
-  getChatQuotaIncrease(baseline = 75) {
+  getChatQuotaIncrease(baseline) {
     if (this.id === PLAN_IDS.STARTER) return 0;
-    return Math.max(0, (this.limits?.monthlyChatQuota || 0) - baseline);
+    const base = baseline !== undefined ? baseline : (DEFAULT_PLANS[PLAN_IDS.STARTER]?.limits?.monthlyChatQuota || 0);
+    return Math.max(0, (this.limits?.monthlyChatQuota || 0) - base);
   }
 }

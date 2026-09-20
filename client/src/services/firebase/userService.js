@@ -7,6 +7,7 @@ import {
   query,
   where,
   getDocs,
+  onSnapshot,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
@@ -58,6 +59,36 @@ export async function getUserProfile(uid) {
     console.error('Error fetching user profile:', error);
     return null;
   }
+}
+
+/**
+ * Subscribes in real-time to a user's profile document in Firestore.
+ * @param {string} uid - Firebase Auth User UID
+ * @param {Function} callback - (profile: Object|null) => void
+ * @param {Function} [onError] - (error: Error) => void
+ * @returns {Function} Unsubscribe callback
+ */
+export function subscribeUserProfile(uid, callback, onError) {
+  if (!uid || typeof callback !== 'function') {
+    return () => {};
+  }
+
+  const userRef = doc(db, 'users', uid);
+  return onSnapshot(
+    userRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const userModel = UserModel.fromFirestore(docSnap);
+        callback(userModel ? userModel.toPlainObject() : null);
+      } else {
+        callback(null);
+      }
+    },
+    (error) => {
+      console.error('Error subscribing to user profile:', error);
+      if (onError) onError(error);
+    }
+  );
 }
 
 export async function checkPhoneRegistered(formattedPhone) {

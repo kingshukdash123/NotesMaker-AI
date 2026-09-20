@@ -1,7 +1,8 @@
 import React from 'react';
-import { CheckCircle2, X, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Check, X, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { PLAN_IDS } from '../../models';
 import { getPlanRank } from '../../services/firebase/planService';
+import PlanQuotaBox from './PlanQuotaBox';
 
 /**
  * PlanCard
@@ -26,13 +27,6 @@ export default function PlanCard({
 
   const textPrimary = isDark ? 'text-zinc-100' : 'text-zinc-900';
   const textSecondary = isDark ? 'text-zinc-400' : 'text-zinc-600';
-
-  // Actual quota increase vs Free Starter tier (10 notes, 2 hrs, 75 chats)
-  const isFree = plan.id === PLAN_IDS.STARTER;
-  const videoHours = Math.round((plan.limits.maxVideoDurationSeconds || 0) / 3600);
-  const notesIncrease = isFree ? 0 : (plan.limits.monthlyNotesQuota || 0) - 10;
-  const videoIncrease = isFree ? 0 : videoHours - 2;
-  const chatIncrease = isFree ? 0 : (plan.limits.monthlyChatQuota || 0) - 75;
 
   const handleAction = () => {
     if (isCurrent || isDowngrade || isUpdating) return;
@@ -82,23 +76,36 @@ export default function PlanCard({
         {/* Standard Header, Description & Price Section */}
         <div className={`pb-5 border-b space-y-3.5 ${isDark ? 'border-zinc-800/80' : 'border-zinc-100'}`}>
           <div className="space-y-1">
-            <h3
-              className={`text-sm sm:text-base font-extrabold uppercase tracking-wide ${
-                isScholar
-                  ? isDark
-                    ? 'text-white font-black'
-                    : 'text-zinc-950 font-black'
-                  : isHighlighted
+            <div className="flex items-center justify-between gap-3">
+              <h3
+                className={`text-sm sm:text-base font-extrabold uppercase tracking-wide ${
+                  isScholar
                     ? isDark
-                      ? 'text-orange-400'
-                      : 'text-orange-600'
-                    : isDark
-                      ? 'text-zinc-400'
-                      : 'text-zinc-500'
-              }`}
-            >
-              {plan.name}
-            </h3>
+                      ? 'text-white font-black'
+                      : 'text-zinc-950 font-black'
+                    : isHighlighted
+                      ? isDark
+                        ? 'text-orange-400'
+                        : 'text-orange-600'
+                      : isDark
+                        ? 'text-zinc-400'
+                        : 'text-zinc-500'
+                }`}
+              >
+                {plan.name}
+              </h3>
+
+              {isCurrent && (
+                <div className="flex items-center shrink-0">
+                  <Check
+                    className={`w-5 h-5 sm:w-6 sm:h-6 stroke-[3] ${
+                      isDark ? 'text-white' : 'text-zinc-950'
+                    }`}
+                    aria-label="Current selected plan"
+                  />
+                </div>
+              )}
+            </div>
 
             {plan.description && (
               <p className={`text-xs leading-relaxed ${textSecondary}`}>
@@ -142,76 +149,7 @@ export default function PlanCard({
         </div>
 
         {/* 1. Key Limit Specs Table (First) with increase badge right after the point label */}
-        <div className={`p-3.5 rounded-xl text-xs space-y-2.5 ${isDark ? 'bg-zinc-900/60' : 'bg-zinc-100/70'}`}>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1.5">
-              <span className={textSecondary}>Note Sessions:</span>
-              {notesIncrease > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  isDark ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50'
-                }`}>
-                  +{notesIncrease}
-                </span>
-              )}
-            </div>
-            <span className={`font-semibold ${textPrimary}`}>{plan.limits.monthlyNotesQuota} / mo</span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1.5">
-              <span className={textSecondary}>Max Video Length:</span>
-              {videoIncrease > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  isDark ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50'
-                }`}>
-                  +{videoIncrease} hrs
-                </span>
-              )}
-            </div>
-            <span className={`font-semibold ${textPrimary}`}>{plan.limits.maxVideoDurationDisplay}</span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1.5">
-              <span className={textSecondary}>AI Q&amp;A Doubts:</span>
-              {chatIncrease > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  isDark ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50'
-                }`}>
-                  +{chatIncrease.toLocaleString()}
-                </span>
-              )}
-            </div>
-            <span className={`font-semibold ${textPrimary}`}>{plan.limits.monthlyChatQuota} / mo</span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span className={textSecondary}>AI Queue Speed:</span>
-            <span className={`font-semibold ${
-              plan.limits.priorityQueue
-                ? isScholar
-                  ? isDark
-                    ? 'text-white font-bold'
-                    : 'text-zinc-950 font-bold'
-                  : 'text-orange-500 dark:text-orange-400'
-                : textPrimary
-            }`}>
-              {plan.limits.priorityQueue ? '⚡ Fast-Track Priority' : 'Standard'}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className={textSecondary}>Subject Playlists:</span>
-            <span className="font-semibold text-emerald-500">Unlimited</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className={textSecondary}>Study History Archive:</span>
-            <span className="font-semibold text-emerald-500">Unlimited</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className={textSecondary}>Daily Study Planner:</span>
-            <span className="font-semibold text-emerald-500">Unlimited</span>
-          </div>
-        </div>
+        <PlanQuotaBox plan={plan} isDark={isDark} />
 
         {/* 2. Remaining Feature Points (After Table) */}
         <ul className="space-y-2.5 pt-1">
