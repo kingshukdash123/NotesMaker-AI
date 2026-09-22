@@ -5,6 +5,7 @@ import uuid
 import json
 from pathlib import Path
 from typing import Dict, Any, Optional, List
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,10 +44,18 @@ from config.constants import (
 
 logger = get_logger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initializes dynamic subscription plans cache and ensures Firestore collection is seeded."""
+    logger.info("Initializing dynamic subscription plans from Firestore...")
+    asyncio.create_task(get_dynamic_plans(force_refresh=True))
+    yield
+
 app = FastAPI(
     title=API_TITLE,
     description=API_DESCRIPTION,
     version=API_VERSION,
+    lifespan=lifespan,
 )
 
 # CORS Setup
@@ -57,12 +66,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def startup_event():
-    """Initializes dynamic subscription plans cache and ensures Firestore collection is seeded."""
-    logger.info("Initializing dynamic subscription plans from Firestore...")
-    asyncio.create_task(get_dynamic_plans(force_refresh=True))
 
 # In-memory store for tracking task states
 # Structure: { task_id: { "status": str, "youtube_url": str, "metadata": dict, "result": dict, "error": str } }
