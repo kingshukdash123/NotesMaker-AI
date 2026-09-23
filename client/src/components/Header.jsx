@@ -6,12 +6,14 @@ import {
   Minimize2,
   LogIn,
   ArrowRight,
+  User,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import ThemeToggle from './common/ThemeToggle';
-import GurujiIcon from './common/GurujiIcon';
+import OrbitIcon from './common/OrbitIcon';
+import ProfileUserIcon from './common/ProfileUserIcon';
 
 const NAV_LINKS = [
   { id: 'home', label: 'Home', isRoute: true, routeUrl: '/' },
@@ -27,7 +29,15 @@ export default function Header({
   onOpenAuthModal,
 }) {
   const { currentUser, getUserDisplayName } = useAuth();
-  const { activeSection, setActiveSection, setIsProfileOpen, resetActiveVideo, isAssistantOpen, setIsAssistantOpen } = useApp();
+  const { 
+    activeSection, 
+    setActiveSection, 
+    setIsProfileOpen, 
+    resetActiveVideo, 
+    isAssistantOpen, 
+    setIsAssistantOpen,
+    activeVideoId 
+  } = useApp();
   const { isDark } = useTheme();
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -162,7 +172,9 @@ export default function Header({
             <button
               type="button"
               onClick={() => setIsSidebarMobileOpen?.(!isSidebarMobileOpen)}
-              className="lg:hidden p-1.5 text-zinc-400 hover:text-zinc-200 cursor-pointer bg-transparent"
+              className={`md:hidden p-1.5 cursor-pointer bg-transparent transition-colors ${
+                isDark ? 'text-white hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
+              }`}
               aria-label="Toggle sidebar menu"
             >
               <Menu className="w-5 h-5" />
@@ -202,7 +214,7 @@ export default function Header({
 
         {/* Center: Desktop Navigation Links (For Unauthenticated Visitors) */}
         {!currentUser && (
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Main Navigation">
+          <nav className="hidden md:flex items-center gap-1 xl:gap-2" aria-label="Main Navigation">
             {NAV_LINKS.map((link) => (
               <button
                 key={link.id}
@@ -252,8 +264,8 @@ export default function Header({
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`lg:hidden w-8 h-8 flex items-center justify-center transition cursor-pointer bg-transparent ${
-                  isDark ? 'text-zinc-300 hover:text-white' : 'text-zinc-700 hover:text-zinc-900'
+                className={`md:hidden w-8 h-8 flex items-center justify-center transition cursor-pointer bg-transparent ${
+                  isDark ? 'text-white hover:text-zinc-200' : 'text-zinc-700 hover:text-zinc-900'
                 }`}
                 aria-label="Toggle navigation menu"
               >
@@ -262,30 +274,30 @@ export default function Header({
             </>
           ) : (
             <>
-              {/* Full Screen (Fn+F11) Toggle - Only shown on Desktop/Laptop views after login */}
+              {/* Orbit AI Assistant Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsAssistantOpen(prev => !prev)}
+                className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition cursor-pointer select-none bg-transparent hover:scale-110 active:scale-95 shrink-0"
+                title={isAssistantOpen ? 'Close Orbit' : 'Ask Orbit'}
+                aria-label={isAssistantOpen ? 'Close Orbit' : 'Ask Orbit'}
+              >
+                <OrbitIcon className="w-7 h-7 sm:w-7.5 sm:h-7.5 shrink-0" />
+              </button>
+
+              {/* Full Screen (Fn+F11) Toggle - Shown on Desktop/Tablet views after login */}
               <button
                 type="button"
                 onClick={handleToggleBrowserFullscreen}
-                className={`hidden lg:flex w-8 h-8 rounded-full transition items-center justify-center cursor-pointer select-none bg-transparent ${
+                className={`hidden md:flex w-8 h-8 rounded-full transition items-center justify-center cursor-pointer select-none bg-transparent ${
                   isDark
-                    ? 'text-orange-500 hover:text-orange-400'
+                    ? 'text-white hover:text-zinc-200'
                     : 'text-zinc-600 hover:text-zinc-900'
                 }`}
                 title={isBrowserFullscreen ? 'Exit Fullscreen (F11)' : 'Enter Fullscreen (F11)'}
                 aria-label={isBrowserFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
               >
                 {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-              </button>
-
-              {/* Guruji AI Assistant Toggle Button */}
-              <button
-                type="button"
-                onClick={() => setIsAssistantOpen(prev => !prev)}
-                className="w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer select-none bg-transparent hover:scale-105 active:scale-95"
-                title={isAssistantOpen ? 'Close Guruji' : 'Ask Guruji'}
-                aria-label={isAssistantOpen ? 'Close Guruji' : 'Ask Guruji'}
-              >
-                <GurujiIcon className="w-6 h-6 shrink-0" />
               </button>
 
               {/* Theme Mode Toggle Button */}
@@ -295,15 +307,15 @@ export default function Header({
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(true)}
-                className={`w-8 h-8 rounded-full transition flex items-center justify-center text-xs font-black uppercase shadow-inner cursor-pointer select-none ${
+                className={`w-8 h-8 rounded-full transition flex items-center justify-center cursor-pointer select-none bg-transparent ${
                   isDark
-                    ? 'bg-zinc-900 border border-zinc-800 text-orange-500 hover:border-zinc-700'
-                    : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                    ? 'text-white hover:text-zinc-200'
+                    : 'text-zinc-700 hover:text-zinc-900'
                 }`}
                 title="User Profile"
                 aria-label="Open User Profile"
               >
-                {getUserDisplayName(currentUser)?.charAt(0) || currentUser.phoneNumber?.slice(-2) || 'U'}
+                <ProfileUserIcon className="w-5 h-5 shrink-0" strokeWidth={1.8} />
               </button>
             </>
           )}

@@ -12,8 +12,6 @@ import NotesViewer from '../components/NotesViewer';
 import SummaryOverview from '../components/SummaryOverview';
 import VideoQa from '../components/VideoQa';
 
-// Icons
-import { NotebookPen, BarChart2, MessageSquare, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function VideoContentPage() {
   const { isDark } = useTheme();
@@ -95,20 +93,20 @@ export default function VideoContentPage() {
   return (
     <div className={`flex-1 flex flex-col ${
       activeTab === 'qa' 
-        ? 'overflow-hidden h-full pb-2 sm:pb-3 lg:pb-6' 
-        : 'overflow-y-auto lg:overflow-hidden h-full pb-3 sm:pb-5'
+        ? 'overflow-hidden h-full pb-2 sm:pb-3 md:pb-6' 
+        : 'overflow-y-auto md:overflow-hidden h-full pb-3 sm:pb-5 md:pb-0'
     } w-full custom-scrollbar pt-0 px-0 ${
-      isVideoFullscreen ? 'lg:p-4' : 'lg:p-6'
+      isVideoFullscreen ? 'md:p-4' : 'md:p-4 lg:p-6'
     }`}>
       {/* Main Grid: Player on left, Workspace tools on right */}
-      <div className={`flex-1 flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 min-w-0 min-h-0 ${
-        activeTab === 'qa' ? 'h-full overflow-hidden' : 'lg:min-h-0 lg:overflow-hidden'
+      <div className={`flex-1 flex flex-col md:flex-row gap-3 sm:gap-4 md:gap-4 lg:gap-6 min-w-0 min-h-0 ${
+        activeTab === 'qa' ? 'h-full overflow-hidden' : 'md:min-h-0 md:overflow-hidden'
       }`}>
         {/* Left Side: Video Player with Tools (Adaptive Desktop Width & Mobile Sticky Header) */}
-        <div className={`flex flex-col shrink-0 min-h-0 sticky top-0 z-30 lg:static transition-all duration-300 ${
+        <div className={`flex flex-col shrink-0 min-h-0 sticky top-0 z-30 md:static transition-all duration-300 ${
           isVideoCollapsed 
-            ? 'w-full lg:w-auto pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 sm:px-5 lg:p-0 overflow-visible' 
-            : 'w-full lg:w-[45%] xl:w-[42%] pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 sm:px-5 lg:p-0'
+            ? 'w-full md:w-auto pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 md:p-0 overflow-visible' 
+            : 'w-full md:w-[48%] lg:w-[45%] xl:w-[42%] pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 md:p-0'
         } ${
           isDark ? 'bg-black' : 'bg-white'
         }`}>
@@ -125,50 +123,16 @@ export default function VideoContentPage() {
             hasNotes={hasNotes}
             onBack={resetActiveVideo}
             isFullscreen={isVideoFullscreen}
+            onToggleFullscreen={() => handleToggleFullscreen(!isVideoFullscreen)}
             isVideoCollapsed={isVideoCollapsed}
             setIsVideoCollapsed={setIsVideoCollapsed}
           />
         </div>
 
-        {/* Right Side: Workspace Active Tool Header & Content Pane */}
-        <div className={`flex-1 min-w-0 flex flex-col h-full min-h-0 rounded-2xl relative border overflow-hidden mx-3 sm:mx-5 lg:mx-0 ${
+        {/* Right Side: Workspace Content Pane */}
+        <div className={`flex-1 min-w-0 flex flex-col h-full min-h-0 rounded-2xl relative border overflow-hidden mx-3 sm:mx-5 md:mx-0 ${
           isDark ? 'bg-zinc-950/20 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'
         }`}>
-          {/* Active Tool Name Header on Right Side */}
-          <div className={`px-4 sm:px-5 py-3 border-b flex items-center justify-between shrink-0 rounded-t-2xl ${
-            isDark ? 'border-zinc-900 bg-zinc-950/70' : 'border-zinc-200 bg-white'
-          }`}>
-            <div className="flex items-center gap-2.5">
-              <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${
-                isDark ? 'bg-orange-950/30 border-orange-500/30 text-orange-400' : 'bg-orange-100 border-orange-300 text-orange-600 shadow-xs'
-              }`}>
-                {activeTab === 'notes' && <NotebookPen className="w-4 h-4" />}
-                {activeTab === 'summary' && <BarChart2 className="w-4 h-4" />}
-                {activeTab === 'qa' && <MessageSquare className="w-4 h-4" />}
-              </div>
-              <div>
-                <h3 className={`text-xs sm:text-sm font-bold tracking-tight ${
-                  isDark ? 'text-zinc-100' : 'text-zinc-900'
-                }`}>
-                  {activeTab === 'notes' && 'Study Notes'}
-                  {activeTab === 'summary' && 'Summary Dashboard'}
-                  {activeTab === 'qa' && 'Video Q&A Companion'}
-                </h3>
-              </div>
-            </div>
-
-            {/* Fullscreen Toggle */}
-            <button
-              type="button"
-              onClick={() => handleToggleFullscreen(!isVideoFullscreen)}
-              className="btn-icon"
-              title={isVideoFullscreen ? "Exit full screen" : "Enter full screen"}
-              aria-label={isVideoFullscreen ? "Exit full screen" : "Enter full screen"}
-            >
-              {isVideoFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            </button>
-          </div>
-          
           {hasNotes ? (
             /* Tools Dashboard Workspace */
             <div className={`flex-1 min-w-0 min-h-0 ${

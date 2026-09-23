@@ -35,7 +35,7 @@ export default function StudyHabitsSection({ isDark, headingClass, subClass }) {
           <ul className="space-y-3">
             <FeatureRow isDark={isDark}>Visual study streak calendar to celebrate your daily momentum</FeatureRow>
             <FeatureRow isDark={isDark}>Weekly progress trends showing your learning consistency</FeatureRow>
-            <FeatureRow isDark={isDark}>Streak milestones with motivating daily tips from Guruji</FeatureRow>
+            <FeatureRow isDark={isDark}>Streak milestones with motivating daily tips from Orbit</FeatureRow>
             <FeatureRow isDark={isDark}>Personalized student dashboard with live study clock &amp; daily targets</FeatureRow>
           </ul>
           <blockquote className={`italic text-sm border-l-2 border-orange-500 pl-4 py-0.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>

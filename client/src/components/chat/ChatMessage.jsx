@@ -65,14 +65,15 @@ export default function ChatMessage({ message, isStreaming = false }) {
 
   return (
     <div className="flex gap-2 sm:gap-2.5 w-full py-2 sm:py-3 px-1 sm:px-2 transition duration-150 relative">
-      {/* Guruji Avatar Badge */}
-      <div className={`w-5 h-5 sm:w-5.5 sm:h-5.5 rounded flex items-center justify-center text-[10px] sm:text-[11px] font-black shrink-0 mt-0.5 select-none border ${
-        isDark 
-          ? 'bg-orange-950/30 border-orange-900/40 text-orange-400 shadow-sm' 
-          : 'bg-orange-500/10 border-orange-500/20 text-orange-600 shadow-xs'
-      }`} title="Guruji">
-        G
-      </div>
+      {/* Orbit Avatar Badge */}
+      <img
+        src="/orbit-dp.png"
+        alt="Orbit"
+        width="24"
+        height="24"
+        className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0 mt-0.5 select-none"
+        title="Orbit"
+      />
 
       <div className="flex-1 min-w-0">
         <div className={`max-w-none text-xs sm:text-sm leading-relaxed ${

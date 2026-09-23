@@ -60,7 +60,7 @@ export const LEGAL_POLICIES_DEFAULTS = {
         id: 'how-we-use',
         order: 3,
         heading: 'How We Use Your Information',
-        body: `We use your information exclusively to deliver and enhance your study experience:\n- Authenticate your account securely via phone number OTP verification.\n- Stream educational lectures in a clean, distraction-free player interface.\n- Generate, organize, and export AI-assisted study notes, summaries, and lecture outlines.\n- Provide personalized academic guidance via "Guruji," our AI mentor.\n- Track study streaks, learning analytics, and planner schedules on your Dashboard.\n- Prevent abuse, enforce rate limits, and maintain platform security.\n\n**We do NOT sell, rent, monetize, or trade your personal information to third parties for advertising or marketing purposes.**`,
+        body: `We use your information exclusively to deliver and enhance your study experience:\n- Authenticate your account securely via phone number OTP verification.\n- Stream educational lectures in a clean, distraction-free player interface.\n- Generate, organize, and export AI-assisted study notes, summaries, and lecture outlines.\n- Provide personalized academic guidance via "Orbit," our AI mentor.\n- Track study streaks, learning analytics, and planner schedules on your Dashboard.\n- Prevent abuse, enforce rate limits, and maintain platform security.\n\n**We do NOT sell, rent, monetize, or trade your personal information to third parties for advertising or marketing purposes.**`,
       },
       {
         id: 'youtube-api-services',
@@ -135,7 +135,7 @@ export const LEGAL_POLICIES_DEFAULTS = {
         id: 'description',
         order: 2,
         heading: 'Description of Service & Mission',
-        body: `${COMPANY_NAME} is an all-in-one educational platform engineered for distraction-free study and academic productivity. Our mission is to eliminate digital distractions and provide students with a focused academic environment featuring:\n- Clean educational video lecture streaming without recommendation rabbit holes or comment distractions.\n- Automated generation of structured study notes, outlines, and lecture summaries.\n- Interactive conceptual doubt resolution via "Guruji," our AI academic mentor.\n- Integrated daily and monthly study planners to maintain academic consistency.\n- A centralized academic library to organize saved lectures, playlists, and study materials.\n\nThe service is provided as a supplementary study productivity aid and is not a substitute for formal accredited schooling.`,
+        body: `${COMPANY_NAME} is an all-in-one educational platform engineered for distraction-free study and academic productivity. Our mission is to eliminate digital distractions and provide students with a focused academic environment featuring:\n- Clean educational video lecture streaming without recommendation rabbit holes or comment distractions.\n- Automated generation of structured study notes, outlines, and lecture summaries.\n- Interactive conceptual doubt resolution via "Orbit," our AI academic mentor.\n- Integrated daily and monthly study planners to maintain academic consistency.\n- A centralized academic library to organize saved lectures, playlists, and study materials.\n\nThe service is provided as a supplementary study productivity aid and is not a substitute for formal accredited schooling.`,
       },
       {
         id: 'youtube-terms',
@@ -171,7 +171,7 @@ export const LEGAL_POLICIES_DEFAULTS = {
         id: 'disclaimer',
         order: 8,
         heading: 'Disclaimer of Warranties',
-        body: `THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND. ${COMPANY_NAME.toUpperCase()} DOES NOT WARRANT THAT:\n- The platform will always be uninterrupted, bug-free, or error-free.\n- AI-generated notes, summaries, or Guruji responses will be 100% accurate, complete, or exhaustive.\n- Using the platform guarantees specific examination scores or academic outcomes.\n\nStudents are strongly advised to cross-verify key formulas, scientific data, and dates with official textbooks and instructors.`,
+        body: `THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND. ${COMPANY_NAME.toUpperCase()} DOES NOT WARRANT THAT:\n- The platform will always be uninterrupted, bug-free, or error-free.\n- AI-generated notes, summaries, or Orbit responses will be 100% accurate, complete, or exhaustive.\n- Using the platform guarantees specific examination scores or academic outcomes.\n\nStudents are strongly advised to cross-verify key formulas, scientific data, and dates with official textbooks and instructors.`,
       },
       {
         id: 'liability',
@@ -225,16 +225,16 @@ export const LEGAL_POLICIES_DEFAULTS = {
         body: `${COMPANY_NAME} utilizes artificial intelligence technologies and large language models (LLMs) to generate structured lecture outlines, study notes, summaries, and conceptual explanations.\n\n**Important Notice**: AI models can occasionally produce inaccurate, incomplete, or outdated information ("hallucinations"). AI-generated notes should always serve as a **study aid and supplementary guide**, not as a definitive academic authority. Always verify critical formulas, mathematical calculations, scientific constants, and historical facts with authoritative textbooks and teachers.`,
       },
       {
-        id: 'guruji-disclaimer',
+        id: 'orbit-disclaimer',
         order: 2,
-        heading: 'Guruji (AI Academic Mentor) Guidance',
-        body: `"Guruji" is an AI-powered conversational study mentor designed to help students clarify concepts, break down complex topics, and stay motivated. Guruji's answers are generated algorithmically and do not constitute formal academic certification, professional counseling, medical advice, or legal guidance.`,
+        heading: 'Orbit (AI Academic Mentor) Guidance',
+        body: `"Orbit" is an AI-powered conversational study mentor designed to help students clarify concepts, break down complex topics, and stay motivated. Orbit's answers are generated algorithmically and do not constitute formal academic certification, professional counseling, medical advice, or legal guidance.`,
       },
       {
         id: 'academic-integrity',
         order: 3,
         heading: 'Academic Integrity & Ethical Study',
-        body: `${COMPANY_NAME} is built to empower learning comprehension—not to bypass academic effort.\n\n**Acceptable Use**:\n- Creating personal study guides and summaries to enhance lecture comprehension.\n- Using Guruji to clarify doubts and explore conceptual explanations.\n- Planning study schedules and organizing learning materials.\n\n**Prohibited Misuse**:\n- Submitting AI-generated notes directly as uncredited academic coursework (plagiarism).\n- Using AI features during proctored examinations or tests.\n\nUsers are solely responsible for upholding their school or university's academic integrity policies.`,
+        body: `${COMPANY_NAME} is built to empower learning comprehension—not to bypass academic effort.\n\n**Acceptable Use**:\n- Creating personal study guides and summaries to enhance lecture comprehension.\n- Using Orbit to clarify doubts and explore conceptual explanations.\n- Planning study schedules and organizing learning materials.\n\n**Prohibited Misuse**:\n- Submitting AI-generated notes directly as uncredited academic coursework (plagiarism).\n- Using AI features during proctored examinations or tests.\n\nUsers are solely responsible for upholding their school or university's academic integrity policies.`,
       },
       {
         id: 'youtube-fair-use',
@@ -291,7 +291,7 @@ export const LEGAL_POLICIES_DEFAULTS = {
         id: 'local-storage',
         order: 4,
         heading: 'Local Storage (User Preferences)',
-        body: `We use browser local storage to save your in-app preferences so they persist between sessions. The following keys are stored locally:\n\n| Key | Value Stored | Purpose |\n|---|---|---|\n| \`theme\` | \`"dark"\` or \`"light"\` | Remembers your chosen interface theme |\n| \`sidebar_collapsed\` | \`"true"\` or \`"false"\` | Saves sidebar collapse state |\n| \`assistant_mode\` | \`"sidebar"\` or \`"floating"\` | Remembers Guruji panel layout preference |\n\nThis data is stored entirely on your device and is never transmitted to our servers.`,
+        body: `We use browser local storage to save your in-app preferences so they persist between sessions. The following keys are stored locally:\n\n| Key | Value Stored | Purpose |\n|---|---|---|\n| \`theme\` | \`"dark"\` or \`"light"\` | Remembers your chosen interface theme |\n| \`sidebar_collapsed\` | \`"true"\` or \`"false"\` | Saves sidebar collapse state |\n| \`assistant_mode\` | \`"sidebar"\` or \`"floating"\` | Remembers Orbit panel layout preference |\n\nThis data is stored entirely on your device and is never transmitted to our servers.`,
       },
       {
         id: 'no-tracking',

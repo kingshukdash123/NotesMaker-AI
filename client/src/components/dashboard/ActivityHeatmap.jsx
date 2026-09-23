@@ -196,8 +196,8 @@ export default function ActivityHeatmap({
                         ? 'opacity-20 cursor-not-allowed bg-zinc-900/20 border-transparent' 
                         : getLevelColorClass(level, day.isToday, isSelected)
                     }`}
-                    title={`${day.formattedDate} • ${getLevelLabel(level)} (${day.metric.score || 0} pts)`}
-                    aria-label={`${day.formattedDate} • ${getLevelLabel(level)}`}
+                    title={`${day.formattedDate} • ${day.metric.score || 0} pts`}
+                    aria-label={`${day.formattedDate} • ${day.metric.score || 0} pts`}
                   />
                 );
               })}
@@ -224,7 +224,7 @@ export default function ActivityHeatmap({
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold ${
                 isDark ? 'bg-orange-950/40 text-orange-400' : 'bg-zinc-100 border border-zinc-200 text-zinc-800'
               }`}>
-                {getLevelLabel(selectedDay.metric.level || getLevelFromScore(selectedDay.metric.score))} ({selectedDay.metric.score || 0} pts)
+                {selectedDay.metric.score || 0} pts
               </span>
             </div>
 

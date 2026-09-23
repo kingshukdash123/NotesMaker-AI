@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { PlayCircle, ArrowLeft } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import Tabs from './Tabs';
+import Skeleton from './common/Skeleton';
 
 export default function VideoPlayer({ 
   videoId, 
@@ -16,6 +17,7 @@ export default function VideoPlayer({
   hasNotes = false, 
   onBack, 
   isFullscreen = false,
+  onToggleFullscreen,
   isVideoCollapsed = false,
   setIsVideoCollapsed
 }) {
@@ -23,6 +25,11 @@ export default function VideoPlayer({
   const [isLoaded, setIsLoaded] = useState(false);
   const iframeRef = useRef(null);
   const containerRef = useRef(null);
+
+  // Reset loading state whenever videoId changes
+  useEffect(() => {
+    setIsLoaded(false);
+  }, [videoId]);
 
   const isVideoCollapsedRef = useRef(isVideoCollapsed);
   const setIsVideoCollapsedRef = useRef(setIsVideoCollapsed);
@@ -68,8 +75,8 @@ export default function VideoPlayer({
           }, ms);
         });
 
-        // On mobile or small screens, scroll the video player into view
-        if (window.innerWidth < 1024 && containerRef.current) {
+        // On mobile phone screens, scroll the video player into view
+        if (window.innerWidth < 768 && containerRef.current) {
           containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       }
@@ -99,39 +106,11 @@ export default function VideoPlayer({
       ref={containerRef}
       className={`flex flex-col min-h-0 border rounded-xl shadow-2xl glass-panel animate-in fade-in duration-300 ${
       isVideoCollapsed 
-        ? 'overflow-visible w-full lg:w-14 lg:h-full lg:items-center lg:py-2.5 z-40' 
+        ? 'overflow-visible w-full md:w-14 md:h-full md:items-center md:py-2.5 z-40' 
         : 'overflow-hidden w-full'
     } ${
-      isDark ? 'bg-zinc-950/95 lg:bg-zinc-950/40 border-zinc-900 backdrop-blur-md' : 'bg-white border-zinc-200 shadow-xs'
+      isDark ? 'bg-zinc-950/95 md:bg-zinc-950/40 border-zinc-900 backdrop-blur-md' : 'bg-white border-zinc-200 shadow-xs'
     }`}>
-      {/* Player Header with Back Button and Title */}
-      <div className={`shrink-0 flex items-center justify-between px-3 py-2 border-b w-full ${
-        isVideoCollapsed 
-          ? isDark 
-            ? 'border-zinc-900 bg-zinc-900/50 lg:bg-transparent lg:border-b-0 lg:px-0 lg:py-0 lg:justify-center lg:mb-2'
-            : 'border-zinc-200 bg-white lg:bg-transparent lg:border-b-0 lg:px-0 lg:py-0 lg:justify-center lg:mb-2'
-          : isDark 
-            ? 'bg-zinc-900/50 border-zinc-900' 
-            : 'bg-white border-zinc-200'
-      }`}>
-        <div className={`flex items-center ${isVideoCollapsed ? 'lg:justify-center' : 'gap-2.5'}`}>
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="btn-icon"
-              title="Back to Discover"
-              aria-label="Back to Discover"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
-          <h3 className={`text-xs sm:text-sm font-bold ${isVideoCollapsed ? 'lg:hidden' : ''} ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
-            Watch & Learn
-          </h3>
-        </div>
-      </div>
-
       {/* Video Embed IFrame */}
       <div className={`relative w-full bg-black video-player-surface shrink-0 transition-all duration-300 ${
         isVideoCollapsed 
@@ -141,14 +120,8 @@ export default function VideoPlayer({
         isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
         {!isLoaded && (
-          <div className={`absolute inset-0 skeleton-shimmer z-10 flex items-center justify-center ${
-            isDark ? 'bg-zinc-900/90' : 'bg-zinc-100'
-          }`}>
-            <div className={`w-12 h-12 rounded-full border flex items-center justify-center shadow-lg ${
-              isDark ? 'bg-zinc-950/80 border-zinc-800' : 'bg-white border-zinc-200 shadow-sm'
-            }`}>
-              <PlayCircle className="w-6 h-6 text-orange-500" />
-            </div>
+          <div className="absolute inset-0 z-10 w-full h-full overflow-hidden pointer-events-none">
+            <Skeleton className="w-full h-full rounded-none" />
           </div>
         )}
         <iframe
@@ -164,7 +137,7 @@ export default function VideoPlayer({
       </div>
 
       {/* Study Tools & Actions Tabs Bar */}
-      <div className={`shrink-0 ${isVideoCollapsed ? 'px-3 py-2 lg:p-0 w-full lg:w-auto' : 'px-4 py-3 sm:py-3.5'} bg-transparent`}>
+      <div className={`shrink-0 ${isVideoCollapsed ? 'px-3 py-2 md:p-0 w-full md:w-auto' : 'px-4 py-3 sm:py-3.5'} bg-transparent`}>
         <Tabs 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
@@ -178,6 +151,8 @@ export default function VideoPlayer({
           hasNotes={hasNotes}
           isVideoCollapsed={isVideoCollapsed}
           isVertical={isVideoCollapsed}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={onToggleFullscreen}
           onToggleCollapseVideo={() => setIsVideoCollapsed?.(!isVideoCollapsed)}
         />
       </div>

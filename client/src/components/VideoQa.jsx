@@ -143,7 +143,7 @@ export default function VideoQa({ videoId, currentUser }) {
         // Error callback
         (err) => {
           console.error('Streaming error in VideoQa:', err);
-          const rawErr = err.message || 'Failed to get answer from Guruji.';
+          const rawErr = err.message || 'Failed to get answer from Orbit.';
           const cleanErr = formatProcessErrorMessage(rawErr);
           setError(cleanErr);
           setIsLoading(false);
@@ -154,7 +154,7 @@ export default function VideoQa({ videoId, currentUser }) {
               next[lastIndex] = {
                 ...next[lastIndex],
                 text: cleanErr.includes('high demand')
-                  ? 'Guruji is currently experiencing high demand. Please try asking again in a moment.'
+                  ? 'Orbit is currently experiencing high demand. Please try asking again in a moment.'
                   : `Sorry, I encountered an error: ${rawErr}`,
                 isError: true
               };
@@ -167,7 +167,7 @@ export default function VideoQa({ videoId, currentUser }) {
       );
     } catch (err) {
       console.error('Error starting video question stream:', err);
-      const rawErr = err.message || 'Failed to connect to Guruji Q&A service.';
+      const rawErr = err.message || 'Failed to connect to Orbit Q&A service.';
       const cleanErr = formatProcessErrorMessage(rawErr);
       setError(cleanErr);
       setIsLoading(false);
@@ -178,7 +178,7 @@ export default function VideoQa({ videoId, currentUser }) {
           next[lastIndex] = {
             ...next[lastIndex],
             text: cleanErr.includes('high demand')
-              ? 'Guruji is currently experiencing high demand. Please try asking again in a moment.'
+              ? 'Orbit is currently experiencing high demand. Please try asking again in a moment.'
               : `Error: ${rawErr}`,
             isError: true
           };
@@ -199,9 +199,9 @@ export default function VideoQa({ videoId, currentUser }) {
           }`}>
             <MessageSquare className="w-6 h-6 text-orange-500" />
           </div>
-          <h3 className={`text-base font-bold mb-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Guruji Q&amp;A Idle</h3>
+          <h3 className={`text-base font-bold mb-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Orbit Q&amp;A Idle</h3>
           <p className={`text-xs max-w-xs leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-            Please generate notes or select a study guide from your history to start asking Guruji questions about the video.
+            Please generate notes or select a study guide from your history to start asking Orbit questions about the video.
           </p>
         </div>
       </div>
@@ -252,22 +252,27 @@ export default function VideoQa({ videoId, currentUser }) {
                 }`}
               >
                 {/* Avatar */}
-                <div
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center text-[11px] sm:text-xs font-black font-mono tracking-tight select-none mt-0.5 ${
-                    isUser
-                      ? isDark 
+                {isUser ? (
+                  <div
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center text-[11px] sm:text-xs font-black font-mono tracking-tight select-none mt-0.5 ${
+                      isDark 
                         ? 'bg-zinc-900 text-zinc-300' 
                         : 'bg-zinc-100 text-zinc-800 border border-zinc-200 shadow-xs'
-                      : msg.isError
-                        ? 'bg-red-950/20 text-red-400'
-                        : isDark
-                          ? 'bg-orange-950/30 text-orange-400'
-                          : 'bg-orange-500/10 border border-orange-500/20 text-orange-600 shadow-xs'
-                  }`}
-                  title={isUser ? 'You' : 'Guruji'}
-                >
-                  {isUser ? 'ME' : 'G'}
-                </div>
+                    }`}
+                    title="You"
+                  >
+                    ME
+                  </div>
+                ) : (
+                  <img
+                    src="/orbit-dp.png"
+                    alt="Orbit"
+                    width="32"
+                    height="32"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 select-none mt-0.5"
+                    title="Orbit"
+                  />
+                )}
 
                 {/* Message Content */}
                 <div className={`flex flex-col min-w-0 ${isUser ? 'items-end' : 'items-start'}`}>

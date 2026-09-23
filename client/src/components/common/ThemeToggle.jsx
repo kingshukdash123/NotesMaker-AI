@@ -93,7 +93,7 @@ export default function ThemeToggle({
         showLabel ? 'px-3 py-1.5 rounded-xl' : 'w-8 h-8 rounded-full'
       } transition flex items-center justify-center gap-2 cursor-pointer select-none bg-transparent ${
         isDark
-          ? 'text-orange-500 hover:text-orange-400'
+          ? 'text-white hover:text-zinc-200'
           : 'text-zinc-600 hover:text-zinc-900'
       } ${className}`}
     >
@@ -102,7 +102,7 @@ export default function ThemeToggle({
         <Sun 
           className={`w-4 h-4 transition-all duration-300 absolute inset-0 m-auto ${
             isDark 
-              ? 'opacity-0 rotate-90 scale-0 text-orange-500' 
+              ? 'opacity-0 rotate-90 scale-0 text-white' 
               : 'opacity-100 rotate-0 scale-100 text-zinc-600 group-hover:rotate-45'
           }`} 
         />
@@ -110,7 +110,7 @@ export default function ThemeToggle({
         <Moon 
           className={`w-4 h-4 transition-all duration-300 absolute inset-0 m-auto ${
             isDark 
-              ? 'opacity-100 rotate-0 scale-100 text-orange-500 group-hover:-rotate-12' 
+              ? 'opacity-100 rotate-0 scale-100 text-white group-hover:-rotate-12' 
               : 'opacity-0 -rotate-90 scale-0 text-orange-700'
           }`} 
         />

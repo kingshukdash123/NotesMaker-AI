@@ -4,6 +4,8 @@ import {
   Library,
   Calendar,
   Timer,
+  Users,
+  Trophy,
   CreditCard,
   Gift,
   Settings,
@@ -16,7 +18,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
 import { LEGAL_SECTIONS } from '../../constants';
-import GurujiIcon from '../common/GurujiIcon';
+import OrbitIcon from '../common/OrbitIcon';
 
 export default function Sidebar({
   isSidebarMobileOpen,
@@ -38,6 +40,7 @@ export default function Sidebar({
     { id: 'discover', label: 'Discover', icon: Search },
     { id: 'library', label: 'Library', icon: Library },
     { id: 'planner', label: 'Planner', icon: Calendar },
+    { id: 'assistant', label: 'Orbit', icon: OrbitIcon },
     { 
       id: 'timer', 
       label: 'Timer', 
@@ -46,7 +49,22 @@ export default function Sidebar({
       badge: 'Soon',
       maintenance: true 
     },
-    { id: 'assistant', label: 'Guruji', icon: GurujiIcon },
+    { 
+      id: 'leaderboard', 
+      label: 'Leaderboard', 
+      icon: Trophy, 
+      disabled: true, 
+      badge: 'Soon',
+      maintenance: true 
+    },
+    { 
+      id: 'community', 
+      label: 'Community', 
+      icon: Users, 
+      disabled: true, 
+      badge: 'Soon',
+      maintenance: true 
+    },
   ];
 
   return (
@@ -62,15 +80,15 @@ export default function Sidebar({
       {/* Left Navigation Sidebar with smooth width & transform transitions */}
       <aside
         className={`fixed top-[53px] bottom-0 left-0 border-r z-[80] flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto custom-scrollbar p-3 ${
-          isSidebarCollapsed ? 'w-64 lg:w-16 lg:items-center' : 'w-64'
+          isSidebarCollapsed ? 'w-64 md:w-16 md:items-center' : 'w-64'
         } ${
-          isSidebarMobileOpen ? 'translate-x-0 shadow-2xl w-64' : '-translate-x-full lg:translate-x-0'
+          isSidebarMobileOpen ? 'translate-x-0 shadow-2xl w-64' : '-translate-x-full md:translate-x-0'
         } ${
           isDark ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-zinc-200'
         }`}
       >
         {/* Toggle Collapse Button for Desktop */}
-        <div className={`hidden lg:flex items-center mb-3 min-h-[32px] w-full ${
+        <div className={`hidden md:flex items-center mb-3 min-h-[32px] w-full ${
           isSidebarCollapsed ? 'justify-center' : 'justify-between px-1'
         }`}>
           {!isSidebarCollapsed && (
@@ -104,7 +122,7 @@ export default function Sidebar({
         </div>
 
         {/* Mobile Header indicator with Close button */}
-        <div className="lg:hidden flex items-center justify-between px-1.5 mb-3 min-h-[32px]">
+        <div className="md:hidden flex items-center justify-between px-1.5 mb-3 min-h-[32px]">
           <button
             type="button"
             onClick={() => {
@@ -133,7 +151,7 @@ export default function Sidebar({
         </div>
 
         {/* Navigation Links */}
-        <nav className={`flex-1 flex flex-col gap-1.5 w-full ${isSidebarCollapsed ? 'lg:items-center' : ''}`}>
+        <nav className={`flex-1 flex flex-col gap-1.5 w-full ${isSidebarCollapsed ? 'md:items-center' : ''}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -146,32 +164,25 @@ export default function Sidebar({
                   type="button"
                   disabled
                   className={`flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
-                    isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
+                    isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
                   } ${
                     isDark
                       ? 'text-zinc-500 hover:text-zinc-400 bg-zinc-900/10'
                       : 'text-zinc-400 hover:text-zinc-500 bg-zinc-50/50'
                   }`}
-                  title={`${item.label} (Under Maintenance)`}
+                  title={`${item.label} (${item.badge || 'Coming Soon'})`}
                 >
                   <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
                     <Icon className="w-4 h-4 shrink-0" />
-                    {isSidebarCollapsed && (
-                      <span className={`hidden lg:block absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1.5 ${isDark ? 'ring-zinc-950' : 'ring-white'}`} />
-                    )}
                   </div>
                   <span className={`truncate whitespace-nowrap text-left max-w-[140px] ml-3 ${
-                    isSidebarCollapsed ? 'block lg:hidden' : 'block'
+                    isSidebarCollapsed ? 'block md:hidden' : 'block'
                   }`}>
                     {item.label}
                   </span>
                   {item.maintenance && (
                     <span className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap ${
-                      isSidebarCollapsed ? 'inline-flex lg:hidden' : 'inline-flex'
-                    } ${
-                      isDark 
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
-                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                      isSidebarCollapsed ? 'inline-flex md:hidden' : 'inline-flex'
                     }`}>
                       <Wrench className="w-2.5 h-2.5 shrink-0" />
                       <span>{item.badge || 'Soon'}</span>
@@ -192,7 +203,7 @@ export default function Sidebar({
                   setIsSidebarMobileOpen(false);
                 }}
                 className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
-                  isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
+                  isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
                 } ${
                   isActive
                     ? isDark
@@ -205,10 +216,10 @@ export default function Sidebar({
                 title={item.label}
               >
                 <div className="shrink-0 flex items-center justify-center w-5 h-5">
-                  <Icon className="w-4 h-4 shrink-0" />
+                  <Icon className={`${item.id === 'assistant' ? 'w-6 h-6' : 'w-4 h-4'} shrink-0`} />
                 </div>
                 <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
-                  isSidebarCollapsed ? 'block lg:hidden' : 'block'
+                  isSidebarCollapsed ? 'block md:hidden' : 'block'
                 }`}>
                   {item.label}
                 </span>
@@ -218,7 +229,7 @@ export default function Sidebar({
         </nav>
 
         {/* Footer controls: Billing, Refer, Legal, Settings */}
-        <div className={`pt-3 border-t space-y-1.5 w-full ${isSidebarCollapsed ? 'flex flex-col lg:items-center' : ''} ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
+        <div className={`pt-3 border-t space-y-1.5 w-full ${isSidebarCollapsed ? 'flex flex-col md:items-center' : ''} ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
           {/* Billing & Usage Tab */}
           <button
             type="button"
@@ -230,7 +241,7 @@ export default function Sidebar({
               setIsSidebarMobileOpen(false);
             }}
             className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
-              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
+              isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
             } ${
               activeSection === 'billing'
                 ? isDark
@@ -246,7 +257,7 @@ export default function Sidebar({
               <CreditCard className="w-4 h-4 shrink-0" />
             </div>
             <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
-              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+              isSidebarCollapsed ? 'block md:hidden' : 'block'
             }`}>
               Billing &amp; Usage
             </span>
@@ -257,7 +268,7 @@ export default function Sidebar({
             type="button"
             disabled
             className={`flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
-              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
+              isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
             } ${
               isDark
                 ? 'text-zinc-500 hover:text-zinc-400 bg-zinc-900/10'
@@ -267,21 +278,14 @@ export default function Sidebar({
           >
             <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
               <Gift className="w-4 h-4 shrink-0" />
-              {isSidebarCollapsed && (
-                <span className={`hidden lg:block absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1.5 ${isDark ? 'ring-zinc-950' : 'ring-white'}`} />
-              )}
             </div>
             <span className={`truncate whitespace-nowrap text-left max-w-[140px] ml-3 ${
-              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+              isSidebarCollapsed ? 'block md:hidden' : 'block'
             }`}>
               Refer &amp; Rewards
             </span>
             <span className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap ${
-              isSidebarCollapsed ? 'inline-flex lg:hidden' : 'inline-flex'
-            } ${
-              isDark 
-                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
-                : 'bg-amber-50 text-amber-700 border border-amber-200'
+              isSidebarCollapsed ? 'inline-flex md:hidden' : 'inline-flex'
             }`}>
               <Wrench className="w-2.5 h-2.5 shrink-0" />
               <span>Soon</span>
@@ -299,7 +303,7 @@ export default function Sidebar({
               setIsSidebarMobileOpen(false);
             }}
             className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
-              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
+              isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
             } ${
               LEGAL_SECTIONS.has(activeSection)
                 ? isDark
@@ -315,7 +319,7 @@ export default function Sidebar({
               <Scale className="w-4 h-4 shrink-0" />
             </div>
             <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
-              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+              isSidebarCollapsed ? 'block md:hidden' : 'block'
             }`}>
               Legal &amp; Policies
             </span>
@@ -332,7 +336,7 @@ export default function Sidebar({
               setIsSidebarMobileOpen(false);
             }}
             className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
-              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
+              isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
             } ${
               activeSection === 'settings'
                 ? isDark
@@ -348,7 +352,7 @@ export default function Sidebar({
               <Settings className="w-4 h-4 shrink-0" />
             </div>
             <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
-              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+              isSidebarCollapsed ? 'block md:hidden' : 'block'
             }`}>
               Settings
             </span>

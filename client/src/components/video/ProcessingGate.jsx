@@ -24,9 +24,9 @@ export default function ProcessingGate({
       buttonLabel: 'Generate Summary',
     },
     qa: {
-      title: 'Process Video to Enable Guruji Q&A',
-      description: 'Index the video transcript to ask doubts and chat with Guruji.',
-      buttonLabel: 'Enable Guruji Q&A',
+      title: 'Process Video to Enable Orbit Q&A',
+      description: 'Index the video transcript to ask doubts and chat with Orbit.',
+      buttonLabel: 'Enable Orbit Q&A',
     },
   };
 

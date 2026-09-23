@@ -194,6 +194,13 @@ html[data-theme="light"] ::selection,
   }
 }
 
+.markdown-content > *:first-child,
+.markdown-content h1:first-child,
+.markdown-content h2:first-child,
+.markdown-content h3:first-child {
+  margin-top: 0;
+}
+
 .markdown-content h1 {
   font-size: 1.6rem;
   font-weight: 800;

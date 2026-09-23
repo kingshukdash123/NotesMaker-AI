@@ -400,15 +400,17 @@ export default function AssistantFullScreen({ currentUser }) {
             </div>
           ) : !activeThread ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-4 max-w-sm mx-auto">
-              <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${
-                isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-orange-500/10 border-orange-500/20 text-orange-600 shadow-xs'
-              }`}>
-                <FileText className="w-6 h-6 text-orange-500" />
-              </div>
+              <img
+                src="/orbit.png"
+                alt="Orbit"
+                width="100"
+                height="133"
+                className="w-24 h-32 sm:w-28 sm:h-36 object-contain mx-auto select-none pointer-events-none drop-shadow-lg"
+              />
               <div className="space-y-1">
                 <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Study Session</h3>
                 <p className={`text-[10px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  Start a study session to learn with Guruji's personal guidance and motivation.
+                  Start a study session to learn with Orbit's personal guidance and motivation.
                 </p>
               </div>
               <button
@@ -424,12 +426,18 @@ export default function AssistantFullScreen({ currentUser }) {
             </div>
           ) : messages.length === 0 ? (
             <div className="h-full flex flex-col justify-center items-center py-8">
-              <div className="max-w-md w-full space-y-6 text-center">
+              <div className="max-w-md w-full space-y-5 text-center">
                 <div className="space-y-2">
-                  <FileText className={`w-10 h-10 mx-auto ${isDark ? 'text-zinc-650' : 'text-zinc-400'}`} />
+                  <img
+                    src="/orbit.png"
+                    alt="Orbit"
+                    width="112"
+                    height="150"
+                    className="w-24 h-32 sm:w-28 sm:h-36 object-contain mx-auto mb-2 select-none pointer-events-none drop-shadow-lg"
+                  />
                   <h2 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeThread.title}</h2>
                   <p className={`text-xs max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-550' : 'text-zinc-500'}`}>
-                    Ask Guruji any study doubts, plan routines, or use slash commands for detailed notes.
+                    Ask Orbit any study doubts, plan routines, or use slash commands for detailed notes.
                   </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 max-w-sm mx-auto">

@@ -747,8 +747,8 @@ export default function StreakCard({
                                 className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2.5px] sm:rounded-[3px] border transition-all duration-150 cursor-pointer focus:outline-none hover:scale-125 active:scale-95 ${
                                   getLevelColorClass(level, day.isToday, isSelected)
                                 }`}
-                                title={`${day.formattedDate} • ${getLevelLabel(level)} (${day.metric.score || 0} pts)`}
-                                aria-label={`${day.formattedDate} • ${getLevelLabel(level)}`}
+                                title={`${day.formattedDate} • ${day.metric.score || 0} pts`}
+                                aria-label={`${day.formattedDate} • ${day.metric.score || 0} pts`}
                               />
                             );
                           })}
@@ -820,21 +820,17 @@ export default function StreakCard({
                 </div>
               </div>
 
-              {/* Center: Date & Activity Status */}
+              {/* Center: Date */}
               <div className="flex flex-col text-center min-w-0 px-1">
-                <span className={`text-[10px] sm:text-[11px] font-mono font-medium truncate ${
+                <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase truncate ${
                   isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
-                  {activeDisplayPoint?.shortDate || 'Today'}
+                  Date
                 </span>
-                <span className={`text-xs font-bold tracking-tight truncate mt-0.5 ${
+                <span className={`text-xs sm:text-sm font-bold font-mono tracking-tight truncate mt-0.5 leading-none ${
                   isDark ? 'text-zinc-200' : 'text-zinc-800'
                 }`}>
-                  {activeDisplayPoint?.isToday
-                    ? "Today's Study"
-                    : activeDisplayPoint?.score > 0
-                    ? getLevelLabel(activeDisplayPoint.metric?.level || getLevelFromScore(activeDisplayPoint.score))
-                    : "Rest Day"}
+                  {activeDisplayPoint?.shortDate || 'Today'}
                 </span>
               </div>
 
@@ -1033,19 +1029,19 @@ export default function StreakCard({
               </CustomButton>
             </div>
 
-            {/* Activity Level Badge & Score */}
+            {/* Activity Score Badge */}
             <div className={`flex items-center justify-between gap-2 mb-3.5 p-2.5 rounded-xl ${
               isDark ? 'bg-orange-950/25' : 'bg-white border border-zinc-200 shadow-xs'
             }`}>
               <span className={`text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                Activity Status
+                Activity Score
               </span>
               <span className={`text-[11px] font-mono px-2.5 py-1 rounded-lg font-bold ${
                 isDark 
                   ? 'bg-orange-950/60 text-orange-300 shadow-xs' 
                   : 'bg-zinc-100 text-zinc-900 border border-zinc-200'
               }`}>
-                {getLevelLabel(selectedDay.metric?.level || getLevelFromScore(selectedDay.metric?.score || selectedDay.score))} • {selectedDay.metric?.score || selectedDay.score || 0} pts
+                {selectedDay.metric?.score || selectedDay.score || 0} pts
               </span>
             </div>
 

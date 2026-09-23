@@ -238,7 +238,7 @@ export function checkCanChat(userProfile, usage) {
     return {
       allowed: false,
       upgradeRequired: true,
-      reason: `You have reached your monthly Guruji doubt limit (${usedChats}/${baseQuota}) on the ${plan.name} plan. Upgrade to unlock more questions.`,
+      reason: `You have reached your monthly Orbit doubt limit (${usedChats}/${baseQuota}) on the ${plan.name} plan. Upgrade to unlock more questions.`,
     };
   }
 

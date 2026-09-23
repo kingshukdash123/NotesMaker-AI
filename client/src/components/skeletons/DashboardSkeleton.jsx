@@ -5,7 +5,7 @@ export default function DashboardSkeleton() {
   const { isDark } = useTheme();
 
   return (
-    <div className={`flex-1 overflow-y-auto custom-scrollbar h-full w-full ${isDark ? 'bg-transparent' : 'bg-zinc-100/50'}`}>
+    <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
       <div className="w-full px-3.5 py-4 sm:p-5 md:p-5 lg:p-6 space-y-4 sm:space-y-4.5 md:space-y-4.5 lg:space-y-5 animate-in fade-in duration-300">
         
         {/* ── 1. TOP HERO: 1ST COL (GREETING & QUOTE - 2/3) | 2ND COL (TIME & DATE - 1/3) ── */}

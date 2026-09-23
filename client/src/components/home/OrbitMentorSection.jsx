@@ -3,7 +3,7 @@ import BrowserFrame from './BrowserFrame';
 import SectionLabel from './SectionLabel';
 import FeatureRow from './FeatureRow';
 
-export default function GurujiMentorSection({ isDark, headingClass, subClass }) {
+export default function OrbitMentorSection({ isDark, headingClass, subClass }) {
   return (
     <section className="px-4 sm:px-6 pb-20">
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -13,7 +13,7 @@ export default function GurujiMentorSection({ isDark, headingClass, subClass }) 
             <h2 className={`text-2xl sm:text-3xl font-black leading-tight ${headingClass}`}>
               Meet{' '}
               <span className="relative inline-block">
-                <span className={isDark ? 'text-orange-400' : 'text-orange-500'}>Guruji</span>
+                <span className={isDark ? 'text-orange-400' : 'text-orange-500'}>Orbit</span>
                 <CurvyUnderline />
               </span>
               {' '}&mdash; your personal academic mentor
@@ -23,14 +23,14 @@ export default function GurujiMentorSection({ isDark, headingClass, subClass }) 
           {/* Mobile & Tablet: Image between heading and description */}
           <div className="md:hidden pt-2 pb-1">
             <BrowserFrame
-              src="/screenshots/guruji_chat.png"
-              alt="Guruji Academic Mentor — Explaining complex concepts step-by-step"
+              src="/screenshots/orbit_chat.png"
+              alt="Orbit Academic Mentor — Explaining complex concepts step-by-step"
               className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
             />
           </div>
 
           <p className={`text-sm leading-relaxed ${subClass}`}>
-            Guruji learns right alongside you. It understands the exact lecture you&apos;re watching, reads your notes, and remembers your study progress. Ask any doubt anytime &mdash; it already knows what you&apos;re working on.
+            Orbit learns right alongside you. It understands the exact lecture you&apos;re watching, reads your notes, and remembers your study progress. Ask any doubt anytime &mdash; it already knows what you&apos;re working on.
           </p>
           <ul className="space-y-3">
             <FeatureRow isDark={isDark}>Solves complex physics equations, organic chemistry, and advanced mathematics</FeatureRow>
@@ -59,8 +59,8 @@ export default function GurujiMentorSection({ isDark, headingClass, subClass }) 
         </div>
         <div className="hidden md:block">
           <BrowserFrame
-            src="/screenshots/guruji_chat.png"
-            alt="Guruji Academic Mentor — Explaining complex concepts step-by-step"
+            src="/screenshots/orbit_chat.png"
+            alt="Orbit Academic Mentor — Explaining complex concepts step-by-step"
             className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
           />
         </div>

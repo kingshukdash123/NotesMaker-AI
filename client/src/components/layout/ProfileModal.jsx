@@ -15,6 +15,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import ProfileUserIcon from '../common/ProfileUserIcon';
 
 export default function ProfileModal() {
   const { isDark } = useTheme();
@@ -128,12 +129,12 @@ export default function ProfileModal() {
         <div className={`flex flex-col items-center text-center space-y-3 pb-5 border-b mb-5 ${
           isDark ? 'border-zinc-900' : 'border-zinc-200'
         }`}>
-          <div className={`w-16 h-16 rounded-full border flex items-center justify-center text-xl font-black uppercase shadow-inner select-none ${
+          <div className={`w-16 h-16 rounded-full border flex items-center justify-center shadow-inner select-none ${
             isDark 
-              ? 'bg-zinc-900 border-zinc-800 text-orange-500' 
-              : 'bg-zinc-100 border-zinc-200 text-zinc-900 shadow-xs'
+              ? 'bg-zinc-900 border-zinc-800 text-white' 
+              : 'bg-zinc-100 border-zinc-200 text-zinc-700 shadow-xs'
           }`}>
-            {firstChar}
+            <ProfileUserIcon className="w-8 h-8 shrink-0" strokeWidth={1.8} />
           </div>
           <div>
             <h3 className={`text-lg font-bold ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>

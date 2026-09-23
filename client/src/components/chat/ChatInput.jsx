@@ -133,7 +133,7 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder="Ask Guruji..."
+        placeholder="Ask Orbit..."
         className={`flex-1 ${isFullScreen ? 'max-h-36' : 'max-h-28'} resize-none bg-transparent outline-none border-none py-0.5 sm:py-1 ${
           isFullScreen ? 'text-xs sm:text-sm md:text-base' : 'text-xs'
         } custom-scrollbar font-sans leading-relaxed ${

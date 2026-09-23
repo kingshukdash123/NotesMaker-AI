@@ -7,7 +7,7 @@ export { default as FaqItem } from './FaqItem';
 export { default as HeroSection } from './HeroSection';
 export { default as StudyHabitsSection } from './StudyHabitsSection';
 export { default as LectureSpaceSection } from './LectureSpaceSection';
-export { default as GurujiMentorSection } from './GurujiMentorSection';
+export { default as OrbitMentorSection } from './OrbitMentorSection';
 export { default as PlaylistsSection } from './PlaylistsSection';
 export { default as StudyPlannerSection } from './StudyPlannerSection';
 export { default as ComparisonSection } from './ComparisonSection';

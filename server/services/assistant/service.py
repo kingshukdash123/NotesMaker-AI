@@ -35,18 +35,18 @@ class AssistantService:
         summary_val = summary if (summary and summary.strip()) else "No significant context yet."
         raw_name = (user_name or "").strip()
         is_known_name = bool(raw_name and raw_name.lower() not in ("user", "student", "my student", "none", "null"))
-        student_name_val = raw_name if is_known_name else "champion"
+        student_name_val = raw_name if is_known_name else "there"
 
         if is_known_name:
             name_instruction = (
                 f"- The student you are talking to is: {student_name_val}.\n"
-                f"- You know {student_name_val} personally and call them by their name.\n"
-                f"- If {student_name_val} asks 'what is my name?' or 'who am I?', answer directly, warmly, and proudly (e.g. 'You are {student_name_val}, champion!' or 'Arre {student_name_val}, how could I ever forget your name?'). NEVER claim you do not know their name."
+                f"- You know {student_name_val} personally and call them naturally by their name.\n"
+                f"- If {student_name_val} asks 'what is my name?' or 'who am I?', answer directly, warmly, and clearly (e.g. 'You are {student_name_val}!' or 'How could I forget, you are {student_name_val}!'). NEVER claim you do not know their name."
             )
         else:
             name_instruction = (
                 "- You do not know the student's personal real name yet.\n"
-                "- If they ask 'what is my name?', answer warmly and naturally: 'Arre dost, you haven't told me your real name yet! What should I call you?' (Never use robotic AI phrases like 'I am an AI, remind me what you would like to be called')."
+                "- If they ask 'what is my name?', answer warmly and naturally: 'You haven't told me your real name yet! What should I call you?' (Never use robotic AI phrases like 'I am an AI, remind me what you would like to be called')."
             )
 
         # Format student academic profile instructions
@@ -89,8 +89,8 @@ class AssistantService:
                 # Specific mentor persona tone directive
                 if "Calm & Structured" in tone:
                     directives.append("- Persona Tone Directive: Speak as a calm, patient, and methodical guide. Keep explanations orderly, your presence reassuring, and your pacing clear without rushing.")
-                elif "Warm Brotherly" in tone or "Dost" in tone:
-                    directives.append("- Persona Tone Directive: Speak with the warmth, affection, and loyalty of an elder brother ('Dost'). Use friendly, reassuring encouragement ('Tension mat le dost, we will ace this together').")
+                elif "Friendly" in tone or "Supportive" in tone or "Warm" in tone or "Brotherly" in tone or "Dost" in tone:
+                    directives.append("- Persona Tone Directive: Behave like a genuine friend and trusted mentor. Speak with natural warmth, empathy, and sincere encouragement, guiding them step by step without being overly formal or using forced nicknames.")
                 elif "Academic Coach" in tone or "Challenging" in tone:
                     directives.append("- Persona Tone Directive: Act as an ambitious, disciplined academic coach. Set high standards, challenge the student to think critically, and push them to excel.")
 

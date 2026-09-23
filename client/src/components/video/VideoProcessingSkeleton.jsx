@@ -125,8 +125,8 @@ const TAB_STEPS = {
     'Configuring chat conversation memory...',
     'Performing latency optimization check...',
     'Finalizing assistant knowledge grounding...',
-    'Preparing Guruji interactive companion...',
-    'Almost ready, connecting you with Guruji...'
+    'Preparing Orbit interactive companion...',
+    'Almost ready, connecting you with Orbit...'
   ]
 };
 

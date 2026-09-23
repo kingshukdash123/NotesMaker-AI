@@ -142,11 +142,11 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Card 1: Personalized Guruji Guidance Form */}
+              {/* Card 1: Personalized Orbit Guidance Form */}
               <DocSectionCard
-                title="Personalized Guruji Guidance"
+                title="Personalized Orbit Guidance"
                 icon={GraduationCap}
-                subtitle="These preferences instruct Guruji how to communicate with you — calibrating explanation depth, problem difficulty, analogies, and pacing specifically to your academic level."
+                subtitle="These preferences instruct Orbit how to communicate with you — calibrating explanation depth, problem difficulty, analogies, and pacing specifically to your academic level."
               >
                 <form onSubmit={handleSavePreferences} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -220,7 +220,7 @@ export default function SettingsPage() {
                     <div className="space-y-1.5">
                       <label className={`block text-xs font-semibold flex items-center gap-1.5 ${textPrimary}`}>
                         <span className="w-2 h-2 rounded-full bg-orange-500 inline-block"></span>
-                        <span>Guruji Mentor Tone</span>
+                        <span>Orbit Mentor Tone</span>
                       </label>
                       <CustomSelect
                         value={mentorTone}
@@ -229,7 +229,7 @@ export default function SettingsPage() {
                         placement="auto"
                         size="md"
                         className="w-full"
-                        ariaLabel="Guruji Mentor Tone"
+                        ariaLabel="Orbit Mentor Tone"
                       />
                     </div>
                   </div>
@@ -251,7 +251,7 @@ export default function SettingsPage() {
               <DocSectionCard
                 title="Active Persona Snapshot"
                 icon={BookOpen}
-                subtitle="A quick summary of how Guruji recognizes your current academic profile in real time:"
+                subtitle="A quick summary of how Orbit recognizes your current academic profile in real time:"
               >
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                   <div className={`p-3 rounded-xl border ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-white border-zinc-200 shadow-xs'}`}>

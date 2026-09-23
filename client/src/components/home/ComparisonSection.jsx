@@ -95,7 +95,7 @@ export default function ComparisonSection({ isDark, headingClass, subClass }) {
                 {[
                   '100% Distraction-Free (Zero ads, popups, or recommendation clutter)',
                   'Instant structured lecture notes + math equations + timestamps',
-                  '24/7 Context-aware Guruji with deep video comprehension',
+                  '24/7 Context-aware Orbit with deep video comprehension',
                   'Automated subject playlists with syllabus mastery checkmarks',
                   'Integrated daily study planner with priority task scheduling',
                   '99.4% accurate mathematical & scientific formula precision',

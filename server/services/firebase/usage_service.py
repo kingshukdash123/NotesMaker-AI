@@ -262,7 +262,7 @@ async def check_can_ask_question(user_id: str | None) -> tuple[bool, str]:
         total_allowed = plan_limits.get("monthly_chat_quota", 75)
 
         if total_chats_used >= total_allowed:
-            return False, f"Monthly Guruji doubt limit reached ({total_chats_used}/{total_allowed}) for your {plan_limits.get('name', 'Starter')} plan. Please upgrade to unlock more questions."
+            return False, f"Monthly Orbit doubt limit reached ({total_chats_used}/{total_allowed}) for your {plan_limits.get('name', 'Starter')} plan. Please upgrade to unlock more questions."
     except Exception as e:
         logger.warning(f"Error validating chat quota for {user_id}: {e}")
 

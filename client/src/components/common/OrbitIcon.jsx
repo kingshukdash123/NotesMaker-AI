@@ -1,10 +1,10 @@
-export default function GurujiIcon({ className = "w-5 h-5", alt = "Guruji", ...props }) {
+export default function OrbitIcon({ className = "w-6 h-6", alt = "Orbit", ...props }) {
   return (
     <img
-      src="/orbit.png"
+      src="/orbit-dp.png"
       alt={alt}
-      width="24"
-      height="24"
+      width="28"
+      height="28"
       loading="lazy"
       decoding="async"
       className={`rounded-full object-cover select-none pointer-events-none shrink-0 ${className}`}

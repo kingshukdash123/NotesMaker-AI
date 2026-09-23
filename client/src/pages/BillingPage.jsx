@@ -228,7 +228,7 @@ export default function BillingPage() {
                     {/* Meter 2: Mentor Doubts (No Inner Border) */}
                     <div className={`p-3.5 rounded-xl space-y-2 ${subCardBg}`}>
                       <div className="flex items-center justify-between gap-2 text-xs">
-                        <span className={`font-medium ${textPrimary} truncate`}>Guruji Doubts</span>
+                        <span className={`font-medium ${textPrimary} truncate`}>Orbit Doubts</span>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
                             qaLeft > 0

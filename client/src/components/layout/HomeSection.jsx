@@ -3,7 +3,7 @@ import {
   HeroSection,
   StudyHabitsSection,
   LectureSpaceSection,
-  GurujiMentorSection,
+  OrbitMentorSection,
   PlaylistsSection,
   StudyPlannerSection,
   ComparisonSection,
@@ -45,9 +45,9 @@ export default function HomeSection({ onOpenAuthModal }) {
         subClass={subClass}
       />
 
-      {/* GURUJI ACADEMIC MENTOR */}
+      {/* ORBIT ACADEMIC MENTOR */}
       <div id="mentor" className="scroll-mt-24">
-        <GurujiMentorSection
+        <OrbitMentorSection
           isDark={isDark}
           headingClass={headingClass}
           subClass={subClass}

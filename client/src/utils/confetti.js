@@ -18,9 +18,9 @@ const CONFETTI_COLORS = [
 ];
 
 export function triggerConfetti({
-  particleCount = 120,
-  duration = 3500,
-  spread = 100,
+  particleCount = 240,
+  duration = 4800,
+  spread = 85,
 } = {}) {
   // Prevent duplicate canvas elements
   const existingCanvas = document.getElementById('pathshala-confetti-canvas');
@@ -31,19 +31,24 @@ export function triggerConfetti({
   const canvas = document.createElement('canvas');
   canvas.id = 'pathshala-confetti-canvas';
   canvas.style.position = 'fixed';
-  canvas.style.top = '0';
-  canvas.style.left = '0';
+  canvas.style.inset = '0';
   canvas.style.width = '100vw';
   canvas.style.height = '100vh';
+  canvas.style.maxWidth = '100%';
+  canvas.style.maxHeight = '100%';
   canvas.style.pointerEvents = 'none';
-  canvas.style.zIndex = '9999';
+  canvas.style.zIndex = '99999';
+  canvas.style.overflow = 'hidden';
   document.body.appendChild(canvas);
 
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) return () => {};
 
   let width = (canvas.width = window.innerWidth);
   let height = (canvas.height = window.innerHeight);
+
+  const isMobile = width < 640;
+  const isTablet = width >= 640 && width < 1024;
 
   const handleResize = () => {
     width = canvas.width = window.innerWidth;
@@ -51,33 +56,76 @@ export function triggerConfetti({
   };
   window.addEventListener('resize', handleResize);
 
-  // Generate particles bursting from both lower quarters of the screen
+  // Scaled particle counts for screen sizes
+  const totalParticles = isMobile 
+    ? Math.min(particleCount, 160) 
+    : isTablet 
+      ? Math.min(particleCount, 210) 
+      : particleCount;
+
+  const actualSpread = isMobile ? Math.min(spread, 55) : isTablet ? Math.min(spread, 75) : spread;
+
+  // Responsive burst origins with high blast launch points near bottom of screen
+  const origins = isMobile
+    ? [
+        { x: width * 0.2, y: height * 0.88, angle: -82 },
+        { x: width * 0.5, y: height * 0.85, angle: -90 },
+        { x: width * 0.8, y: height * 0.88, angle: -98 },
+      ]
+    : [
+        { x: width * 0.15, y: height * 0.85, angle: -72 },
+        { x: width * 0.35, y: height * 0.80, angle: -84 },
+        { x: width * 0.65, y: height * 0.80, angle: -96 },
+        { x: width * 0.85, y: height * 0.85, angle: -108 },
+      ];
+
   const particles = [];
-  const origins = [
-    { x: width * 0.2, y: height * 0.75, angle: -65 },
-    { x: width * 0.5, y: height * 0.65, angle: -90 },
-    { x: width * 0.8, y: height * 0.75, angle: -115 },
-  ];
 
-  for (let i = 0; i < particleCount; i++) {
-    const origin = origins[i % origins.length];
-    const angleRad = ((origin.angle + (Math.random() - 0.5) * spread) * Math.PI) / 180;
-    const speed = 18 + Math.random() * 22;
+  // Helper to create a single particle
+  const createParticle = (origin, delayMs = 0) => {
+    const angleRad = ((origin.angle + (Math.random() - 0.5) * actualSpread) * Math.PI) / 180;
+    
+    // High-blast speed calculation
+    const baseSpeed = isMobile 
+      ? (18 + Math.random() * 16) // Powerful high blast on small devices
+      : isTablet 
+        ? (18 + Math.random() * 18) 
+        : (20 + Math.random() * 22);
 
-    particles.push({
+    const size = isMobile 
+      ? (4.5 + Math.random() * 4.5) 
+      : (5.5 + Math.random() * 5.5);
+
+    return {
       x: origin.x,
       y: origin.y,
-      vx: Math.cos(angleRad) * speed,
-      vy: Math.sin(angleRad) * speed,
-      size: 6 + Math.random() * 6,
+      vx: Math.cos(angleRad) * baseSpeed,
+      vy: Math.sin(angleRad) * baseSpeed,
+      size,
       color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
       rotation: Math.random() * 360,
       rotationSpeed: (Math.random() - 0.5) * 12,
       wobble: Math.random() * 10,
-      wobbleSpeed: 0.08 + Math.random() * 0.08,
+      wobbleSpeed: 0.07 + Math.random() * 0.07,
       opacity: 1,
-      shape: Math.random() > 0.4 ? 'rect' : 'circle',
-    });
+      shape: Math.random() > 0.35 ? 'rect' : 'circle',
+      delayMs,
+      active: delayMs === 0,
+    };
+  };
+
+  // Wave 1: Immediate primary high blast (70% of particles)
+  const wave1Count = Math.floor(totalParticles * 0.7);
+  for (let i = 0; i < wave1Count; i++) {
+    const origin = origins[i % origins.length];
+    particles.push(createParticle(origin, 0));
+  }
+
+  // Wave 2: Booster secondary blast at 220ms (30% of particles)
+  const wave2Count = totalParticles - wave1Count;
+  for (let i = 0; i < wave2Count; i++) {
+    const origin = origins[i % origins.length];
+    particles.push(createParticle(origin, 220));
   }
 
   const startTime = performance.now();
@@ -92,19 +140,38 @@ export function triggerConfetti({
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
 
-      // Physics update: air drag + gravity
-      p.vx *= 0.98;
-      p.vy *= 0.98;
-      p.vy += 0.42; // Gravity
+      // Activate delayed booster particles
+      if (!p.active) {
+        if (elapsed >= p.delayMs) {
+          p.active = true;
+        } else {
+          continue;
+        }
+      }
+
+      // Physics update: air resistance + slow gentle flutter gravity
+      p.vx *= 0.978;
+      p.vy *= 0.978;
+      p.vy += isMobile ? 0.30 : 0.34; // Slower floating gravity for longer air time
 
       p.x += p.vx;
       p.y += p.vy;
+
+      // Soft boundary containment to keep high-blast confetti on screen on mobile
+      if (p.x < 6) {
+        p.x = 6;
+        p.vx = Math.abs(p.vx) * 0.35; // gentle inward rebound
+      } else if (p.x > width - 6) {
+        p.x = width - 6;
+        p.vx = -Math.abs(p.vx) * 0.35; // gentle inward rebound
+      }
+
       p.rotation += p.rotationSpeed;
       p.wobble += p.wobbleSpeed;
 
-      // Fade out towards the end
-      if (progress > 0.7) {
-        p.opacity = Math.max(0, 1 - (progress - 0.7) / 0.3);
+      // Fade out smoothly towards the end
+      if (progress > 0.72) {
+        p.opacity = Math.max(0, 1 - (progress - 0.72) / 0.28);
       }
 
       ctx.save();
@@ -116,7 +183,7 @@ export function triggerConfetti({
       ctx.fillStyle = p.color;
 
       if (p.shape === 'rect') {
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.6);
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
       } else {
         ctx.beginPath();
         ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);

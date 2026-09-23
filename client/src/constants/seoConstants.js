@@ -19,19 +19,19 @@ export const OG_LOCALE = 'en_IN';
 export const PLATFORM_FAQS = [
   {
     q: 'Does Pathshala AI work with any video lecture?',
-    a: 'Yes. Simply paste any video lecture link into your study space. Pathshala AI creates neat, structured notes from the class audio and allows Guruji to explain concepts and answer your questions directly from that lecture.',
+    a: 'Yes. Simply paste any video lecture link into your study space. Pathshala AI creates neat, structured notes from the class audio and allows Orbit to explain concepts and answer your questions directly from that lecture.',
   },
   {
     q: 'How accurate are the extracted formulas and math equations?',
     a: 'Extremely accurate. We precisely capture complex scientific equations, symbols, and formulas across physics, chemistry, and mathematics so you can revise with complete confidence without textbook hunting.',
   },
   {
-    q: 'Can Guruji understand what I am currently watching?',
-    a: 'Yes. Guruji actively follows along with your lecture and notes. When you have a doubt, it gives you direct, relevant answers based on what your teacher just explained, rather than generic web search results.',
+    q: 'Can Orbit understand what I am currently watching?',
+    a: 'Yes. Orbit actively follows along with your lecture and notes. When you have a doubt, it gives you direct, relevant answers based on what your teacher just explained, rather than generic web search results.',
   },
   {
     q: 'What happens when my 30-day free Starter quota limit is reached?',
-    a: 'You can easily upgrade to Learner or Scholar anytime to unlock more lecture processing and Guruji doubts. Your existing notes, saved lectures, and study progress are always safely preserved so you never lose your hard work.',
+    a: 'You can easily upgrade to Learner or Scholar anytime to unlock more lecture processing and Orbit doubts. Your existing notes, saved lectures, and study progress are always safely preserved so you never lose your hard work.',
   },
   {
     q: 'Can I cancel my subscription anytime?',
@@ -50,7 +50,7 @@ export const SEO_PAGE_CONFIGS = {
   landing: {
     title: 'Pathshala AI — Distraction-Free Study & Productivity Platform',
     description: 'One platform for distraction-free study and maximum productivity. Focused educational lectures, structured AI notes, smart planner, and personal AI mentorship.',
-    keywords: 'distraction-free study, study productivity, AI study notes, student focus, lecture notes, study planner, educational AI, academic productivity, Guruji AI mentor',
+    keywords: 'distraction-free study, study productivity, AI study notes, student focus, lecture notes, study planner, educational AI, academic productivity, Orbit AI mentor',
     path: '/',
     robots: DEFAULT_ROBOTS,
   },
@@ -111,16 +111,16 @@ export const SEO_PAGE_CONFIGS = {
     robots: DEFAULT_ROBOTS,
   },
   assistant: {
-    title: 'Guruji — Personal Academic Mentor | Pathshala AI',
-    description: 'Converse with Guruji, your dedicated personal study mentor for real-time explanations, motivation, and conceptual clarity.',
-    keywords: 'Guruji, Pathshala AI, personal mentor, AI tutor, study assistant, academic chat',
+    title: 'Orbit — Personal Academic Mentor | Pathshala AI',
+    description: 'Converse with Orbit, your dedicated personal study mentor for real-time explanations, motivation, and conceptual clarity.',
+    keywords: 'Orbit, Pathshala AI, personal mentor, AI tutor, study assistant, academic chat',
     path: '/assistant',
     robots: DEFAULT_ROBOTS,
   },
   settings: {
     title: 'Settings — Mentor Profile & Theme | Pathshala AI',
-    description: 'Configure your personalized Guruji study mentor parameters and theme mode.',
-    keywords: 'Pathshala AI settings, Guruji preferences, student profile, theme settings',
+    description: 'Configure your personalized Orbit study mentor parameters and theme mode.',
+    keywords: 'Pathshala AI settings, Orbit preferences, student profile, theme settings',
     path: '/settings',
     robots: NOINDEX_ROBOTS,
   },

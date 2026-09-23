@@ -18,16 +18,16 @@ export default function FinalCtaSection({ isDark, onOpenAuthModal, headingClass,
             : 'bg-[linear-gradient(rgba(24,24,27,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.06)_1px,transparent_1px)]'
           }`} />
 
-        {/* Guruji Mentor Avatar */}
-        <div className="relative z-10 flex justify-center">
+        {/* Orbit Mascot Character */}
+        <div className="relative z-10 flex justify-center pb-1 sm:pb-2">
           <img
-            src="/orbit.png"
-            alt="Guruji — AI Academic Mentor"
+            src="/orbit-dp.png"
+            alt="Orbit — AI Academic Mentor"
             width="64"
             height="64"
             loading="lazy"
             decoding="async"
-            className="w-16 h-16 rounded-full object-cover border-2 border-orange-500 shadow-lg shadow-orange-500/25"
+            className="w-16 h-16 rounded-full object-cover"
           />
         </div>
 

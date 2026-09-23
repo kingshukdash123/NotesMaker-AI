@@ -315,7 +315,7 @@ export function useAssistantChat(currentUser) {
           const last = list[list.length - 1];
           if (last.role === 'assistant') {
             last.content = cleanMsg.includes('high demand')
-              ? 'Guruji is currently experiencing high demand. Please try asking again in a moment.'
+              ? 'Orbit is currently experiencing high demand. Please try asking again in a moment.'
               : 'An error occurred during response generation. Please check your connection and try again.';
             last.isError = true;
           }

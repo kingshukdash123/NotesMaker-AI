@@ -460,7 +460,7 @@ function MainApp() {
           )}
 
           {/* Right Scrollable Page Pane */}
-          <div className={`flex-1 min-w-0 ${isVideoFullscreen ? 'pl-0' : isSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'} flex flex-col h-full overflow-hidden transition-all duration-300`}>
+          <div className={`flex-1 min-w-0 ${isVideoFullscreen ? 'pl-0' : isSidebarCollapsed ? 'md:pl-16' : 'md:pl-64'} flex flex-col h-full overflow-hidden transition-all duration-300`}>
             <div className={`flex-1 w-full relative z-10 overflow-hidden flex flex-col h-full min-h-0 ${isDark ? 'bg-zinc-950/10' : 'bg-white'}`}>
               {activeSection === 'dashboard' && <DashboardPage />}
               {activeSection === 'discover' && <DiscoverPage />}
@@ -473,7 +473,7 @@ function MainApp() {
             </div>
           </div>
 
-          {/* Right Floating Guruji Assistant Drawer (Hidden in Fullscreen Video Mode) */}
+          {/* Right Floating Orbit Assistant Drawer (Hidden in Fullscreen Video Mode) */}
           {!isVideoFullscreen && activeSection !== 'assistant' && (
             <RightAssistantSidebar
               currentUser={currentUser}

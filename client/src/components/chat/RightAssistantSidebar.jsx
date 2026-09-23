@@ -7,7 +7,7 @@ import ChatInput from './ChatInput';
 import ActionModal from '../common/ActionModal';
 
 const COMPACT_SUGGESTIONS = [
-  { text: 'Ask Guruji a study question', command: '/explain ' },
+  { text: 'Ask Orbit a study question', command: '/explain ' },
   { text: 'Solve a math problem step-by-step', command: '/math ' },
   { text: 'Create a focused study checklist', command: '/todo ' },
   { text: 'Draft a summary or email', command: '/email ' }
@@ -340,14 +340,16 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               </div>
             ) : !activeThread ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 space-y-2.5 sm:space-y-3">
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center ${
-                  isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-orange-500/10 border-orange-500/20 text-orange-600 shadow-xs'
-                }`}>
-                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                </div>
+                <img
+                  src="/orbit.png"
+                  alt="Orbit"
+                  width="72"
+                  height="96"
+                  className="w-16 h-20 sm:w-20 sm:h-24 object-contain mx-auto select-none pointer-events-none drop-shadow-md"
+                />
                 <h4 className={`text-[11px] sm:text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Study Session</h4>
                 <p className={`text-[9px] sm:text-[10px] max-w-[190px] sm:max-w-[200px] leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  Start a study session to learn and study with Guruji's guidance.
+                  Start a study session to learn and study with Orbit's guidance.
                 </p>
                 <button
                   onClick={async () => {
@@ -361,12 +363,18 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               </div>
             ) : messages.length === 0 ? (
               <div className="h-full flex flex-col justify-center py-2 sm:py-4">
-                <div className="max-w-[260px] sm:max-w-[280px] mx-auto space-y-3 sm:space-y-4">
+                <div className="max-w-[260px] sm:max-w-[280px] mx-auto space-y-2.5 sm:space-y-3">
                   <div className="space-y-0.5 sm:space-y-1 text-center">
-                    <FileText className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1.5 sm:mb-2 ${isDark ? 'text-zinc-650' : 'text-zinc-400'}`} />
+                    <img
+                      src="/orbit.png"
+                      alt="Orbit"
+                      width="80"
+                      height="106"
+                      className="w-16 h-22 sm:w-20 sm:h-26 object-contain mx-auto mb-1.5 sm:mb-2 select-none pointer-events-none drop-shadow-md"
+                    />
                     <h3 className={`text-[11px] sm:text-xs font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeThread.title}</h3>
                     <p className={`text-[9px] sm:text-[10px] leading-relaxed ${isDark ? 'text-zinc-550' : 'text-zinc-500'}`}>
-                      Ask Guruji any study doubt, discuss your goals, or use slash commands.
+                      Ask Orbit any study doubt, discuss your goals, or use slash commands.
                     </p>
                   </div>
                   <div className={`space-y-1 sm:space-y-1.5 border-t pt-3 sm:pt-4 flex flex-col ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>

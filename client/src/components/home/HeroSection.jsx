@@ -19,7 +19,7 @@ export default function HeroSection({ isDark, onOpenAuthModal, headingClass, sub
         {/* Hero Subtitle */}
         <p className={`text-base sm:text-lg max-w-2xl mx-auto leading-relaxed ${subClass}`}>
           Turn any video lecture into crystal-clear organized notes, instant formula breakdowns, and direct answers from your personal study mentor{' '}
-          <strong className={isDark ? 'text-zinc-100 font-semibold' : 'text-zinc-900 font-semibold'}>Guruji</strong>
+          <strong className={isDark ? 'text-zinc-100 font-semibold' : 'text-zinc-900 font-semibold'}>Orbit</strong>
           {' '}&mdash; all in one quiet, focused workspace.
         </p>
 
@@ -34,7 +34,7 @@ export default function HeroSection({ isDark, onOpenAuthModal, headingClass, sub
             <div className="rotating-beam" />
             <div className="inner-content">
               <span className="sm:hidden">Start Free</span>
-              <span className="hidden sm:inline">Start 30-Day Free Pass</span>
+              <span className="hidden sm:inline">Start 30-Day Free</span>
               <ArrowRight className="w-4 h-4 text-orange-500 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
@@ -55,7 +55,7 @@ export default function HeroSection({ isDark, onOpenAuthModal, headingClass, sub
 
         {/* Trust Footnote */}
         <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-          Trusted by <span className={isDark ? 'text-zinc-300 font-semibold' : 'text-zinc-700 font-semibold'}>10,000+ students</span> preparing for Board Exams, JEE, NEET, GATE, UPSC &amp; University Degrees
+          Trusted by <span className={isDark ? 'text-zinc-300 font-semibold' : 'text-zinc-700 font-semibold'}>5000+ students</span> preparing for Board Exams, JEE, NEET, GATE, UPSC &amp; University Degrees
         </p>
       </div>
     </section>

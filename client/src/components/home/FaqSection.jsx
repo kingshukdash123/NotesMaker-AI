@@ -21,7 +21,7 @@ export default function FaqSection({ isDark, headingClass }) {
             <FaqItem
               isDark={isDark}
               q="Does Pathshala AI work with any video lecture?"
-              a="Yes. Simply paste any video lecture link into your study space. Pathshala AI creates neat, structured notes from the class audio and allows Guruji to explain concepts and answer your questions directly from that lecture."
+              a="Yes. Simply paste any video lecture link into your study space. Pathshala AI creates neat, structured notes from the class audio and allows Orbit to explain concepts and answer your questions directly from that lecture."
             />
             <FaqItem
               isDark={isDark}
@@ -30,15 +30,15 @@ export default function FaqSection({ isDark, headingClass }) {
             />
             <FaqItem
               isDark={isDark}
-              q="Can Guruji understand what I'm currently watching?"
-              a="Yes. Guruji actively follows along with your lecture and notes. When you have a doubt, it gives you direct, relevant answers based on what your teacher just explained, rather than generic web search results."
+              q="Can Orbit understand what I'm currently watching?"
+              a="Yes. Orbit actively follows along with your lecture and notes. When you have a doubt, it gives you direct, relevant answers based on what your teacher just explained, rather than generic web search results."
             />
           </div>
           <div className="space-y-4">
             <FaqItem
               isDark={isDark}
               q="What happens when my 30-day free Starter quota limit is reached?"
-              a="You can easily upgrade to Learner or Scholar anytime to unlock more lecture processing and Guruji doubts. Your existing notes, saved lectures, and study progress are always safely preserved so you never lose your hard work."
+              a="You can easily upgrade to Learner or Scholar anytime to unlock more lecture processing and Orbit doubts. Your existing notes, saved lectures, and study progress are always safely preserved so you never lose your hard work."
             />
             <FaqItem
               isDark={isDark}

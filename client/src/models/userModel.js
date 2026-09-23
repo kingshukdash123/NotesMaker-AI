@@ -1,28 +1,28 @@
 import { serverTimestamp } from 'firebase/firestore';
 
 export const DEFAULT_STUDENT_PREFERENCES = {
-  educationLevel: 'College / Undergraduate',
-  fieldOfStudy: 'Engineering & Computer Science',
+  educationLevel: 'Self-Taught / Professional',
+  fieldOfStudy: 'General Academics',
   targetGoal: 'Semester Exams & Concept Mastery',
-  explanationStyle: 'Intuitive with Real-World Analogies',
-  mentorTone: 'Warm Brotherly Dost (Supportive & Encouraging)',
+  explanationStyle: 'Concise Bullet Points & Key Formulas',
+  mentorTone: 'Friendly & Supportive Mentor',
 };
 
 export const EDUCATION_LEVELS = [
+  { id: 'Self-Taught / Professional', label: 'Self-Taught / Professional', desc: 'Practical skills & career upskilling' },
   { id: 'High School (9th - 10th)', label: 'High School (9th - 10th)', desc: 'Foundational concepts & board prep' },
   { id: 'Senior Secondary (11th - 12th)', label: 'Senior Secondary (11th - 12th)', desc: 'Board exams & entrance foundations' },
   { id: 'College / Undergraduate', label: 'College / Undergraduate', desc: 'Degree coursework & specialized topics' },
   { id: 'Postgraduate / Masters', label: 'Postgraduate / Masters', desc: 'Advanced academic & research focus' },
-  { id: 'Self-Taught / Professional', label: 'Self-Taught / Professional', desc: 'Practical skills & career upskilling' },
 ];
 
 export const FIELDS_OF_STUDY = [
+  { id: 'General Academics', label: 'General / Multi-Disciplinary', icon: '📚' },
   { id: 'Engineering & Computer Science', label: 'Engineering & CS', icon: '💻' },
   { id: 'Medical & Life Sciences', label: 'Medical & Bio', icon: '🔬' },
   { id: 'Physics, Chemistry & Mathematics', label: 'Math & Physical Sciences', icon: '📐' },
   { id: 'Commerce, Business & Economics', label: 'Commerce & Finance', icon: '📊' },
   { id: 'Arts, Law & Humanities', label: 'Humanities & Law', icon: '⚖️' },
-  { id: 'General Academics', label: 'General / Multi-Disciplinary', icon: '📚' },
 ];
 
 export const TARGET_GOALS = [
@@ -33,14 +33,14 @@ export const TARGET_GOALS = [
 ];
 
 export const EXPLANATION_STYLES = [
+  { id: 'Concise Bullet Points & Key Formulas', label: 'Concise Bullet Points & Formulas', desc: 'Direct, minimal fluff, high information density' },
   { id: 'Intuitive with Real-World Analogies', label: 'Intuitive Real-World Analogies', desc: 'Breaks complex concepts down into everyday examples' },
   { id: 'Step-by-Step Mathematical & Technical Rigor', label: 'Deep Technical & Mathematical Rigor', desc: 'Focuses on proofs, formulas, and deep mechanisms' },
-  { id: 'Concise Bullet Points & Key Formulas', label: 'Concise Bullet Points & Formulas', desc: 'Direct, minimal fluff, high information density' },
   { id: 'Exam-Oriented High-Yield Focus', label: 'Exam-Oriented & Common Pitfalls', desc: 'Highlights what questions appear in exams and common mistakes' },
 ];
 
 export const MENTOR_TONES = [
-  { id: 'Warm Brotherly Dost (Supportive & Encouraging)', label: 'Warm Brotherly "Dost"', desc: 'Supportive, friendly, caring and empathetic mentor' },
+  { id: 'Friendly & Supportive Mentor', label: 'Friendly & Supportive Mentor', desc: 'Supportive, caring, and encouraging mentor who guides you like a friend' },
   { id: 'High-Standard Academic Coach (Challenging & Focused)', label: 'High-Standard Academic Coach', desc: 'Disciplined, pushes you to excel and stay consistent' },
   { id: 'Calm & Structured Guide (Patient & Clear)', label: 'Calm & Structured Guide', desc: 'Patient, methodical explanations without rushing' },
 ];

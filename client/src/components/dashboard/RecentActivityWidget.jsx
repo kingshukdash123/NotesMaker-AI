@@ -150,8 +150,8 @@ export default function RecentActivityWidget({
 
                       {/* Metadata */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
-                        <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 group-hover:text-orange-500 transition-colors ${
-                          isDark ? 'text-zinc-200' : 'text-zinc-900'
+                        <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 transition-colors ${
+                          isDark ? 'text-zinc-200 group-hover:text-white' : 'text-zinc-800 group-hover:text-zinc-950'
                         }`}>
                           {title}
                         </h4>
@@ -261,8 +261,8 @@ export default function RecentActivityWidget({
 
                       {/* Metadata */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
-                        <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 group-hover:text-orange-500 transition-colors ${
-                          isDark ? 'text-zinc-200' : 'text-zinc-900'
+                        <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 transition-colors ${
+                          isDark ? 'text-zinc-200 group-hover:text-white' : 'text-zinc-800 group-hover:text-zinc-950'
                         }`}>
                           {title}
                         </h4>

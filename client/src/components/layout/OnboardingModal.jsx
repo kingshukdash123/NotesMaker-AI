@@ -47,27 +47,28 @@ export default function OnboardingModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
-      setIsAllSet(false);
-      setIsFadingOut(false);
-      setCurrentStep(1);
+      if (!isAllSet) {
+        setIsFadingOut(false);
+        setCurrentStep(1);
+      }
     } else if (!isAllSet) {
       setIsVisible(false);
     }
   }, [isOpen, isAllSet]);
 
-  // Handle celebration timing: big text for ~2.2s, then smooth fade-out for 700ms, then close
+  // Handle celebration timing: big text for ~3.8s, then smooth fade-out for 800ms, then close and reveal dashboard
   useEffect(() => {
     if (isAllSet) {
       const fadeTimer = setTimeout(() => {
         setIsFadingOut(true);
-      }, 2200);
+      }, 3800);
 
       const closeTimer = setTimeout(() => {
         setIsVisible(false);
         setIsAllSet(false);
         setIsFadingOut(false);
         onClose?.();
-      }, 2900);
+      }, 4600);
 
       return () => {
         clearTimeout(fadeTimer);
@@ -105,7 +106,14 @@ export default function OnboardingModal({ isOpen, onClose }) {
   };
 
   const handleFinish = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
+
+    // 1. Immediately switch to celebration screen with full overlay and high-blast confetti
+    setIsAllSet(true);
+    setIsFadingOut(false);
+    triggerConfetti({ particleCount: 240, duration: 4800 });
+
     try {
       const finalGoal = UserModel.formatTargetGoal(formData.targetGoal, formData.customGoal);
 
@@ -116,10 +124,6 @@ export default function OnboardingModal({ isOpen, onClose }) {
         explanationStyle: formData.explanationStyle,
         mentorTone: formData.mentorTone,
       });
-
-      setIsAllSet(true);
-      setIsFadingOut(false);
-      triggerConfetti({ particleCount: 160, duration: 3500 });
     } catch (err) {
       console.error('Failed to save onboarding preferences:', err);
     } finally {
@@ -131,12 +135,12 @@ export default function OnboardingModal({ isOpen, onClose }) {
     return (
       <div 
         onClick={handleDismissCelebration}
-        className={`fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xs cursor-pointer select-none transition-opacity duration-700 ease-out ${
+        className={`fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm cursor-pointer select-none transition-opacity duration-700 ease-out ${
           isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
         <h1 
-          className={`text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-white transition-all duration-700 ease-out ${
+          className={`text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-white select-none transition-all duration-700 ease-out ${
             isFadingOut ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
           }`}
         >
@@ -173,7 +177,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
                     Personalize Your AI Mentor
                   </h2>
                   <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    Help Guruji understand your academic background to give tailored guidance
+                    Help Orbit understand your academic background to give tailored guidance
                   </p>
                 </div>
               </div>
@@ -366,7 +370,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
                   <div>
                     <label className={`block text-xs font-semibold mb-2 flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
                       <Compass className={`w-4 h-4 ${isDark ? 'text-zinc-400' : 'text-orange-500'}`} />
-                      <span>Guruji&apos;s Mentor Persona & Tone</span>
+                      <span>Orbit&apos;s Mentor Persona & Tone</span>
                     </label>
                     <div className="space-y-2">
                       {MENTOR_TONES.map((tone) => {
