@@ -287,10 +287,10 @@ export default function VideoQa({ videoId, currentUser }) {
                     {isUser ? (
                       <p className="whitespace-pre-wrap leading-relaxed m-0 text-sm">{msg.text}</p>
                     ) : !msg.text && isLoading && index === messages.length - 1 ? (
-                      <div className="flex items-center gap-1 py-1">
-                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce"></span>
+                      <div className="space-y-2 py-1 min-w-[200px] max-w-sm w-full animate-pulse">
+                        <div className={`h-3.5 w-4/5 rounded-md ${isDark ? 'bg-zinc-800/90' : 'bg-zinc-200'}`} />
+                        <div className={`h-3.5 w-full rounded-md ${isDark ? 'bg-zinc-800/90' : 'bg-zinc-200'}`} />
+                        <div className={`h-3.5 w-3/5 rounded-md ${isDark ? 'bg-zinc-800/90' : 'bg-zinc-200'}`} />
                       </div>
                     ) : (
                       <MarkdownRenderer content={msg.text} className="chat-markdown" />

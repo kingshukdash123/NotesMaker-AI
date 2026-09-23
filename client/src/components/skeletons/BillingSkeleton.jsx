@@ -40,7 +40,6 @@ export function UsageCardSkeleton({ isDark = true, cardBg = '', subCardBg = '' }
           </div>
           
           <Skeleton className="w-full h-2 rounded-full" />
-          <Skeleton className="h-2.5 w-4/5 rounded" />
         </div>
 
         {/* Meter 2 Skeleton */}
@@ -54,7 +53,15 @@ export function UsageCardSkeleton({ isDark = true, cardBg = '', subCardBg = '' }
           </div>
           
           <Skeleton className="w-full h-2 rounded-full" />
-          <Skeleton className="h-2.5 w-5/6 rounded" />
+        </div>
+
+        {/* Usage & Billing Period Details Skeleton */}
+        <div className={`p-3.5 rounded-xl flex items-start gap-2.5 ${defaultSubCardBg}`}>
+          <Skeleton className="w-4 h-4 rounded-full shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3 w-full rounded" />
+            <Skeleton className="h-3 w-3/4 rounded" />
+          </div>
         </div>
       </div>
     </div>

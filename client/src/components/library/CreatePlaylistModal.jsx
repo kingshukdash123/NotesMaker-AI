@@ -41,12 +41,11 @@ export default function CreatePlaylistModal({ isOpen, onClose, onCreate }) {
         </button>
 
         {/* Modal Header */}
-        <div className={`space-y-1 pb-3 border-b ${isDark ? 'border-zinc-900' : 'border-zinc-100'} mb-4`}>
+        <div className={`pb-3 border-b ${isDark ? 'border-zinc-900' : 'border-zinc-100'} mb-4`}>
           <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2`}>
             <FolderPlus className="w-4.5 h-4.5 text-orange-500" />
             Create Playlist
           </h3>
-          <p className={`text-[11px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Group your study videos by course or subject.</p>
         </div>
 
         {/* Form */}
@@ -60,7 +59,11 @@ export default function CreatePlaylistModal({ isOpen, onClose, onCreate }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. JEE Physics, Linear Algebra"
-              className={`w-full ${isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-700' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white'} border rounded-xl px-3 py-2 text-xs transition`}
+              className={`w-full rounded-xl px-3 py-2 text-xs transition focus:outline-none focus:border-orange-500 ${
+                isDark
+                  ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500'
+                  : 'bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:bg-white'
+              }`}
               required
               maxLength={30}
               autoFocus

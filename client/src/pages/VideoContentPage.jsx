@@ -154,11 +154,6 @@ export default function VideoContentPage() {
                   {activeTab === 'summary' && 'Summary Dashboard'}
                   {activeTab === 'qa' && 'Video Q&A Companion'}
                 </h3>
-                <p className={`text-[10px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  {activeTab === 'notes' && 'Structured lecture notes with markdown, formulas & code'}
-                  {activeTab === 'summary' && 'Key takeaways, learning objectives, and curriculum hierarchy'}
-                  {activeTab === 'qa' && 'Interactive question answering on the lecture transcript'}
-                </p>
               </div>
             </div>
 

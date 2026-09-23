@@ -10,11 +10,7 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
         {Array.from({ length: count }).map((_, index) => (
           <div
             key={index}
-            className={`flex flex-col sm:flex-row gap-3 sm:gap-4.5 rounded-2xl p-2 sm:p-2.5 border transition duration-150 select-none ${
-              isDark
-                ? 'bg-zinc-950/20 border-zinc-900/60'
-                : 'bg-white border-zinc-200/80 shadow-xs'
-            }`}
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4.5 rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none"
           >
             {/* 16:9 Thumbnail Skeleton Column */}
             <div
@@ -51,7 +47,7 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
               {/* Action Bar Below Channel Name */}
               <div
                 className={`flex items-center gap-8 sm:gap-10 mt-2.5 pt-2 border-t ${
-                  isDark ? 'border-zinc-800/60' : 'border-zinc-100'
+                  isDark ? 'border-zinc-800/40' : 'border-zinc-200/60'
                 }`}
               >
                 {/* Action Buttons Cluster */}
@@ -75,16 +71,16 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className={`flex flex-col rounded-xl overflow-hidden border shadow-xs ${
+          className={`flex flex-col rounded-xl overflow-hidden ${
             isDark
-              ? 'bg-zinc-950/40 border-zinc-900/80'
-              : 'bg-white border-zinc-200/80 shadow-xs'
+              ? 'bg-zinc-900/40'
+              : 'bg-zinc-100/70'
           }`}
         >
           {/* 16:9 Thumbnail Skeleton */}
           <div
-            className={`relative w-full aspect-video ${
-              isDark ? 'bg-zinc-900/50' : 'bg-zinc-100'
+            className={`relative w-full aspect-video overflow-hidden ${
+              isDark ? 'bg-zinc-900/50' : 'bg-zinc-200'
             }`}
           >
             <Skeleton className="w-full h-full rounded-none border-0" />
@@ -121,7 +117,7 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
             {/* Action strip placeholder */}
             <div
               className={`flex items-center justify-between pt-2 border-t min-h-[28px] ${
-                isDark ? 'border-zinc-900/60' : 'border-zinc-100'
+                isDark ? 'border-zinc-900/60' : 'border-zinc-200'
               }`}
             >
               {/* Left buttons silhouette */}

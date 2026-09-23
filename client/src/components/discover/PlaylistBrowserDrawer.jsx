@@ -155,13 +155,13 @@ export default function PlaylistBrowserDrawer({
         <div className={`p-4 sm:p-5 border-b flex items-start justify-between gap-3 ${
           isDark ? 'border-zinc-800/80 bg-zinc-900/60' : 'border-zinc-200 bg-white'
         }`}>
-          <div className="flex items-start gap-3 min-w-0">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
             <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 mt-0.5 ${
               isDark ? 'bg-zinc-800 border-zinc-700/60 text-orange-500' : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
             }`}>
               <ListVideo className="w-5 h-5" />
             </div>
-            <div className="min-w-0 space-y-1">
+            <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                   isDark ? 'bg-orange-500/15 text-orange-400' : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
@@ -181,12 +181,18 @@ export default function PlaylistBrowserDrawer({
                 </div>
               ) : (
                 <>
-                  <h2 className={`text-base sm:text-lg font-bold line-clamp-2 leading-snug ${
-                    isDark ? 'text-zinc-100' : 'text-zinc-900'
-                  }`}>
+                  <h2
+                    title={displayTitle}
+                    className={`text-base sm:text-lg font-bold truncate leading-snug ${
+                      isDark ? 'text-zinc-100' : 'text-zinc-900'
+                    }`}
+                  >
                     {displayTitle}
                   </h2>
-                  <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                  <p
+                    title={displayChannel}
+                    className={`text-xs font-medium truncate ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}
+                  >
                     {displayChannel}
                   </p>
                 </>
@@ -194,58 +200,53 @@ export default function PlaylistBrowserDrawer({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className={`p-2 rounded-lg transition shrink-0 cursor-pointer ${
-              isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
-            }`}
-            aria-label="Close drawer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Action Toolbar */}
-        <div className={`px-4 sm:px-5 py-2.5 border-b flex items-center justify-between gap-2 text-xs ${
-          isDark ? 'border-zinc-800/60 bg-zinc-950 text-zinc-400' : 'border-zinc-200 bg-zinc-50 text-zinc-600'
-        }`}>
-          <div className="font-medium text-[11px] truncate">
-            Click any lecture to open and generate notes
-          </div>
-          {onSaveToLibrary && (
+          {/* Right Column: Close Cross Button & Save Playlist Button Below It */}
+          <div className="flex flex-col items-end shrink-0 gap-1.5 sm:gap-2">
             <button
               type="button"
-              onClick={handleSave}
-              disabled={isPlaylistSaved || isSaving || isLoading}
-              className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
-                isPlaylistSaved
-                  ? isDark
-                    ? 'bg-green-950/80 text-green-400 border border-green-800/40 rounded-lg opacity-90 cursor-default'
-                    : 'bg-green-100 text-green-800 border border-green-200 rounded-lg opacity-90 cursor-default'
-                  : isSaving
-                    ? 'btn-secondary !rounded-lg opacity-80 cursor-wait'
-                    : 'btn-primary !rounded-lg cursor-pointer'
+              onClick={onClose}
+              className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer ${
+                isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
               }`}
+              aria-label="Close drawer"
             >
-              {isPlaylistSaved ? (
-                <>
-                  <Check className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-700'}`} />
-                  <span>Saved to Library</span>
-                </>
-              ) : isSaving ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
-                  <span>Saving all lectures...</span>
-                </>
-              ) : (
-                <>
-                  <Bookmark className="w-3.5 h-3.5" />
-                  <span>Save Playlist</span>
-                </>
-              )}
+              <X className="w-5 h-5" />
             </button>
-          )}
+
+            {onSaveToLibrary && (
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isPlaylistSaved || isSaving || isLoading}
+                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
+                  isPlaylistSaved
+                    ? isDark
+                      ? 'bg-green-950/80 text-green-400 border border-green-800/40 rounded-lg opacity-90 cursor-default'
+                      : 'bg-green-100 text-green-800 border border-green-200 rounded-lg opacity-90 cursor-default'
+                    : isSaving
+                      ? 'btn-secondary !rounded-lg opacity-80 cursor-wait'
+                      : 'btn-primary !rounded-lg cursor-pointer'
+                }`}
+              >
+                {isPlaylistSaved ? (
+                  <>
+                    <Check className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-700'}`} />
+                    <span>Saved to Library</span>
+                  </>
+                ) : isSaving ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Bookmark className="w-3.5 h-3.5" />
+                    <span>Save Playlist</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Video List Body (YouTube Playlist Queue Style) */}
@@ -335,7 +336,7 @@ export default function PlaylistBrowserDrawer({
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <h4 className={`text-xs sm:text-sm font-semibold line-clamp-2 leading-snug transition ${
-                    isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
+                    isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
                   }`}>
                     {vid.title}
                   </h4>

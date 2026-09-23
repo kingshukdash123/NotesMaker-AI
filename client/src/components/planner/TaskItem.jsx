@@ -1,13 +1,36 @@
 import { useState } from 'react';
-import { Trash2, Pencil, Check, X } from 'lucide-react';
+import { Trash2, Pencil, Check, X, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import ThreeDotMenu from '../common/ThreeDotMenu';
+import CustomSelect from '../common/CustomSelect';
+
+const PRIORITY_OPTIONS = [
+  { value: 'high', label: 'High', dotColor: 'bg-rose-500' },
+  { value: 'medium', label: 'Medium', dotColor: 'bg-amber-500' },
+  { value: 'low', label: 'Low', dotColor: 'bg-emerald-500' }
+];
 
 export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
   const { isDark } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editPriority, setEditPriority] = useState(task.priority || 'medium');
+  const [isToggling, setIsToggling] = useState(false);
+
+  const handleToggle = async (e) => {
+    if (e) e.stopPropagation();
+    if (isToggling) return;
+    setIsToggling(true);
+    try {
+      if (onToggle) {
+        await onToggle(task.id, task.completed);
+      }
+    } catch (err) {
+      console.error('Failed to toggle task in TaskItem:', err);
+    } finally {
+      setIsToggling(false);
+    }
+  };
 
   const handleSave = () => {
     if (!editTitle.trim()) return;
@@ -71,28 +94,27 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
             type="text"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
-            className={`flex-1 rounded-lg px-2.5 py-1 text-xs outline-none border transition ${
+            className={`flex-1 rounded-lg px-2.5 py-1 text-xs outline-none border-0 transition focus:ring-1 focus:ring-orange-500/50 ${
               isDark 
-                ? 'bg-zinc-900 border-zinc-800 text-zinc-100 focus:border-zinc-700' 
-                : 'bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-400 focus:bg-white'
+                ? 'bg-zinc-900 text-zinc-100 placeholder-zinc-500 focus:bg-zinc-850' 
+                : 'bg-zinc-100 text-zinc-900 placeholder-zinc-400 focus:bg-white'
             }`}
             required
             autoFocus
           />
           <div className="flex items-center gap-2">
-            <select
+            <CustomSelect
               value={editPriority}
-              onChange={(e) => setEditPriority(e.target.value)}
-              className={`rounded-lg px-2 py-1 text-[10px] sm:text-xs font-semibold outline-none border ${
-                isDark 
-                  ? 'bg-zinc-900 border-zinc-800 text-zinc-300' 
-                  : 'bg-white border-zinc-200 text-zinc-900'
+              onChange={setEditPriority}
+              options={PRIORITY_OPTIONS}
+              placement="auto"
+              size="xs"
+              className="shrink-0"
+              triggerClassName={`!border-0 !shadow-none !py-1 !px-2 !rounded-lg text-[10px] sm:text-xs font-semibold ${
+                isDark ? '!bg-zinc-900 hover:!bg-zinc-850' : '!bg-zinc-100 hover:!bg-zinc-200'
               }`}
-            >
-              <option value="high">🔴 High</option>
-              <option value="medium">🟡 Medium</option>
-              <option value="low">🟢 Low</option>
-            </select>
+              ariaLabel="Edit task priority"
+            />
             <div className="flex gap-1">
               <button
                 type="button"
@@ -124,16 +146,26 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
             {/* Custom Checkbox */}
             <button
               type="button"
-              onClick={() => onToggle(task.id, task.completed)}
-              className={`w-4.5 h-4.5 rounded border transition flex items-center justify-center cursor-pointer shrink-0 ${
-                task.completed
-                  ? 'bg-orange-500 border-orange-500 text-white'
-                  : isDark 
-                    ? 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50' 
-                    : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'
+              onClick={handleToggle}
+              disabled={isToggling}
+              aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
+              className={`w-4.5 h-4.5 rounded border transition flex items-center justify-center shrink-0 ${
+                isToggling
+                  ? isDark
+                    ? 'border-orange-500/40 bg-orange-950/20 cursor-wait'
+                    : 'border-orange-400 bg-orange-50 cursor-wait'
+                  : task.completed
+                    ? 'bg-orange-500 border-orange-500 text-white cursor-pointer'
+                    : isDark 
+                      ? 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 cursor-pointer' 
+                      : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 cursor-pointer'
               }`}
             >
-              {task.completed && <Check className="w-3 h-3 stroke-[3]" />}
+              {isToggling ? (
+                <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
+              ) : task.completed ? (
+                <Check className="w-3 h-3 stroke-[3]" />
+              ) : null}
             </button>
 
             {/* Task Title text */}

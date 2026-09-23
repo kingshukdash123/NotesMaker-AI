@@ -21,7 +21,7 @@ export default function FinalCtaSection({ isDark, onOpenAuthModal, headingClass,
         {/* Guruji Mentor Avatar */}
         <div className="relative z-10 flex justify-center">
           <img
-            src="/nova.png"
+            src="/orbit.png"
             alt="Guruji — AI Academic Mentor"
             width="64"
             height="64"
@@ -43,10 +43,10 @@ export default function FinalCtaSection({ isDark, onOpenAuthModal, headingClass,
 
         {/* Subtitle */}
         <p className={`relative z-10 text-sm max-w-lg mx-auto leading-relaxed ${subClass}`}>
-          Join thousands of students who replaced video distractions with focused, structured learning. Start your 7-day free trial today &mdash; no credit card required.
+          Join thousands of students who replaced video distractions with focused, structured learning. Start with 30 days of free starter access &mdash; no credit card required.
         </p>
 
-        {/* Action Buttons: Start Trial + High Contrast Sign In Button */}
+        {/* Action Buttons: Start Free Pass + High Contrast Sign In Button */}
         <div className="relative z-10 flex flex-wrap items-center justify-center gap-4 pt-1">
           <button
             type="button"
@@ -56,12 +56,12 @@ export default function FinalCtaSection({ isDark, onOpenAuthModal, headingClass,
           >
             <div className="rotating-beam" />
             <div className="inner-content">
-              <span>Start 7-Day Free Trial</span>
+              <span>Start 30-Day Free</span>
               <ArrowRight className="w-4 h-4 text-orange-500 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
 
-          <button
+          {/* <button
             type="button"
             id="final-cta-signin"
             onClick={() => onOpenAuthModal('login')}
@@ -71,7 +71,7 @@ export default function FinalCtaSection({ isDark, onOpenAuthModal, headingClass,
               }`}
           >
             <span>Sign In</span>
-          </button>
+          </button> */}
         </div>
 
         {/* Trust Guarantees */}

@@ -67,21 +67,7 @@ export default function HistoryTab({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden space-y-3 sm:space-y-4 animate-in fade-in duration-300">
-      {/* Tab control bar (Pinned) */}
-      <div className={`flex items-center justify-between border-b ${isDark ? 'border-zinc-900/50' : 'border-zinc-200/80'} pb-2 shrink-0`}>
-        <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>WATCH HISTORY</span>
-        <button
-          type="button"
-          onClick={handleClearAll}
-          className="btn-danger-subtle px-2.5 py-1 text-[10px] font-bold !rounded-lg"
-          title="Clear entire history"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          <span>Clear History</span>
-        </button>
-      </div>
-
+    <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden animate-in fade-in duration-300">
       {/* History Grid (Only Grid is Scrollable!) */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">

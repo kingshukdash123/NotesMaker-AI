@@ -20,13 +20,12 @@ import {
 import { extractYouTubeVideoId, extractYouTubePlaylistId } from '../utils/router';
 
 // Icons
-import { AlertCircle, Search, Layers, Video, ListVideo, Radio } from 'lucide-react';
+import { AlertCircle, Search, Layers, Video, ListVideo } from 'lucide-react';
 
 const FILTER_TYPES = [
   { id: 'all', label: 'All', icon: Layers },
   { id: 'video', label: 'Videos', icon: Video },
   { id: 'playlist', label: 'Playlists', icon: ListVideo },
-  { id: 'live', label: 'Live Streams', icon: Radio },
 ];
 
 export default function DiscoverPage() {
@@ -342,25 +341,26 @@ export default function DiscoverPage() {
     <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
       <div className="w-full p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="space-y-1">
-            <h1 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className={`text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2 sm:gap-2.5 truncate ${
               isDark ? 'text-zinc-100' : 'text-zinc-900'
             }`}>
-              <Search className="w-5 h-5 text-orange-500" />
-              Discover Lectures & Courses
+              <Search className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 shrink-0" />
+              <span className="truncate">Discover Lectures</span>
             </h1>
-            <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-              Find high-quality academic lectures, full course playlists, and live masterclasses to outline, transcribe, and study.
-            </p>
           </div>
 
-          {/* Powered by YouTube Attribution Badge */}
-          <div className={`self-start sm:self-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 ${
+          {/* Powered by YouTube Attribution */}
+          <div className={`inline-flex items-center gap-1 sm:gap-1.5 text-[9px] min-[380px]:text-[9.5px] sm:text-xs font-medium shrink-0 whitespace-nowrap ${
             isDark 
-              ? 'text-zinc-300' 
-              : 'text-zinc-700'
+              ? 'text-zinc-400' 
+              : 'text-zinc-500'
           }`}>
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+              <polygon fill="#FFFFFF" points="9.545,15.568 15.818,12 9.545,8.432" />
+            </svg>
             <span>Powered by YouTube</span>
           </div>
         </div>

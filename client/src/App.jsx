@@ -71,12 +71,13 @@ function MainApp() {
     isSidebarCollapsed,
     upgradeModalState,
     closeUpgradeModal,
+    isAssistantOpen,
+    setIsAssistantOpen,
+    assistantMode,
+    setAssistantMode,
+    isSidebarMobileOpen,
+    setIsSidebarMobileOpen,
   } = useApp();
-
-  // Navigation & Drawer States
-  const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
-  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
-  const [assistantMode, setAssistantMode] = useState(() => localStorage.getItem('assistant_mode') || 'sidebar');
 
   // Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -261,7 +262,6 @@ function MainApp() {
       ? newMode
       : (assistantMode === 'sidebar' ? 'floating' : 'sidebar');
     setAssistantMode(targetMode);
-    localStorage.setItem('assistant_mode', targetMode);
   };
 
   // Check backend server health
@@ -486,26 +486,6 @@ function MainApp() {
                 setIsAssistantOpen(false);
               }}
             />
-          )}
-
-          {/* Floating launcher widget button (Hidden in Fullscreen Video Mode) */}
-          {!isVideoFullscreen && !isAssistantOpen && activeSection !== 'assistant' && (
-            <button
-              onClick={() => setIsAssistantOpen(true)}
-              className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-2xl z-[100] cursor-pointer bg-black hover:scale-105 active:scale-95 transition-all ${isDark ? 'hover:shadow-orange-500/20' : 'hover:shadow-xl'} hover:shadow-2xl overflow-hidden border border-zinc-800`}
-              title="Ask Guruji"
-              aria-label="Guruji"
-            >
-              <img
-                src="/nova.png"
-                alt="Ask Guruji — AI Academic Mentor"
-                width="52"
-                height="52"
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover select-none pointer-events-none"
-              />
-            </button>
           )}
         </div>
       )}

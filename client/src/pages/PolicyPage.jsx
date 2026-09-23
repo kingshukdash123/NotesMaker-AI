@@ -238,7 +238,6 @@ export default function PolicyPage({ slug: initialSlug = 'privacy' }) {
           {/* ── Page Header using Reusable DocPageHeader ── */}
           <DocPageHeader
             title="Legal Center"
-            subtitle={`All ${COMPANY_NAME} legal documents, policies, and terms — always up to date.`}
             backAction={!currentUser && (
               <a
                 href="/"

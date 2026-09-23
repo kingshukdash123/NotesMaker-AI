@@ -1327,3 +1327,50 @@ html[data-theme="light"] ::selection,
     border-color: #fca5a5;
   }
 }
+
+/* Chat Window Mode Transitions (Floating, Sidebar, Fullscreen) */
+@keyframes chatFloatIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.88) translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes chatSidebarIn {
+  0% {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes chatFullscreenIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-chat-float {
+  animation: chatFloatIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-chat-sidebar {
+  animation: chatSidebarIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-chat-fullscreen {
+  animation: chatFullscreenIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

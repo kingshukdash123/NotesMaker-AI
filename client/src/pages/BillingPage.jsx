@@ -11,6 +11,7 @@ import {
   Lock,
   RefreshCw,
   Zap,
+  Info,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -102,7 +103,6 @@ export default function BillingPage() {
         <div className="w-full px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-3 space-y-4">
           <DocPageHeader
             title="Billing & Usage"
-            subtitle="Manage your subscription and monthly usage."
           />
         </div>
       </div>
@@ -131,9 +131,6 @@ export default function BillingPage() {
                   Your Plan &amp; Usage
                 </h2>
               </div>
-              <p className={`text-xs ${textSecondary}`}>
-                Review your current tier limits and monthly quota consumption.
-              </p>
             </div>
 
             {/* Top Row: Current Plan & Features (Left) + Monthly Resource Usage (Right) */}
@@ -169,14 +166,13 @@ export default function BillingPage() {
                     {/* Header (Responsive for mobile screens) */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pb-1">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                          isDark ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-orange-50 border-orange-200 text-orange-600'
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          isDark ? 'bg-zinc-800/60 text-zinc-200' : 'bg-white text-zinc-800 shadow-xs'
                         }`}>
-                          <CreditCard className="w-5 h-5" />
+                          <Zap className="w-5 h-5 text-orange-500" />
                         </div>
                         <div>
                           <h3 className={`text-base sm:text-lg font-bold leading-tight ${textPrimary}`}>Monthly Resource Usage</h3>
-                          <p className={`text-xs ${textSecondary}`}>Real-time quota tracking</p>
                         </div>
                       </div>
 
@@ -227,9 +223,6 @@ export default function BillingPage() {
                         />
                       </div>
 
-                      <p className={`text-[11px] leading-relaxed ${textMuted}`}>
-                        Generates structured lecture outlines, smart chapter takeaways, and formula breakdowns.
-                      </p>
                     </div>
 
                     {/* Meter 2: Mentor Doubts (No Inner Border) */}
@@ -266,8 +259,13 @@ export default function BillingPage() {
                         />
                       </div>
 
-                      <p className={`text-[11px] leading-relaxed ${textMuted}`}>
-                        Ask conceptual doubt questions to Guruji and get real-time lecture Q&amp;A.
+                    </div>
+
+                    {/* Resource Usage & Quota Info */}
+                    <div className={`p-3.5 rounded-xl text-xs text-left flex items-start gap-2.5 ${subCardBg}`}>
+                      <Info className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      <p className={`text-[11px] leading-relaxed ${textSecondary}`}>
+                        Unused quotas do not roll over to the next cycle. Plan upgrades apply instantly, and all saved notes and history remain permanently accessible.
                       </p>
                     </div>
 
@@ -293,9 +291,6 @@ export default function BillingPage() {
                   Available Subscription Plans
                 </h2>
               </div>
-              <p className={`text-xs ${textSecondary}`}>
-                To get more quota and increase your study productivity, <span className="text-orange-500 font-semibold">upgrade your plan below</span>.
-              </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch pt-2">
@@ -323,14 +318,18 @@ export default function BillingPage() {
           </div>
 
           {/* ── Payment Info & Security Banner (No Outer Border) ── */}
-          <div className={`p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${
+          <div className={`p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-center sm:text-left ${
             isDark ? 'bg-zinc-900/40 text-zinc-400' : 'bg-zinc-50/80 text-zinc-600'
           }`}>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span><strong>No credit card required</strong> for starter access. Paid plans support <strong>UPI, Cards & NetBanking</strong> with instant activation.</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-2.5 text-center sm:text-left">
+              <ShieldCheck className="w-5 h-5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
+              <span className="leading-relaxed text-center sm:text-left">
+                <strong className={textPrimary}>No credit card required</strong> for starter access. Paid plans support <strong className={textPrimary}>UPI, Cards &amp; NetBanking</strong> with instant activation.
+              </span>
             </div>
-            <p className="text-[11px] text-zinc-500 font-medium">100% Secure &amp; encrypted payments</p>
+            <p className="text-[11px] text-zinc-500 font-medium shrink-0 self-center text-center sm:text-right whitespace-normal sm:whitespace-nowrap">
+              100% Secure &amp; encrypted payments
+            </p>
           </div>
 
           <div className="h-8" />

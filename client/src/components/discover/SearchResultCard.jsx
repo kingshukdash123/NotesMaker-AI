@@ -24,10 +24,10 @@ export default function SearchResultCard({
   return (
     <div 
       onClick={onOpen}
-      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none border border-transparent ${
+      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none ${
         isDark 
-          ? 'hover:bg-zinc-900/40 hover:border-zinc-850' 
-          : 'hover:bg-zinc-50 hover:border-zinc-200'
+          ? 'hover:bg-zinc-900/40' 
+          : 'hover:bg-zinc-50'
       }`}
     >
       {/* 16:9 Thumbnail Column */}
@@ -72,7 +72,7 @@ export default function SearchResultCard({
         {/* Full-width Title */}
         <h3 
           className={`text-sm sm:text-base md:text-lg font-semibold line-clamp-2 leading-snug transition ${
-            isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
+            isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
           }`}
           title={metadata.title || ''}
         >
@@ -88,7 +88,7 @@ export default function SearchResultCard({
           </div>
 
           <p className={`text-xs font-medium truncate max-w-[200px] sm:max-w-[320px] ${
-            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
+            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
           }`}>
             {metadata.channel || 'YouTube Creator'}
           </p>
@@ -123,7 +123,7 @@ export default function SearchResultCard({
 
         {/* Action Bar Below Channel Name: Action Buttons first, Processed Icon last */}
         <div className={`flex items-center gap-8 sm:gap-10 mt-2.5 pt-2 border-t ${
-          isDark ? 'border-zinc-800/60' : 'border-zinc-100'
+          isDark ? 'border-zinc-800/60' : 'border-zinc-200'
         }`}>
           {/* Action Buttons Cluster first */}
           <VideoActionButtons

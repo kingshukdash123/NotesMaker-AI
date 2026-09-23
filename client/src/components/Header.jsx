@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import ThemeToggle from './common/ThemeToggle';
+import GurujiIcon from './common/GurujiIcon';
 
 const NAV_LINKS = [
   { id: 'home', label: 'Home', isRoute: true, routeUrl: '/' },
@@ -26,7 +27,7 @@ export default function Header({
   onOpenAuthModal,
 }) {
   const { currentUser, getUserDisplayName } = useAuth();
-  const { activeSection, setActiveSection, setIsProfileOpen, resetActiveVideo } = useApp();
+  const { activeSection, setActiveSection, setIsProfileOpen, resetActiveVideo, isAssistantOpen, setIsAssistantOpen } = useApp();
   const { isDark } = useTheme();
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -150,7 +151,7 @@ export default function Header({
     : 'text-zinc-600 hover:text-orange-600 hover:bg-orange-50';
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-8 py-2.5 sm:py-3 transition-colors duration-200 border-b bg-transparent ${
+    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-5 py-2.5 sm:py-3 transition-colors duration-200 border-b bg-transparent ${
       isDark ? 'border-zinc-800/80' : 'border-zinc-200/80 shadow-xs'
     }`}>
       <div className="w-full flex items-center justify-between gap-3 sm:gap-6">
@@ -274,6 +275,17 @@ export default function Header({
                 aria-label={isBrowserFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
               >
                 {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              </button>
+
+              {/* Guruji AI Assistant Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsAssistantOpen(prev => !prev)}
+                className="w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer select-none bg-transparent hover:scale-105 active:scale-95"
+                title={isAssistantOpen ? 'Close Guruji' : 'Ask Guruji'}
+                aria-label={isAssistantOpen ? 'Close Guruji' : 'Ask Guruji'}
+              >
+                <GurujiIcon className="w-6 h-6 shrink-0" />
               </button>
 
               {/* Theme Mode Toggle Button */}

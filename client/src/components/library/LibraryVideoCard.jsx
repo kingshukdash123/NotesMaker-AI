@@ -28,14 +28,18 @@ export default function LibraryVideoCard({
   const timeAgoText = formatTimeAgo(metadata.publishedAt || video.publishedAt);
 
   return (
-    <div className={`group flex flex-col h-full cursor-pointer transition duration-150 rounded-xl select-none ${
-      isWatched ? 'opacity-85 hover:opacity-100' : ''
+    <div className={`group relative flex flex-col h-full cursor-pointer transition-all duration-200 rounded-xl select-none hover:z-20 focus-within:z-30 ${
+      isDark
+        ? 'bg-zinc-900/40 hover:bg-zinc-900/70'
+        : 'bg-zinc-100/70 hover:bg-zinc-100'
     }`}>
       {/* 16:9 Clean YouTube Thumbnail */}
       <div
         onClick={onOpen}
-        className={`relative w-full aspect-video rounded-xl overflow-hidden shrink-0 border shadow-xs transition-colors duration-150 ${
-          isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100'
+        className={`relative w-full aspect-video rounded-t-xl overflow-hidden shrink-0 transition-colors duration-150 ${
+          isDark ? 'bg-zinc-900' : 'bg-zinc-200'
+        } ${
+          isWatched ? 'opacity-85 group-hover:opacity-100' : ''
         }`}
       >
         {metadata.thumbnail ? (
@@ -72,7 +76,7 @@ export default function LibraryVideoCard({
       </div>
 
       {/* Details Section (Flex-1 to align Action Bar at bottom) */}
-      <div className="pt-2.5 px-0.5 flex-1 flex flex-col justify-between min-w-0">
+      <div className="p-3 flex-1 flex flex-col justify-between min-w-0">
         {/* Top Channel & Title Info */}
         <div className="flex items-start gap-2.5 min-w-0">
           {/* Channel Avatar Circle */}
@@ -91,7 +95,7 @@ export default function LibraryVideoCard({
             <h4
               onClick={onOpen}
               className={`text-sm font-bold line-clamp-2 leading-snug transition ${
-                isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
+                isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
               }`}
               title={metadata.title || ''}
             >
@@ -103,7 +107,7 @@ export default function LibraryVideoCard({
               <p
                 onClick={onOpen}
                 className={`text-xs truncate font-medium ${
-                  isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
+                  isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
                 }`}
                 title={metadata.channel || ''}
               >
@@ -123,7 +127,7 @@ export default function LibraryVideoCard({
 
         {/* Action Bar Pinned at the Bottom of the Card: Action Buttons first, Notes Icon in last */}
         <div className={`mt-auto pt-2 flex items-center justify-between border-t min-h-[32px] ${
-          isDark ? 'border-zinc-800/60' : 'border-zinc-100'
+          isDark ? 'border-zinc-800/60' : 'border-zinc-200'
         }`}>
           {/* Action Buttons: Bookmark, Add to Playlist, Delete + Watched Checkbox */}
           <div className="flex items-center gap-1 shrink-0">

@@ -20,21 +20,25 @@ export function useAssistantChat(currentUser) {
   const [summary, setSummary] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(Boolean(currentUser));
   const [error, setError] = useState(null);
 
   const activeThreadIdRef = useRef(activeThreadId);
+  const loadedThreadIdRef = useRef(null);
 
   useEffect(() => {
     activeThreadIdRef.current = activeThreadId;
   }, [activeThreadId]);
-
 
   // Load threads on mount / auth change
   const loadThreads = useCallback(async () => {
     if (!currentUser) {
       setThreads([]);
       setActiveThreadId(null);
+      setMessages([]);
+      setSummary('');
+      setIsLoadingHistory(false);
+      loadedThreadIdRef.current = null;
       return;
     }
     setIsLoadingHistory(true);
@@ -42,11 +46,23 @@ export function useAssistantChat(currentUser) {
       const data = await getAssistantThreads(currentUser.uid);
       setThreads(data);
       if (data.length > 0) {
-        // Auto-select latest updated thread
-        setActiveThreadId(data[0].threadId);
+        const firstThreadId = data[0].threadId;
+        setActiveThreadId(firstThreadId);
+        loadedThreadIdRef.current = firstThreadId;
+        // Atomically fetch the first thread's messages to avoid loader flickering
+        const msgData = await getAssistantMessages(currentUser.uid, firstThreadId);
+        if (activeThreadIdRef.current === firstThreadId || !activeThreadIdRef.current) {
+          setMessages(msgData.messages || []);
+          setSummary(msgData.summary || '');
+        }
+      } else {
+        setActiveThreadId(null);
+        setMessages([]);
+        setSummary('');
+        loadedThreadIdRef.current = null;
       }
     } catch (err) {
-      console.error('Failed to load assistant threads:', err);
+      console.error('Failed to load assistant history:', err);
       setError('Could not load conversation history.');
     } finally {
       setIsLoadingHistory(false);
@@ -57,21 +73,31 @@ export function useAssistantChat(currentUser) {
     loadThreads();
   }, [loadThreads]);
 
-  // Load messages when activeThreadId changes
+  // Load messages when activeThreadId changes (e.g. user selects a different thread)
   useEffect(() => {
     const loadMessages = async () => {
       if (!currentUser || !activeThreadId) {
-        setMessages([]);
-        setSummary('');
+        if (!activeThreadId) {
+          setMessages([]);
+          setSummary('');
+          loadedThreadIdRef.current = null;
+        }
         return;
       }
+
+      // If this thread was already loaded in the initial batch or on creation, don't refetch
+      if (loadedThreadIdRef.current === activeThreadId) {
+        return;
+      }
+
       setIsLoadingHistory(true);
       try {
         const data = await getAssistantMessages(currentUser.uid, activeThreadId);
         // Only update if the user hasn't switched threads in the meantime
         if (activeThreadIdRef.current === activeThreadId) {
-          setMessages(data.messages);
-          setSummary(data.summary);
+          setMessages(data.messages || []);
+          setSummary(data.summary || '');
+          loadedThreadIdRef.current = activeThreadId;
         }
       } catch (err) {
         console.error('Failed to load messages:', err);
@@ -99,6 +125,7 @@ export function useAssistantChat(currentUser) {
       await saveAssistantThread(currentUser.uid, newThreadId, newThread);
       await saveAssistantMessages(currentUser.uid, newThreadId, [], '');
 
+      loadedThreadIdRef.current = newThreadId;
       setThreads(prev => [newThread, ...prev]);
       setActiveThreadId(newThreadId);
       setMessages([]);
@@ -127,6 +154,7 @@ export function useAssistantChat(currentUser) {
           setActiveThreadId(null);
           setMessages([]);
           setSummary('');
+          loadedThreadIdRef.current = null;
         }
       }
     } catch (err) {

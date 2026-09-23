@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Video, FileText, Calendar, TrendingUp, TrendingDown, Minus, BarChart3, Zap } from 'lucide-react';
+import { Video, FileText, Calendar, CalendarDays, TrendingUp, TrendingDown, Minus, BarChart3, Zap } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import InfoPopover from '../common/InfoPopover';
 import CustomButton from '../common/CustomButton';
@@ -269,48 +269,41 @@ export default function StatsGrid({
   ];
 
   return (
-    <div className={`w-full space-y-3 sm:space-y-3.5 ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 transition duration-300 relative overflow-hidden ${
       isDark 
-        ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 relative overflow-hidden' 
-        : ''
+        ? 'bg-zinc-950/40 shadow-sm' 
+        : 'bg-white shadow-xs'
     }`}>
       {/* ── COMMON HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
-        isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
+      <div className={`flex items-center justify-between gap-2 sm:gap-2.5 pb-2.5 sm:pb-3 ${
+        isDark ? 'border-b border-orange-500/15' : ''
       }`}>
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
               : 'text-orange-600 bg-orange-500/10'
           }`}>
             <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${
-                isDark ? 'text-zinc-100' : 'text-zinc-900'
-              }`}>
-                {timeframe === 'month' ? 'Monthly Learning Metrics' : 'Weekly Learning Metrics'}
-              </h3>
-              <InfoPopover title={timeframe === 'month' ? 'Monthly Metrics & Prior Month Comparison' : 'Weekly Metrics & Prior Week Comparison'}>
-                <p>• <strong>{timeframe === 'month' ? '30-Day Rolling Window' : '7-Day Rolling Window'}</strong>: Compares your activity over the past {timeframe === 'month' ? '30' : '7'} days against the previous {timeframe === 'month' ? '30' : '7'}-day period.</p>
-                <p>• <strong>Videos Learned</strong>: Count of unique educational lectures studied.</p>
-                <p>• <strong>Notes Generated</strong>: Academic outlines created with AI.</p>
-                <p>• <strong>Study Days Active</strong>: Total active study days recorded in the period.</p>
-                <p>• <strong>Learning Score</strong>: Cumulative focus score and activity points earned.</p>
-              </InfoPopover>
-            </div>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-              {timeframe === 'month' 
-                ? 'Performance over past 30 days vs previous month' 
-                : 'Performance over past 7 days vs previous week'}
-            </p>
+          <div className="min-w-0 flex items-center gap-1.5 sm:gap-2">
+            <h3 className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${
+              isDark ? 'text-zinc-100' : 'text-zinc-900'
+            }`}>
+              {timeframe === 'month' ? 'Monthly Learning Metrics' : 'Weekly Learning Metrics'}
+            </h3>
+            <InfoPopover title={timeframe === 'month' ? 'Monthly Metrics & Prior Month Comparison' : 'Weekly Metrics & Prior Week Comparison'}>
+              <p>• <strong>{timeframe === 'month' ? '30-Day Rolling Window' : '7-Day Rolling Window'}</strong>: Compares your activity over the past {timeframe === 'month' ? '30' : '7'} days against the previous {timeframe === 'month' ? '30' : '7'}-day period.</p>
+              <p>• <strong>Videos Learned</strong>: Count of unique educational lectures studied.</p>
+              <p>• <strong>Notes Generated</strong>: Academic outlines created with AI.</p>
+              <p>• <strong>Study Days Active</strong>: Total active study days recorded in the period.</p>
+              <p>• <strong>Learning Score</strong>: Cumulative focus score and activity points earned.</p>
+            </InfoPopover>
           </div>
         </div>
 
         {/* Right side of header: Week / Month Filter Toggle */}
-        <div className="flex items-center self-start sm:self-auto shrink-0 pt-0.5 sm:pt-0">
+        <div className="flex items-center shrink-0">
           <div className={`flex items-center p-0.5 rounded-xl ${
             isDark ? 'bg-zinc-900/80' : 'bg-zinc-100'
           }`}>
@@ -318,30 +311,36 @@ export default function StatsGrid({
               variant={timeframe === 'week' ? 'primary' : 'ghost'}
               size="xs"
               onClick={() => setTimeframe('week')}
-              className="text-xs sm:text-sm px-3 sm:px-3.5 py-1 min-h-[26px] sm:min-h-[28px] rounded-lg"
+              className="text-xs sm:text-sm px-2 sm:px-3.5 py-1 min-h-[26px] sm:min-h-[28px] rounded-lg"
+              title="Weekly View (7 Days)"
+              aria-label="Weekly View"
             >
-              Week
+              <Calendar className="w-3.5 h-3.5 sm:hidden shrink-0" />
+              <span className="hidden sm:inline">Week</span>
             </CustomButton>
             <CustomButton
               variant={timeframe === 'month' ? 'primary' : 'ghost'}
               size="xs"
               onClick={() => setTimeframe('month')}
-              className="text-xs sm:text-sm px-3 sm:px-3.5 py-1 min-h-[26px] sm:min-h-[28px] rounded-lg"
+              className="text-xs sm:text-sm px-2 sm:px-3.5 py-1 min-h-[26px] sm:min-h-[28px] rounded-lg"
+              title="Monthly View (30 Days)"
+              aria-label="Monthly View"
             >
-              Month
+              <CalendarDays className="w-3.5 h-3.5 sm:hidden shrink-0" />
+              <span className="hidden sm:inline">Month</span>
             </CustomButton>
           </div>
         </div>
       </div>
 
       {/* ── 4-METRIC GRID ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 lg:gap-4 w-full pt-0.5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-3.5 w-full pt-0.5">
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <div 
               key={idx} 
-              className={`rounded-xl p-3 sm:p-3.5 md:p-4 flex flex-col justify-between transition duration-200 relative overflow-hidden group hover:scale-[1.01] min-h-[105px] sm:min-h-[118px] md:min-h-[126px] ${
+              className={`rounded-xl p-3 sm:p-3.5 md:p-4 flex flex-col justify-between transition duration-200 relative overflow-hidden group hover:scale-[1.01] min-h-[88px] sm:min-h-[100px] md:min-h-[106px] ${
                 isDark 
                   ? 'bg-zinc-900/30' 
                   : 'bg-zinc-100/70 hover:bg-zinc-100 transition-colors'
@@ -354,7 +353,7 @@ export default function StatsGrid({
                 }`}>
                   {stat.title}
                 </span>
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
+                <div className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
                   isDark 
                     ? 'text-orange-500 bg-orange-950/25 shadow-xs' 
                     : 'text-orange-600 bg-orange-500/10'
@@ -363,8 +362,8 @@ export default function StatsGrid({
                 </div>
               </div>
 
-              {/* Card Body: Numeric Value */}
-              <div className="space-y-0.5 my-0.5 sm:my-1">
+              {/* Card Body: Numeric Value & Comparison Badge on Extreme Right */}
+              <div className="flex items-baseline justify-between gap-1.5 mt-1 sm:mt-2">
                 <div className="flex items-baseline gap-1">
                   <span className={`text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight ${
                     isDark ? 'text-zinc-100' : 'text-zinc-900'
@@ -379,16 +378,9 @@ export default function StatsGrid({
                     </span>
                   )}
                 </div>
-              </div>
 
-              {/* Card Footer: Subtitle & Comparison Badge */}
-              <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between gap-1 pt-0.5">
-                <span className={`text-[11px] sm:text-xs md:text-[13px] leading-tight font-medium truncate ${
-                  isDark ? 'text-zinc-400' : 'text-zinc-500'
-                }`}>
-                  {stat.sub}
-                </span>
-                <div className="self-start min-[380px]:self-auto">
+                {/* Extreme right comparison badge */}
+                <div className="shrink-0">
                   {stat.badge}
                 </div>
               </div>

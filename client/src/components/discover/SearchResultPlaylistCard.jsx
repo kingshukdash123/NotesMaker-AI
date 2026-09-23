@@ -10,10 +10,10 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
   return (
     <div
       onClick={() => onOpen(playlist)}
-      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none border border-transparent ${
+      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none ${
         isDark 
-          ? 'hover:bg-zinc-900/40 hover:border-zinc-850' 
-          : 'hover:bg-zinc-50 hover:border-zinc-200'
+          ? 'hover:bg-zinc-900/40' 
+          : 'hover:bg-zinc-50'
       }`}
     >
       {/* Thumbnail Column with YouTube Playlist Stack Overlay */}
@@ -56,7 +56,7 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
       {/* Info Column */}
       <div className="flex-1 flex flex-col min-w-0 justify-start py-0.5">
         <h3 className={`text-sm sm:text-base md:text-lg font-semibold line-clamp-2 leading-snug transition ${
-          isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900 group-hover:text-orange-600'
+          isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
         }`}>
           {playlist.title}
         </h3>
@@ -69,7 +69,7 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
             {channelLetter}
           </div>
           <p className={`text-xs font-medium truncate ${
-            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
+            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
           }`}>
             {playlist.channel}
           </p>

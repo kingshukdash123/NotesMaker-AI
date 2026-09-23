@@ -55,14 +55,7 @@ export default function SavedVideosTab({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden space-y-3 sm:space-y-4 animate-in fade-in duration-300">
-      {/* Saved Videos Header (Pinned) */}
-      <div className={`flex items-center justify-between border-b ${isDark ? 'border-zinc-900/50' : 'border-zinc-200/80'} pb-2 shrink-0`}>
-        <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-          SAVED VIDEOS
-        </span>
-      </div>
-
+    <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden animate-in fade-in duration-300">
       {/* Grid listing (Only Grid is Scrollable!) */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">

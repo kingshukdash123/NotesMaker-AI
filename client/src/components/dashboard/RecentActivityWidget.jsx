@@ -44,17 +44,17 @@ export default function RecentActivityWidget({
   };
 
   return (
-    <div className={`w-full space-y-3 sm:space-y-3.5 ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 transition duration-300 relative ${
       isDark 
-        ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 relative' 
-        : ''
+        ? 'bg-zinc-950/40 shadow-sm' 
+        : 'bg-white shadow-xs'
     }`}>
       {/* ── SECTION HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-        isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
+        isDark ? 'border-b border-orange-500/15' : ''
       }`}>
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
               : 'text-orange-600 bg-orange-500/10'
@@ -67,20 +67,17 @@ export default function RecentActivityWidget({
             }`}>
               Recent Activity
             </h3>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-              Your latest educational lecture streams and generated study outlines
-            </p>
           </div>
         </div>
       </div>
 
       {/* ── 2 COLUMNS: COLUMN 1 (WATCH HISTORY) | COLUMN 2 (GENERATED NOTES) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 lg:gap-4.5 items-stretch">
 
         {/* ══════════════════════════════════════════════════════════════
             COLUMN 1: WATCH HISTORY
            ══════════════════════════════════════════════════════════════ */}
-        <div className={`flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+        <div className={`flex flex-col justify-between p-3.5 sm:p-4 rounded-xl ${
           isDark 
             ? 'bg-zinc-900/30' 
             : 'bg-zinc-100/70'
@@ -89,15 +86,15 @@ export default function RecentActivityWidget({
           <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/60 dark:border-orange-500/10">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-orange-500" />
-              <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
+              <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
                 Watch History
               </span>
             </div>
-            <span className={`text-[11px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            {/* <span className={`text-[10px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               Lectures
-            </span>
+            </span> */}
           </div>
 
           {/* List */}
@@ -183,7 +180,7 @@ export default function RecentActivityWidget({
               onClick={onNavigateToHistory}
               className="w-full justify-between"
             >
-              <span>View All Watch History in Library</span>
+              <span>View All Watch History</span>
             </CustomButton>
           </div>
         </div>
@@ -200,15 +197,15 @@ export default function RecentActivityWidget({
           <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/60 dark:border-orange-500/10">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-orange-500" />
-              <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
+              <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
                 Generated Notes
               </span>
             </div>
-            <span className={`text-[11px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            {/* <span className={`text-[10px] sm:text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               Academic Outlines
-            </span>
+            </span> */}
           </div>
 
           {/* List */}
@@ -294,7 +291,7 @@ export default function RecentActivityWidget({
               onClick={onNavigateToNotes}
               className="w-full justify-between"
             >
-              <span>View All Outlines & Notes in Library</span>
+              <span>View All Outlines & Notes</span>
             </CustomButton>
           </div>
         </div>

@@ -25,6 +25,7 @@ import {
 import DocSectionCard from '../components/common/DocSectionCard';
 import TabPillSwitcher from '../components/common/TabPillSwitcher';
 import DocPageHeader from '../components/common/DocPageHeader';
+import CustomSelect from '../components/common/CustomSelect';
 
 const EDUCATION_OPTIONS = EDUCATION_LEVELS.map((l) => l.id);
 const STREAM_OPTIONS = FIELDS_OF_STUDY.map((f) => f.id);
@@ -103,7 +104,6 @@ export default function SettingsPage() {
           {/* ── Page Header using Reusable DocPageHeader ── */}
           <DocPageHeader
             title="Application Settings"
-            subtitle="Configure your Guruji mentor persona and theme appearance."
           />
 
           {/* ── Main Tab Switcher using Reusable TabPillSwitcher ── */}
@@ -112,12 +112,6 @@ export default function SettingsPage() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
           />
-
-          {/* ── Tab Context Subtitle ── */}
-          <div className={`text-xs ${textMuted}`}>
-            {activeTab === 'mentor' && 'Adjust your academic preferences, focus milestones, and mentor interaction style.'}
-            {activeTab === 'appearance' && 'Customize theme mode and color aesthetics.'}
-          </div>
         </div>
       </div>
 
@@ -162,17 +156,15 @@ export default function SettingsPage() {
                         <GraduationCap className="w-3.5 h-3.5 text-orange-500" />
                         <span>Academic Level</span>
                       </label>
-                      <select
+                      <CustomSelect
                         value={educationLevel}
-                        onChange={(e) => setEducationLevel(e.target.value)}
-                        className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
-                      >
-                        {EDUCATION_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={setEducationLevel}
+                        options={EDUCATION_OPTIONS}
+                        placement="auto"
+                        size="md"
+                        className="w-full"
+                        ariaLabel="Academic Level"
+                      />
                     </div>
 
                     {/* Stream / Field */}
@@ -181,17 +173,15 @@ export default function SettingsPage() {
                         <BookOpen className="w-3.5 h-3.5 text-orange-500" />
                         <span>Stream / Field of Study</span>
                       </label>
-                      <select
+                      <CustomSelect
                         value={fieldOfStudy}
-                        onChange={(e) => setFieldOfStudy(e.target.value)}
-                        className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
-                      >
-                        {STREAM_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={setFieldOfStudy}
+                        options={STREAM_OPTIONS}
+                        placement="auto"
+                        size="md"
+                        className="w-full"
+                        ariaLabel="Stream / Field of Study"
+                      />
                     </div>
 
                     {/* Target Goal */}
@@ -215,17 +205,15 @@ export default function SettingsPage() {
                         <Lightbulb className="w-3.5 h-3.5 text-orange-500" />
                         <span>Preferred Explanation Style</span>
                       </label>
-                      <select
+                      <CustomSelect
                         value={explanationStyle}
-                        onChange={(e) => setExplanationStyle(e.target.value)}
-                        className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
-                      >
-                        {STYLE_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={setExplanationStyle}
+                        options={STYLE_OPTIONS}
+                        placement="auto"
+                        size="md"
+                        className="w-full"
+                        ariaLabel="Preferred Explanation Style"
+                      />
                     </div>
 
                     {/* Mentor Tone */}
@@ -234,17 +222,15 @@ export default function SettingsPage() {
                         <span className="w-2 h-2 rounded-full bg-orange-500 inline-block"></span>
                         <span>Guruji Mentor Tone</span>
                       </label>
-                      <select
+                      <CustomSelect
                         value={mentorTone}
-                        onChange={(e) => setMentorTone(e.target.value)}
-                        className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-orange-500 transition cursor-pointer ${inputBg} ${textPrimary}`}
-                      >
-                        {TONE_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className={isDark ? 'bg-zinc-900 text-zinc-100' : 'bg-white text-zinc-900'}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={setMentorTone}
+                        options={TONE_OPTIONS}
+                        placement="auto"
+                        size="md"
+                        className="w-full"
+                        ariaLabel="Guruji Mentor Tone"
+                      />
                     </div>
                   </div>
 

@@ -37,8 +37,8 @@ export default function FaqSection({ isDark, headingClass }) {
           <div className="space-y-4">
             <FaqItem
               isDark={isDark}
-              q="What happens after my 7-day free trial ends?"
-              a="You can choose a plan that fits your study needs. Your notes, playlists, and study progress are always safely preserved so you never lose your hard work."
+              q="What happens when my 30-day free Starter quota limit is reached?"
+              a="You can easily upgrade to Learner or Scholar anytime to unlock more lecture processing and Guruji doubts. Your existing notes, saved lectures, and study progress are always safely preserved so you never lose your hard work."
             />
             <FaqItem
               isDark={isDark}
@@ -48,7 +48,7 @@ export default function FaqSection({ isDark, headingClass }) {
             <FaqItem
               isDark={isDark}
               q="How do I contact customer support if I need help?"
-              a="You can reach us directly anytime at support@pathshalaai.co.in. Our dedicated team is based in India and responds quickly in less than 2–4 hours to help you with your studies."
+              a="You can reach us directly anytime at support@pathshalaai.co.in. Our dedicated team is based in India and responds quickly to help you with your studies."
             />
           </div>
         </div>

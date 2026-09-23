@@ -8,7 +8,8 @@ import {
   PlusCircle, 
   BarChart2,
   Crown,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import InfoPopover from '../common/InfoPopover';
@@ -21,6 +22,26 @@ export default function TodayPlanWidget({
   onNavigateToPlanner
 }) {
   const { isDark } = useTheme();
+  const [togglingTaskIds, setTogglingTaskIds] = useState(new Set());
+
+  const handleTaskToggle = async (taskId, currentStatus, e) => {
+    if (e) e.stopPropagation();
+    if (togglingTaskIds.has(taskId)) return;
+    setTogglingTaskIds(prev => new Set(prev).add(taskId));
+    try {
+      if (onToggleTask) {
+        await onToggleTask(taskId, currentStatus);
+      }
+    } catch (err) {
+      console.error('Failed to toggle task in TodayPlanWidget:', err);
+    } finally {
+      setTogglingTaskIds(prev => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
+    }
+  };
 
   // ── 1. 7-DAY STACKED BAR DATA ENGINE ──
   const { 
@@ -165,18 +186,18 @@ export default function TodayPlanWidget({
   };
 
   return (
-    <div className={`w-full space-y-3 sm:space-y-3.5 ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 transition duration-300 relative overflow-hidden ${
       isDark 
-        ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6 transition duration-300 relative overflow-hidden' 
-        : ''
+        ? 'bg-zinc-950/40 shadow-sm' 
+        : 'bg-white shadow-xs'
     }`}>
       
       {/* ── COMMON HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-        isDark ? 'pb-3.5 border-b border-orange-500/15' : 'pb-0.5'
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
+        isDark ? 'border-b border-orange-500/15' : ''
       }`}>
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
               : 'text-orange-600 bg-orange-500/10'
@@ -184,48 +205,53 @@ export default function TodayPlanWidget({
             <CalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <h3 className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${
                 isDark ? 'text-zinc-100' : 'text-zinc-900'
               }`}>
                 Study Planner & Targets
               </h3>
               <InfoPopover title="7-Day History & Targets">
-                <p>• <strong>Stacked Bar Graph</strong>: Each bar visualizes your daily targets stacked by priority: High, Medium, and Low.</p>
-                <p>• <strong>Solid vs Translucent</strong>: Solid colored blocks indicate completed tasks; translucent blocks indicate pending tasks.</p>
+                <p className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block shrink-0" /><strong>High Priority</strong>: Critical tasks & exam prep.</p>
+                <p className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block shrink-0" /><strong>Medium Priority</strong>: Daily chapters & lectures.</p>
+                <p className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-sky-500 inline-block shrink-0" /><strong>Low Priority</strong>: Revision & quick tasks.</p>
+                <p>• <strong>Stacked Bar Graph</strong>: Visualizes your daily targets stacked by priority.</p>
+                <p>• <strong>Solid vs Translucent</strong>: Solid blocks indicate completed tasks; translucent blocks indicate pending tasks.</p>
               </InfoPopover>
             </div>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-              Monitor weekly execution velocity and manage today's planned study targets
-            </p>
           </div>
         </div>
       </div>
 
       {/* ── ROW LAYOUT: COLUMN 1 (CLEAN STACKED BARS) | COLUMN 2 (TODAY'S TARGETS) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 lg:gap-6 items-stretch pt-1">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-4.5 items-stretch pt-0.5">
 
         {/* ══════════════════════════════════════════════════════════════
             COLUMN 1 (LEFT): TARGET HISTORY (SIMPLE CLEAN STACKED BAR GRAPH)
            ══════════════════════════════════════════════════════════════ */}
-        <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+        <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 rounded-xl ${
           isDark 
             ? 'bg-zinc-900/30' 
             : 'bg-zinc-100/70'
         }`}>
-          {/* Subheader with Priority Legend */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-zinc-200/60 dark:border-orange-500/10">
-            <div className="flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-orange-500" />
-              <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
+          {/* Subheader with Priority Legend & Info */}
+          <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-zinc-200/60 dark:border-orange-500/10">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <BarChart2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 shrink-0" />
+              <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
-                Target History (7D)
+                Target History
               </span>
+              {/* <InfoPopover title="Priority Levels">
+                <p className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block shrink-0" /><strong>High</strong>: Critical study tasks</p>
+                <p className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block shrink-0" /><strong>Medium</strong>: Core learning targets</p>
+                <p className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-sky-500 inline-block shrink-0" /><strong>Low</strong>: Quick review & practice</p>
+              </InfoPopover> */}
             </div>
 
-            {/* Simple Clean Legend */}
-            <div className="flex items-center gap-2 sm:gap-2.5 text-[10px] sm:text-xs font-mono">
+            {/* Simple Clean Legend (Hidden on phone, tucked in info icon) */}
+            {/* <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 text-[10px] sm:text-xs font-mono">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-rose-500" />
                 <span className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>High</span>
@@ -238,7 +264,7 @@ export default function TodayPlanWidget({
                 <span className="w-2 h-2 rounded-full bg-sky-500" />
                 <span className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>Low</span>
               </span>
-            </div>
+            </div> */}
           </div>
 
           {/* ── 7-DAY STACKED BARS ── */}
@@ -387,7 +413,7 @@ export default function TodayPlanWidget({
           <div className="flex items-center justify-between pb-2.5 border-b border-zinc-200/60 dark:border-orange-500/10">
             <div className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4 text-orange-500" />
-              <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${
+              <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
                 Today's Targets
@@ -395,13 +421,44 @@ export default function TodayPlanWidget({
             </div>
 
             {totalTasks > 0 && (
-              <span className={`text-xs sm:text-[13px] font-mono font-bold ${
-                isAllCompleted 
-                  ? isDark ? 'text-green-400' : 'text-green-700'
-                  : isDark ? 'text-orange-400' : 'text-orange-600'
-              }`}>
-                {percentComplete}% Completed
-              </span>
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {/* Compact Circular Progress Ring Starting at Top (12 o'clock) */}
+                <div className="relative w-5 h-5 sm:w-5.5 sm:h-5.5 flex items-center justify-center shrink-0">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.9155"
+                      fill="none"
+                      className={isDark ? "stroke-zinc-800" : "stroke-zinc-200"}
+                      strokeWidth="3.5"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.9155"
+                      fill="none"
+                      className={`transition-all duration-300 ease-out ${
+                        isAllCompleted ? "stroke-emerald-500" : "stroke-orange-500"
+                      }`}
+                      strokeDasharray={`${percentComplete} 100`}
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  {isAllCompleted && (
+                    <Check className="absolute w-2.5 h-2.5 text-emerald-500 stroke-[3]" />
+                  )}
+                </div>
+
+                <span className={`text-[11px] sm:text-xs font-mono font-bold ${
+                  isAllCompleted 
+                    ? isDark ? 'text-emerald-400' : 'text-emerald-600'
+                    : isDark ? 'text-orange-400' : 'text-orange-600'
+                }`}>
+                  {percentComplete}%
+                </span>
+              </div>
             )}
           </div>
 
@@ -431,43 +488,54 @@ export default function TodayPlanWidget({
                 </CustomButton>
               </div>
             ) : (
-              sortedTasks.map((task) => (
-                <div
-                  key={task.id}
-                  onClick={() => onToggleTask && onToggleTask(task.id, task.completed)}
-                  className={`group min-h-[44px] px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-150 flex items-center justify-between gap-2.5 cursor-pointer select-none ${
-                    task.completed
-                      ? isDark 
-                        ? 'bg-zinc-950/40 text-zinc-500' 
-                        : 'bg-zinc-200/50 text-zinc-400'
-                      : isDark
-                        ? 'bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-200'
-                        : 'bg-white/80 hover:bg-white text-zinc-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <button
-                      type="button"
-                      className="p-1.5 -m-1.5 text-orange-500 shrink-0 cursor-pointer focus:outline-none transition-transform active:scale-90"
-                      aria-label={task.completed ? "Mark as incomplete" : "Mark as completed"}
-                    >
-                      {task.completed ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
-                      ) : (
-                        <Circle className="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors" />
-                      )}
-                    </button>
+              sortedTasks.map((task) => {
+                const isTaskToggling = togglingTaskIds.has(task.id);
+                return (
+                  <div
+                    key={task.id}
+                    onClick={() => !isTaskToggling && handleTaskToggle(task.id, task.completed)}
+                    className={`group min-h-[44px] px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-150 flex items-center justify-between gap-2.5 select-none ${
+                      isTaskToggling ? 'cursor-wait opacity-80' : 'cursor-pointer'
+                    } ${
+                      task.completed
+                        ? isDark 
+                          ? 'bg-zinc-950/40 text-zinc-500' 
+                          : 'bg-zinc-200/50 text-zinc-400'
+                        : isDark
+                          ? 'bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-200'
+                          : 'bg-white/80 hover:bg-white text-zinc-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <button
+                        type="button"
+                        disabled={isTaskToggling}
+                        onClick={(e) => handleTaskToggle(task.id, task.completed, e)}
+                        className={`p-1.5 -m-1.5 text-orange-500 shrink-0 focus:outline-none transition-transform ${
+                          isTaskToggling ? 'cursor-wait' : 'cursor-pointer active:scale-90'
+                        }`}
+                        aria-label={task.completed ? "Mark as incomplete" : "Mark as completed"}
+                      >
+                        {isTaskToggling ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                        ) : task.completed ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors" />
+                        )}
+                      </button>
 
-                    <span className={`text-xs sm:text-sm font-medium truncate ${
-                      task.completed ? 'line-through opacity-70' : ''
-                    }`}>
-                      {task.title}
-                    </span>
+                      <span className={`text-xs sm:text-sm font-medium truncate ${
+                        task.completed ? 'line-through opacity-70' : ''
+                      }`}>
+                        {task.title}
+                      </span>
+                    </div>
+
+                    {getPriorityBadge(task.priority)}
                   </div>
-
-                  {getPriorityBadge(task.priority)}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 

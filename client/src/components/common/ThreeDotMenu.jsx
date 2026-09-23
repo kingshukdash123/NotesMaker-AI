@@ -111,8 +111,8 @@ export default function ThreeDotMenu({
                     isDanger
                       ? 'text-red-400 hover:bg-red-500/10'
                       : isDark
-                      ? 'hover:bg-zinc-800 text-zinc-200'
-                      : 'hover:bg-zinc-50 text-zinc-900'
+                      ? 'hover:bg-white/10 text-zinc-200 hover:text-white'
+                      : 'hover:bg-black/5 text-zinc-800 hover:text-zinc-950'
                   } ${item.className || ''}`}
                 >
                   {Icon && (

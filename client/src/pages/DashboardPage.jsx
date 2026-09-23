@@ -20,7 +20,7 @@ import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
 import { Calendar } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { currentUser, getUserDisplayName } = useAuth();
+  const { currentUser, userProfile, getUserDisplayName } = useAuth();
   const { 
     loadVideo, 
     setActiveSection, 
@@ -178,24 +178,19 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="w-full p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-5 md:space-y-6 animate-in fade-in duration-300">
+    <div className={`flex-1 overflow-y-auto custom-scrollbar h-full w-full ${isDark ? 'bg-transparent' : 'bg-zinc-100/50'}`}>
+      <div className="w-full px-3.5 py-4 sm:p-5 md:p-5 lg:p-6 space-y-4 sm:space-y-4.5 md:space-y-4.5 lg:space-y-5 animate-in fade-in duration-300">
         
         {/* ── TOP HERO: 1ST COL (GREETING & QUOTE - 2/3) | 2ND COL (TIME & DATE - 1/3) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5 lg:gap-6 items-stretch w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-4.5 items-stretch w-full">
           {/* 1st Column: Greetings & Motivational Quote (2/3 width) */}
-          <div className="md:col-span-2 flex flex-col justify-between space-y-3 h-full">
+          <div className="md:col-span-2 flex flex-col justify-between space-y-2.5 sm:space-y-3 h-full">
             <div>
-              <h1 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-2 ${
+              <h1 className={`text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-2 ${
                 isDark ? 'text-zinc-50' : 'text-zinc-900'
               }`}>
                 Welcome back, {displayName} 👋
               </h1>
-              <p className={`text-xs sm:text-sm md:text-base mt-1 sm:mt-1.5 leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                {notesHistory.length > 0 || watchHistory.length > 0 
-                  ? `You've engaged with ${Math.max(notesHistory.length, watchHistory.length)} educational lectures. Let's make today productive!`
-                  : "Ready to start your learning journey? Explore educational videos or set daily study targets."}
-              </p>
             </div>
 
             <MotivationalQuote className="w-full mt-auto" />
@@ -203,8 +198,10 @@ export default function DashboardPage() {
           
           {/* 2nd Column: Date and Time Widget (1/3 width) */}
           <div className="md:col-span-1 flex flex-col justify-center">
-            <div className={`h-full rounded-2xl p-3.5 sm:p-4 md:p-5 flex flex-col justify-center items-center text-center select-none bg-transparent ${
-              isDark ? 'text-zinc-100' : 'text-zinc-900'
+            <div className={`h-full rounded-2xl p-4 sm:p-4 md:p-5 flex flex-col justify-center items-center text-center select-none ${
+              isDark 
+                ? 'bg-zinc-900/30 md:bg-transparent text-zinc-100' 
+                : 'bg-zinc-100/70 md:bg-transparent text-zinc-900'
             }`}>
               {/* Clock Display with Seconds */}
               <div className="flex items-baseline justify-center font-mono">
@@ -250,6 +247,7 @@ export default function DashboardPage() {
           weeklyActivity={weeklyActivity} 
           heatmapData={heatmapData} 
           dayMetrics={dayMetrics} 
+          userSignupDate={userProfile?.createdAt || currentUser?.metadata?.creationTime}
         />
 
         {/* ── STUDY PLANNER: 7-DAY COMPLETION RATE GRAPH | TODAY'S PLANS (ROW LAYOUT) ── */}

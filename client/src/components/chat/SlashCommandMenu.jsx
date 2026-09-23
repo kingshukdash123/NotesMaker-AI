@@ -65,26 +65,26 @@ export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClo
 
   return (
     <div 
-      className={`absolute bottom-[calc(100%+8px)] left-0 w-full max-w-sm max-w-[calc(100vw-2.5rem)] ${
+      className={`absolute bottom-[calc(100%+8px)] left-0 w-full max-w-[calc(100vw-2.5rem)] sm:max-w-sm ${
         isDark ? 'bg-zinc-950 border-zinc-800/80 shadow-2xl' : 'bg-white border-zinc-200 shadow-xl'
-      } border rounded-xl p-1.5 z-[150] animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md`}
+      } border rounded-xl p-1 sm:p-1.5 z-[150] animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md`}
     >
-      <div className={`px-2.5 py-1.5 flex items-center justify-between border-b ${
+      <div className={`px-2 sm:px-2.5 py-1 sm:py-1.5 flex items-center justify-between border-b ${
         isDark ? 'border-zinc-900/60' : 'border-zinc-100'
       } mb-1`}>
-        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Slash Commands</span>
+        <span className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Slash Commands</span>
         <button
           type="button"
           onClick={onClose}
           className="btn-icon !p-0.5"
           title="Close (Esc)"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
         </button>
       </div>
       <div 
         ref={containerRef}
-        className="max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-0.5"
+        className="max-h-40 sm:max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-0.5"
       >
         {filtered.map((cmd, idx) => {
           const isSelected = idx === selectedIndex;
@@ -94,7 +94,7 @@ export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClo
               key={cmd.name}
               type="button"
               onClick={() => onSelect(cmd)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors duration-150 cursor-pointer ${
+              className={`w-full flex items-center gap-2 sm:gap-3 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-left transition-colors duration-150 cursor-pointer ${
                 isSelected 
                   ? isDark 
                     ? 'bg-orange-950/20 border border-orange-900/30 text-orange-400 font-bold' 
@@ -107,11 +107,11 @@ export default function SlashCommandMenu({ visible, searchQuery, onSelect, onClo
               <div className={`p-1 rounded ${
                 isDark ? 'bg-zinc-900/80 border-zinc-800 text-zinc-400' : 'bg-zinc-100 border-zinc-200 text-zinc-600'
               } border shrink-0`}>
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-mono">{cmd.name}</div>
-                <div className="text-[10px] text-zinc-500 truncate leading-tight mt-0.5">{cmd.description}</div>
+                <div className="text-[11px] sm:text-xs font-mono">{cmd.name}</div>
+                <div className="text-[9px] sm:text-[10px] text-zinc-500 truncate leading-tight mt-0.5">{cmd.description}</div>
               </div>
             </button>
           );

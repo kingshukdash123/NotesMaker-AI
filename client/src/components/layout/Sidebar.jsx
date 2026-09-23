@@ -4,18 +4,19 @@ import {
   Library,
   Calendar,
   Timer,
-  Bot,
   CreditCard,
   Gift,
   Settings,
   Scale,
   Wrench,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
 import { LEGAL_SECTIONS } from '../../constants';
+import GurujiIcon from '../common/GurujiIcon';
 
 export default function Sidebar({
   isSidebarMobileOpen,
@@ -26,7 +27,6 @@ export default function Sidebar({
     setActiveSection,
     activeVideoId,
     resetActiveVideo,
-    setIsSettingsOpen,
     isSidebarCollapsed,
     setIsSidebarCollapsed
   } = useApp();
@@ -46,27 +46,33 @@ export default function Sidebar({
       badge: 'Soon',
       maintenance: true 
     },
-    { id: 'assistant', label: 'Guruji', icon: Bot },
+    { id: 'assistant', label: 'Guruji', icon: GurujiIcon },
   ];
 
   return (
     <>
-      {/* Mobile Sidebar Backdrop Overlay */}
-      {isSidebarMobileOpen && (
-        <div
-          onClick={() => setIsSidebarMobileOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-[1px] z-[79] lg:hidden mt-[53px]"
-        />
-      )}
+      {/* Mobile Sidebar Backdrop Overlay with smooth fade in/out */}
+      <div
+        onClick={() => setIsSidebarMobileOpen(false)}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-[1px] z-[79] lg:hidden mt-[53px] transition-opacity duration-300 ease-in-out ${
+          isSidebarMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      />
 
-      {/* Left Navigation Sidebar */}
+      {/* Left Navigation Sidebar with smooth width & transform transitions */}
       <aside
-        className={`fixed top-[53px] bottom-0 left-0 border-r z-[80] flex flex-col p-3 transition-all duration-300 lg:translate-x-0 overflow-y-auto custom-scrollbar ${isSidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
-          } w-64 ${isSidebarMobileOpen ? 'translate-x-0' : '-translate-x-full'} ${isDark ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-zinc-200'
-          }`}
+        className={`fixed top-[53px] bottom-0 left-0 border-r z-[80] flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto custom-scrollbar p-3 ${
+          isSidebarCollapsed ? 'w-64 lg:w-16 lg:items-center' : 'w-64'
+        } ${
+          isSidebarMobileOpen ? 'translate-x-0 shadow-2xl w-64' : '-translate-x-full lg:translate-x-0'
+        } ${
+          isDark ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-zinc-200'
+        }`}
       >
         {/* Toggle Collapse Button for Desktop */}
-        <div className={`hidden lg:flex items-center mb-4 px-1.5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`hidden lg:flex items-center mb-3 min-h-[32px] w-full ${
+          isSidebarCollapsed ? 'justify-center' : 'justify-between px-1'
+        }`}>
           {!isSidebarCollapsed && (
             <button
               type="button"
@@ -74,25 +80,31 @@ export default function Sidebar({
                 resetActiveVideo();
                 setActiveSection('dashboard');
               }}
-              className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
-                }`}
+              className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left whitespace-nowrap truncate ${
+                isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
               title="Go to Dashboard"
             >
-              Pathshala
+              Studyspace
             </button>
           )}
           <button
             type="button"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="btn-icon"
+            className={`rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+              isSidebarCollapsed ? 'w-10 h-8' : 'w-7 h-7'
+            } ${
+              isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+            }`}
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
-            {isSidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+            {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
         </div>
 
-        {/* Mobile Header indicator */}
-        <div className="lg:hidden block px-2 mb-4">
+        {/* Mobile Header indicator with Close button */}
+        <div className="lg:hidden flex items-center justify-between px-1.5 mb-3 min-h-[32px]">
           <button
             type="button"
             onClick={() => {
@@ -100,16 +112,28 @@ export default function Sidebar({
               setActiveSection('dashboard');
               if (setIsSidebarMobileOpen) setIsSidebarMobileOpen(false);
             }}
-            className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
-              }`}
+            className={`text-[11px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${
+              isDark ? 'text-zinc-400 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
+            }`}
             title="Go to Dashboard"
           >
-            Pathshala
+            Workspace
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsSidebarMobileOpen?.(false)}
+            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+              isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+            }`}
+            title="Close menu"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 flex flex-col gap-1.5">
+        <nav className={`flex-1 flex flex-col gap-1.5 w-full ${isSidebarCollapsed ? 'lg:items-center' : ''}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -121,8 +145,8 @@ export default function Sidebar({
                   key={item.id}
                   type="button"
                   disabled
-                  className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 ${
-                    isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+                  className={`flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
+                    isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
                   } ${
                     isDark
                       ? 'text-zinc-500 hover:text-zinc-400 bg-zinc-900/10'
@@ -130,15 +154,21 @@ export default function Sidebar({
                   }`}
                   title={`${item.label} (Under Maintenance)`}
                 >
-                  <div className="relative shrink-0 flex items-center justify-center">
+                  <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
                     <Icon className="w-4 h-4 shrink-0" />
                     {isSidebarCollapsed && (
-                      <span className={`hidden lg:block absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1.5 ${isDark ? 'ring-zinc-950' : 'ring-white'}`} />
+                      <span className={`hidden lg:block absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1.5 ${isDark ? 'ring-zinc-950' : 'ring-white'}`} />
                     )}
                   </div>
-                  <span className={`truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
+                  <span className={`truncate whitespace-nowrap text-left max-w-[140px] ml-3 ${
+                    isSidebarCollapsed ? 'block lg:hidden' : 'block'
+                  }`}>
+                    {item.label}
+                  </span>
                   {item.maintenance && (
-                    <span className={`${isSidebarCollapsed ? 'lg:hidden' : ''} ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+                    <span className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap ${
+                      isSidebarCollapsed ? 'inline-flex lg:hidden' : 'inline-flex'
+                    } ${
                       isDark 
                         ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
                         : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -161,8 +191,8 @@ export default function Sidebar({
                   setActiveSection(item.id);
                   setIsSidebarMobileOpen(false);
                 }}
-                className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
-                  isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+                className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
+                  isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
                 } ${
                   isActive
                     ? isDark
@@ -174,15 +204,21 @@ export default function Sidebar({
                 }`}
                 title={item.label}
               >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>{item.label}</span>
+                <div className="shrink-0 flex items-center justify-center w-5 h-5">
+                  <Icon className="w-4 h-4 shrink-0" />
+                </div>
+                <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
+                  isSidebarCollapsed ? 'block lg:hidden' : 'block'
+                }`}>
+                  {item.label}
+                </span>
               </button>
             );
           })}
         </nav>
 
         {/* Footer controls: Billing, Refer, Legal, Settings */}
-        <div className={`pt-3 border-t space-y-1.5 ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
+        <div className={`pt-3 border-t space-y-1.5 w-full ${isSidebarCollapsed ? 'flex flex-col lg:items-center' : ''} ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
           {/* Billing & Usage Tab */}
           <button
             type="button"
@@ -193,8 +229,8 @@ export default function Sidebar({
               setActiveSection('billing');
               setIsSidebarMobileOpen(false);
             }}
-            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
-              isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+            className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
+              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
             } ${
               activeSection === 'billing'
                 ? isDark
@@ -206,16 +242,22 @@ export default function Sidebar({
             }`}
             title="Billing & Resource Usage"
           >
-            <CreditCard className="w-4 h-4 shrink-0" />
-            <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>Billing &amp; Usage</span>
+            <div className="shrink-0 flex items-center justify-center w-5 h-5">
+              <CreditCard className="w-4 h-4 shrink-0" />
+            </div>
+            <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
+              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+            }`}>
+              Billing &amp; Usage
+            </span>
           </button>
 
           {/* Refer & Rewards Tab (Disabled / Maintenance) */}
           <button
             type="button"
             disabled
-            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 ${
-              isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+            className={`flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
+              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
             } ${
               isDark
                 ? 'text-zinc-500 hover:text-zinc-400 bg-zinc-900/10'
@@ -223,14 +265,20 @@ export default function Sidebar({
             }`}
             title="Refer & Rewards (Under Maintenance)"
           >
-            <div className="relative shrink-0 flex items-center justify-center">
+            <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
               <Gift className="w-4 h-4 shrink-0" />
               {isSidebarCollapsed && (
-                <span className={`hidden lg:block absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1.5 ${isDark ? 'ring-zinc-950' : 'ring-white'}`} />
+                <span className={`hidden lg:block absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1.5 ${isDark ? 'ring-zinc-950' : 'ring-white'}`} />
               )}
             </div>
-            <span className={`truncate ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>Refer &amp; Rewards</span>
-            <span className={`${isSidebarCollapsed ? 'lg:hidden' : ''} ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+            <span className={`truncate whitespace-nowrap text-left max-w-[140px] ml-3 ${
+              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+            }`}>
+              Refer &amp; Rewards
+            </span>
+            <span className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap ${
+              isSidebarCollapsed ? 'inline-flex lg:hidden' : 'inline-flex'
+            } ${
               isDark 
                 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
                 : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -250,8 +298,8 @@ export default function Sidebar({
               setActiveSection(LEGAL_SECTIONS.has(activeSection) ? activeSection : 'privacy');
               setIsSidebarMobileOpen(false);
             }}
-            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
-              isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+            className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
+              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
             } ${
               LEGAL_SECTIONS.has(activeSection)
                 ? isDark
@@ -263,8 +311,14 @@ export default function Sidebar({
             }`}
             title="Legal & Policies"
           >
-            <Scale className="w-4 h-4 shrink-0" />
-            <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>Legal &amp; Policies</span>
+            <div className="shrink-0 flex items-center justify-center w-5 h-5">
+              <Scale className="w-4 h-4 shrink-0" />
+            </div>
+            <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
+              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+            }`}>
+              Legal &amp; Policies
+            </span>
           </button>
 
           {/* Settings Trigger */}
@@ -277,8 +331,8 @@ export default function Sidebar({
               setActiveSection('settings');
               setIsSidebarMobileOpen(false);
             }}
-            className={`w-full flex items-center rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
-              isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2.5' : 'gap-3 px-3.5 py-2.5'
+            className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
+              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0' : ''
             } ${
               activeSection === 'settings'
                 ? isDark
@@ -290,8 +344,14 @@ export default function Sidebar({
             }`}
             title="Configure Settings"
           >
-            <Settings className="w-4 h-4 shrink-0" />
-            <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>Settings</span>
+            <div className="shrink-0 flex items-center justify-center w-5 h-5">
+              <Settings className="w-4 h-4 shrink-0" />
+            </div>
+            <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
+              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+            }`}>
+              Settings
+            </span>
           </button>
         </div>
       </aside>

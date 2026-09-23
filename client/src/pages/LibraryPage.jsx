@@ -23,8 +23,6 @@ import HistoryTab from '../components/library/HistoryTab';
 import NotesTab from '../components/library/NotesTab';
 import CreatePlaylistModal from '../components/library/CreatePlaylistModal';
 
-import LibrarySkeleton from '../components/skeletons/LibrarySkeleton';
-
 // Icons
 import { Library, Bookmark, Folder, Clock, FileText } from 'lucide-react';
 
@@ -245,15 +243,11 @@ export default function LibraryPage() {
     loadVideo(video.videoId, video.videoUrl, video.metadata, video.id, video.result);
   };
 
-  if (isLoading) {
-    return <LibrarySkeleton />;
-  }
-
   const subTabs = [
-    { id: 'history', label: 'Watch History', icon: Clock },
-    { id: 'notes', label: 'Outlines & Notes', icon: FileText },
-    { id: 'saved', label: 'Saved Videos', icon: Bookmark },
-    { id: 'playlists', label: 'Playlists', icon: Folder },
+    { id: 'history', label: 'Watch History', mobileLabel: 'History', icon: Clock },
+    { id: 'notes', label: 'Outlines & Notes', mobileLabel: 'Notes', icon: FileText },
+    { id: 'saved', label: 'Saved Videos', mobileLabel: 'Saved', icon: Bookmark },
+    { id: 'playlists', label: 'Playlists', mobileLabel: 'Playlists', icon: Folder },
   ];
 
   return (
@@ -263,15 +257,12 @@ export default function LibraryPage() {
         {/* Page Header (Pinned) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
           <div className="space-y-1">
-            <h1 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
+            <h1 className={`text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2 sm:gap-2.5 ${
               isDark ? 'text-zinc-50' : 'text-zinc-900'
             }`}>
-              <Library className="w-5 h-5 text-orange-500" />
-              Your Library
+              <Library className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+              <span>Your Library</span>
             </h1>
-            <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-              Manage saved playlists, study history logs, and generated notes archive.
-            </p>
           </div>
         </div>
 
@@ -296,16 +287,21 @@ export default function LibraryPage() {
                 onClick={() => setLibraryTab(tab.id)}
                 title={tab.label}
                 aria-label={tab.label}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-3 text-xs font-semibold relative transition shrink-0 cursor-pointer ${
+                className={`flex-1 sm:flex-initial flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs font-semibold relative transition shrink-0 cursor-pointer ${
                   isActive 
                     ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
-                    : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-900'
+                    : isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+                <Icon className={`w-4 h-4 sm:w-4 sm:h-4 shrink-0 transition-colors ${
+                  isActive 
+                    ? 'text-orange-500' 
+                    : isDark ? 'text-zinc-400' : 'text-zinc-400'
+                }`} />
+                <span className="sm:hidden font-medium text-[11px] leading-tight text-center">{tab.mobileLabel}</span>
                 <span className="hidden sm:inline">{tab.label}</span>
                 {isActive && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
+                  <div className="absolute bottom-0 inset-x-0 sm:left-0 sm:right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
                 )}
               </button>
             );
@@ -354,6 +350,7 @@ export default function LibraryPage() {
             <PlaylistsTab
               playlists={playlists}
               savedVideos={savedVideos}
+              isLoading={isLoading}
               onCreatePlaylistOpen={handleOpenCreatePlaylistModal}
               onDeletePlaylist={handleDeletePlaylist}
               onOpenVideo={handleOpenVideo}

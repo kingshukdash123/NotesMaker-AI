@@ -43,6 +43,43 @@ export default function DailyPlanner({
           <h3 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
             {formattedDateHeading}
           </h3>
+          {tasks.length > 0 && (
+            <div className="flex items-center gap-1.5 ml-1 sm:ml-2 shrink-0">
+              <div className="relative w-4.5 h-4.5 sm:w-5 sm:h-5 flex items-center justify-center shrink-0">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.9155"
+                    fill="none"
+                    className={isDark ? "stroke-zinc-800" : "stroke-zinc-200"}
+                    strokeWidth="3.5"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.9155"
+                    fill="none"
+                    className={`transition-all duration-300 ease-out ${
+                      completedTasks.length === tasks.length 
+                        ? "stroke-emerald-500" 
+                        : "stroke-orange-500"
+                    }`}
+                    strokeDasharray={`${Math.round((completedTasks.length / tasks.length) * 100)} 100`}
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+              <span className={`text-[10px] sm:text-[11px] font-mono font-bold ${
+                completedTasks.length === tasks.length
+                  ? isDark ? 'text-emerald-400' : 'text-emerald-600'
+                  : isDark ? 'text-orange-400' : 'text-orange-600'
+              }`}>
+                {completedTasks.length}/{tasks.length}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-1 shrink-0">

@@ -3,7 +3,7 @@ import { Loader2, Plus, ChevronUp } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import SlashCommandMenu from './SlashCommandMenu';
 
-export default function ChatInput({ value, onChange, onSubmit, isLoading, isStreaming }) {
+export default function ChatInput({ value, onChange, onSubmit, isLoading, isStreaming, isFullScreen = false }) {
   const { isDark } = useTheme();
   const [showMenu, setShowMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,9 +14,9 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(scrollHeight, 140)}px`;
+      textareaRef.current.style.height = `${Math.min(scrollHeight, isFullScreen ? 180 : 140)}px`;
     }
-  }, [value]);
+  }, [value, isFullScreen]);
 
   const handleInputChange = (e) => {
     const text = e.target.value;
@@ -101,7 +101,7 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
   const hasValue = Boolean(value?.trim());
 
   return (
-    <div className="relative w-full flex items-center gap-2">
+    <div className={`relative w-full flex items-center ${isFullScreen ? 'gap-2 sm:gap-2.5' : 'gap-1.5 sm:gap-2'}`}>
       <SlashCommandMenu
         visible={showMenu}
         searchQuery={searchQuery}
@@ -113,7 +113,9 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
       <button
         type="button"
         onClick={handlePlusClick}
-        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition cursor-pointer ${
+        className={`${
+          isFullScreen ? 'w-6 h-6 md:w-7 md:h-7' : 'w-5.5 h-5.5 sm:w-6 sm:h-6'
+        } rounded-full flex items-center justify-center shrink-0 transition cursor-pointer ${
           isDark
             ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
             : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
@@ -121,7 +123,7 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         title="Add command (/)"
         aria-label="Add command"
       >
-        <Plus className="w-3.5 h-3.5" />
+        <Plus className={isFullScreen ? 'w-3.5 h-3.5 md:w-4 md:h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'} />
       </button>
 
       {/* Input textarea */}
@@ -131,8 +133,10 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder="Ask Guruji anything..."
-        className={`flex-1 max-h-32 resize-none bg-transparent outline-none border-none py-1.5 text-sm custom-scrollbar font-sans leading-relaxed ${
+        placeholder="Ask Guruji..."
+        className={`flex-1 ${isFullScreen ? 'max-h-36' : 'max-h-28'} resize-none bg-transparent outline-none border-none py-0.5 sm:py-1 ${
+          isFullScreen ? 'text-xs sm:text-sm md:text-base' : 'text-xs'
+        } custom-scrollbar font-sans leading-relaxed ${
           isDark ? 'text-zinc-100 placeholder-zinc-500' : 'text-zinc-900 placeholder-zinc-400'
         }`}
         disabled={isLoading}
@@ -143,7 +147,9 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         type="button"
         disabled={isLoading || isStreaming || !hasValue}
         onClick={onSubmit}
-        className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center transition shadow-xs ${
+        className={`${
+          isFullScreen ? 'w-6 h-6 md:w-7 md:h-7' : 'w-5.5 h-5.5 sm:w-6 sm:h-6'
+        } rounded-full shrink-0 flex items-center justify-center transition shadow-xs ${
           hasValue && !isLoading && !isStreaming
             ? 'bg-orange-500 hover:bg-orange-600 text-white cursor-pointer'
             : isDark
@@ -154,9 +160,9 @@ export default function ChatInput({ value, onChange, onSubmit, isLoading, isStre
         aria-label="Send message"
       >
         {isStreaming ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          <Loader2 className={`${isFullScreen ? 'w-3.5 h-3.5 md:w-4 md:h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'} animate-spin`} />
         ) : (
-          <ChevronUp className="w-4 h-4 stroke-[2.5]" />
+          <ChevronUp className={`${isFullScreen ? 'w-4 h-4 md:w-4.5 md:h-4.5' : 'w-3.5 h-3.5'} stroke-[2.5]`} />
         )}
       </button>
     </div>

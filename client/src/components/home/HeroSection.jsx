@@ -23,7 +23,7 @@ export default function HeroSection({ isDark, onOpenAuthModal, headingClass, sub
           {' '}&mdash; all in one quiet, focused workspace.
         </p>
 
-        {/* Action CTAs: Free Trial + Sign In */}
+        {/* Action CTAs: Free Starter Access + Sign In */}
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
           <button
             type="button"
@@ -33,7 +33,8 @@ export default function HeroSection({ isDark, onOpenAuthModal, headingClass, sub
           >
             <div className="rotating-beam" />
             <div className="inner-content">
-              <span>Start 7-Day Free Trial</span>
+              <span className="sm:hidden">Start Free</span>
+              <span className="hidden sm:inline">Start 30-Day Free Pass</span>
               <ArrowRight className="w-4 h-4 text-orange-500 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>

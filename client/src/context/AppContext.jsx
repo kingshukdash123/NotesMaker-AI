@@ -16,7 +16,18 @@ export function AppProvider({ children }) {
   
   // Initialize state directly from the current URL
   const [initialRoute] = useState(() => parseLocation(window.location.pathname, window.location.search));
-  const [activeSection, setActiveSection] = useState(initialRoute.section || 'dashboard');
+  const [activeSection, setActiveSectionState] = useState(initialRoute.section || 'dashboard');
+  const [previousSection, setPreviousSection] = useState(null);
+
+  const setActiveSection = (nextSectionOrFn) => {
+    setActiveSectionState((prev) => {
+      const next = typeof nextSectionOrFn === 'function' ? nextSectionOrFn(prev) : nextSectionOrFn;
+      if (prev && prev !== next) {
+        setPreviousSection(prev);
+      }
+      return next;
+    });
+  };
   const [libraryTab, setLibraryTab] = useState(initialRoute.libraryTab || 'history');
   const [plannerTab, setPlannerTab] = useState(initialRoute.plannerTab || 'daily');
   const [videoTab, setVideoTab] = useState(initialRoute.videoTab || 'notes');
@@ -64,14 +75,67 @@ export function AppProvider({ children }) {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
 
+  // Modal open states (Settings, Profile, Assistant, Mobile/Tablet Sidebar)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpenState] = useState(false);
+  const [assistantMode, setAssistantModeState] = useState(() => {
+    return localStorage.getItem('assistant_mode') || 'sidebar';
+  });
+
+  const setAssistantMode = (newModeOrFn) => {
+    setAssistantModeState((prev) => {
+      const next = typeof newModeOrFn === 'function' ? newModeOrFn(prev) : newModeOrFn;
+      localStorage.setItem('assistant_mode', next);
+      // If switching to docked 'sidebar' mode, collapse the left navigation sidebar so both full sidebars don't crowd the screen
+      if (next === 'sidebar') {
+        setIsSidebarCollapsedState(true);
+        localStorage.setItem('sidebar_collapsed', 'true');
+      }
+      return next;
+    });
+  };
+
+  const [isSidebarMobileOpen, setIsSidebarMobileOpenState] = useState(false);
+
+  const setIsSidebarMobileOpen = (valueOrFn) => {
+    setIsSidebarMobileOpenState((prev) => {
+      const next = typeof valueOrFn === 'function' ? valueOrFn(prev) : valueOrFn;
+      // If mobile/tablet left drawer is opened, close the chat assistant
+      if (next) {
+        setIsAssistantOpenState(false);
+      }
+      return next;
+    });
+  };
+
   const setIsSidebarCollapsed = (value) => {
     setIsSidebarCollapsedState(value);
     localStorage.setItem('sidebar_collapsed', String(value));
+    // If left sidebar is expanded (!value) and assistant is in docked 'sidebar' mode, close the chat assistant
+    // If assistant is in 'floating' mode, both can co-exist simultaneously
+    if (!value && assistantMode === 'sidebar') {
+      setIsAssistantOpenState(false);
+      setIsSidebarMobileOpenState(false);
+    } else if (!value) {
+      setIsSidebarMobileOpenState(false);
+    }
   };
 
-  // Modal open states (Settings, Profile)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const setIsAssistantOpen = (valueOrFn) => {
+    setIsAssistantOpenState((prev) => {
+      const next = typeof valueOrFn === 'function' ? valueOrFn(prev) : valueOrFn;
+      // Only collapse desktop sidebar if opening docked 'sidebar' mode; in 'floating' mode, keep sidebar state
+      if (next) {
+        if (assistantMode === 'sidebar') {
+          setIsSidebarCollapsedState(true);
+          localStorage.setItem('sidebar_collapsed', 'true');
+        }
+        setIsSidebarMobileOpenState(false);
+      }
+      return next;
+    });
+  };
 
   // Custom Dialog Modal states (Confirm / Alert)
   const [dialogState, setDialogState] = useState({
@@ -206,6 +270,7 @@ export function AppProvider({ children }) {
 
   const value = {
     activeSection,
+    previousSection,
     setActiveSection,
     libraryTab,
     setLibraryTab,
@@ -247,6 +312,12 @@ export function AppProvider({ children }) {
     setIsSettingsOpen,
     isProfileOpen,
     setIsProfileOpen,
+    isAssistantOpen,
+    setIsAssistantOpen,
+    assistantMode,
+    setAssistantMode,
+    isSidebarMobileOpen,
+    setIsSidebarMobileOpen,
     dialogState,
     showConfirm,
     showAlert,

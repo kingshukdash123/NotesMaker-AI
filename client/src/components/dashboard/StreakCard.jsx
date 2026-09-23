@@ -1,7 +1,21 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Award, CalendarDays, BarChart2, Calendar, CheckCircle2, FileText, Video, X, TrendingUp, Flame } from 'lucide-react';
+import { 
+  Award, 
+  CalendarDays, 
+  BarChart2, 
+  Calendar, 
+  CheckCircle2, 
+  FileText, 
+  Video, 
+  X, 
+  TrendingUp, 
+  TrendingDown, 
+  Minus, 
+  Flame 
+} from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import InfoPopover from '../common/InfoPopover';
 import CustomButton from '../common/CustomButton';
 
@@ -10,11 +24,15 @@ export default function StreakCard({
   longestStreak = 0,
   weeklyActivity = [],
   heatmapData = {},
-  dayMetrics = {}
+  dayMetrics = {},
+  userSignupDate = null
 }) {
   const { isDark } = useTheme();
+  const { currentUser, userProfile } = useAuth();
   const [selectedDay, setSelectedDay] = useState(null);
   const [hoveredPointIndex, setHoveredPointIndex] = useState(null);
+  const heatmapScrollRef = useRef(null);
+  const graphContainerRef = useRef(null);
 
   // Close floating day details modal on Escape key
   useEffect(() => {
@@ -25,6 +43,28 @@ export default function StreakCard({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedDay]);
+
+  // Helper to parse dates from various formats (Firestore Timestamp, ISO string, Date, millis)
+  const parseDate = useCallback((val) => {
+    if (!val) return null;
+    if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+    if (typeof val?.toDate === 'function') {
+      const d = val.toDate();
+      return isNaN(d.getTime()) ? null : d;
+    }
+    if (typeof val === 'number' || typeof val === 'string') {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    return null;
+  }, []);
+
+  const formatDateStr = useCallback((d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
 
   // 1. Weekly Consistency (Trailing 7 days, ending today)
   const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -147,20 +187,64 @@ export default function StreakCard({
     };
   }, [heatmapData, dayMetrics]);
 
-  // 3. Trailing 14 days for the score velocity graph
-  const { trailing14Days, maxScoreIn14D, avgScoreIn14D } = useMemo(() => {
-    const formatDateStr = (d) => {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+  // Auto-scroll heatmap to the rightmost (current month) on mobile / small devices by default
+  useEffect(() => {
+    const el = heatmapScrollRef.current;
+    if (!el) return;
+
+    const scrollToRight = () => {
+      if (el.scrollWidth > el.clientWidth) {
+        el.scrollLeft = el.scrollWidth;
+      }
     };
 
-    const trailingDays = [];
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
-      const dateStr = formatDateStr(d);
+    scrollToRight();
+    const timer = setTimeout(scrollToRight, 100);
+    return () => clearTimeout(timer);
+  }, [monthsData]);
+
+  // 3. Score Velocity Timeline (Tracked continuously from User's Signup Day to Today)
+  const { 
+    timelineDays, 
+    maxScore, 
+    avgScore, 
+    activeDaysCount,
+    signupFormattedDate, 
+    totalDaysSinceSignup 
+  } = useMemo(() => {
+    const now = new Date();
+    const todayNorm = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const rawSignup = userSignupDate || userProfile?.createdAt || currentUser?.metadata?.creationTime;
+    const parsedSignup = parseDate(rawSignup);
+
+    // If no signup date is found, check if there is an earliest date in dayMetrics, else fallback to 14 days ago
+    let startNorm;
+    if (parsedSignup) {
+      startNorm = new Date(parsedSignup.getFullYear(), parsedSignup.getMonth(), parsedSignup.getDate());
+      // Guard against future clock skew
+      if (startNorm > todayNorm) {
+        startNorm = new Date(todayNorm);
+      }
+    } else {
+      const metricDates = Object.keys(dayMetrics).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+      if (metricDates.length > 0) {
+        const [y, m, d] = metricDates[0].split('-').map(Number);
+        startNorm = new Date(y, m - 1, d);
+      } else {
+        startNorm = new Date(todayNorm);
+        startNorm.setDate(todayNorm.getDate() - 13);
+      }
+    }
+
+    const signupFormatted = startNorm.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+
+    // Collect all days from signup day up to today
+    const days = [];
+    const iter = new Date(startNorm);
+
+    while (iter <= todayNorm) {
+      const dateStr = formatDateStr(iter);
       const metric = dayMetrics[dateStr] || {
         score: heatmapData[dateStr] || 0,
         level: 0,
@@ -169,27 +253,60 @@ export default function StreakCard({
         tasksCompleted: 0,
         tasksTotal: 0,
       };
-      trailingDays.push({
+
+      days.push({
         date: dateStr,
         score: metric.score || 0,
-        shortDate: d.toLocaleDateString([], { month: 'numeric', day: 'numeric' }),
-        dayLabel: daysOfWeek[d.getDay()],
-        isToday: i === 0,
-        formattedDate: d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+        shortDate: iter.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+        dayLabel: daysOfWeek[iter.getDay()],
+        isToday: iter.getTime() === todayNorm.getTime(),
+        isSignupDay: iter.getTime() === startNorm.getTime(),
+        formattedDate: iter.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
         metric
+      });
+
+      iter.setDate(iter.getDate() + 1);
+    }
+
+    // Ensure at least 2 points for SVG curve drawing if user signed up today
+    if (days.length === 1) {
+      const yesterday = new Date(todayNorm);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = formatDateStr(yesterday);
+      const yesterdayMetric = dayMetrics[yesterdayStr] || {
+        score: heatmapData[yesterdayStr] || 0,
+        level: 0,
+        notesCount: 0,
+        videosCount: 0,
+        tasksCompleted: 0,
+        tasksTotal: 0,
+      };
+      days.unshift({
+        date: yesterdayStr,
+        score: yesterdayMetric.score || 0,
+        shortDate: yesterday.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+        dayLabel: daysOfWeek[yesterday.getDay()],
+        isToday: false,
+        isSignupDay: false,
+        formattedDate: yesterday.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+        metric: yesterdayMetric
       });
     }
 
-    const max14 = Math.max(...trailingDays.map(d => d.score), 6);
-    const sum14 = trailingDays.reduce((acc, curr) => acc + curr.score, 0);
-    const avg14 = (sum14 / 14).toFixed(1);
+    const max = Math.max(...days.map(d => d.score), 6);
+    const sum = days.reduce((acc, curr) => acc + curr.score, 0);
+    const avg = days.length > 0 ? (sum / days.length).toFixed(1) : '0.0';
+    const activeCount = days.filter(d => d.score > 0).length;
 
-    return { 
-      trailing14Days: trailingDays,
-      maxScoreIn14D: max14,
-      avgScoreIn14D: avg14
+    return {
+      timelineDays: days,
+      maxScore: max,
+      avgScore: avg,
+      activeDaysCount: activeCount,
+      signupFormattedDate: signupFormatted,
+      totalDaysSinceSignup: days.length
     };
-  }, [heatmapData, dayMetrics]);
+  }, [userSignupDate, userProfile?.createdAt, currentUser?.metadata?.creationTime, dayMetrics, heatmapData, parseDate, formatDateStr]);
 
   // Level classification (0 to 4)
   const getLevelFromScore = (score) => {
@@ -256,43 +373,146 @@ export default function StreakCard({
     }
   };
 
-  // SVG Area Path for 30-day Score Graph
-  const graphWidth = 320;
-  const graphHeight = 80;
-  const paddingX = 14;
-  const paddingY = 12;
+  // SVG Area Path for Score Velocity Graph (LeetCode Contest Rating Chart Style)
+  const graphWidth = 340;
+  const graphHeight = 84;
+  const paddingX = 16;
+  const paddingY = 14;
   const usableWidth = graphWidth - paddingX * 2;
   const usableHeight = graphHeight - paddingY * 2;
 
   const points = useMemo(() => {
-    return trailing14Days.map((item, idx) => {
-      const x = paddingX + (idx / (trailing14Days.length - 1)) * usableWidth;
-      const y = graphHeight - paddingY - (item.score / maxScoreIn14D) * usableHeight;
-      return { x, y, ...item };
-    });
-  }, [trailing14Days, maxScoreIn14D, usableWidth, usableHeight]);
+    if (timelineDays.length === 0) return [];
+    const baselineY = graphHeight - paddingY;
+    const topY = paddingY;
 
-  const svgPathD = useMemo(() => {
-    if (points.length === 0) return '';
-    let d = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const cx = (prev.x + curr.x) / 2;
-      d += ` C ${cx} ${prev.y}, ${cx} ${curr.y}, ${curr.x} ${curr.y}`;
+    if (timelineDays.length === 1) {
+      const item = timelineDays[0];
+      const x = graphWidth / 2;
+      const y = Math.min(baselineY, Math.max(topY, baselineY - (item.score / maxScore) * usableHeight));
+      return [{ x, y, ...item, index: 0 }];
     }
+    return timelineDays.map((item, idx) => {
+      const x = paddingX + (idx / (timelineDays.length - 1)) * usableWidth;
+      const y = Math.min(baselineY, Math.max(topY, baselineY - (item.score / maxScore) * usableHeight));
+      return { x, y, ...item, index: idx };
+    });
+  }, [timelineDays, maxScore, usableWidth, usableHeight, graphHeight, paddingY]);
+
+  // Smooth Monotone Cubic Spline (Fritsch-Carlson) - Guarantees NO overshoot below baseline
+  const svgPathD = useMemo(() => {
+    const n = points.length;
+    if (n === 0) return '';
+    if (n === 1) return `M ${points[0].x} ${points[0].y}`;
+    if (n === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+
+    const baselineY = graphHeight - paddingY;
+    const topY = paddingY;
+
+    // 1. Calculate secant slopes (delta)
+    const dxs = [];
+    const dys = [];
+    const deltas = [];
+    for (let i = 0; i < n - 1; i++) {
+      const dx = points[i + 1].x - points[i].x;
+      const dy = points[i + 1].y - points[i].y;
+      dxs.push(dx);
+      dys.push(dy);
+      deltas.push(dx !== 0 ? dy / dx : 0);
+    }
+
+    // 2. Initialize tangents (m)
+    const m = new Array(n);
+    m[0] = deltas[0];
+    for (let i = 1; i < n - 1; i++) {
+      if (deltas[i - 1] * deltas[i] <= 0) {
+        // Local extremum (peak or valley/baseline) -> tangent must be 0
+        m[i] = 0;
+      } else {
+        m[i] = (deltas[i - 1] + deltas[i]) / 2;
+      }
+    }
+    m[n - 1] = deltas[n - 2];
+
+    // 3. Fritsch-Carlson monotonicity adjustment
+    for (let i = 0; i < n - 1; i++) {
+      if (deltas[i] === 0) {
+        m[i] = 0;
+        m[i + 1] = 0;
+      } else {
+        const alpha = m[i] / deltas[i];
+        const beta = m[i + 1] / deltas[i];
+        const dist = alpha * alpha + beta * beta;
+        if (dist > 9) {
+          const tau = 3 / Math.sqrt(dist);
+          m[i] = tau * alpha * deltas[i];
+          m[i + 1] = tau * beta * deltas[i];
+        }
+      }
+    }
+
+    // 4. Build SVG cubic Bezier path with strict baseline clamping
+    let d = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+    for (let i = 0; i < n - 1; i++) {
+      const dx = dxs[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+
+      const cp1x = p1.x + dx / 3;
+      let cp1y = p1.y + (m[i] * dx) / 3;
+      const cp2x = p2.x - dx / 3;
+      let cp2y = p2.y - (m[i + 1] * dx) / 3;
+
+      // Strict clamping to prevent going below baseline or above top padding
+      cp1y = Math.min(baselineY, Math.max(topY, cp1y));
+      cp2y = Math.min(baselineY, Math.max(topY, cp2y));
+
+      d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+    }
+
     return d;
-  }, [points]);
+  }, [points, graphHeight, paddingY]);
 
   const svgAreaD = useMemo(() => {
     if (points.length === 0) return '';
-    return `${svgPathD} L ${points[points.length - 1].x} ${graphHeight - paddingY} L ${points[0].x} ${graphHeight - paddingY} Z`;
-  }, [svgPathD, points]);
+    const baselineY = graphHeight - paddingY;
+    return `${svgPathD} L ${points[points.length - 1].x.toFixed(2)} ${baselineY} L ${points[0].x.toFixed(2)} ${baselineY} Z`;
+  }, [svgPathD, points, graphHeight, paddingY]);
 
-  // Glitch-Free Mouse Tracking on the SVG Container
+  // Smart Milestone Ticks for X-Axis (LeetCode Style)
+  const milestoneTicks = useMemo(() => {
+    if (points.length <= 4) return points;
+    const ticks = [];
+    ticks.push(points[0]);
+
+    if (points.length <= 10) {
+      for (let i = 2; i < points.length - 1; i += 2) {
+        ticks.push(points[i]);
+      }
+    } else if (points.length <= 30) {
+      const step = Math.floor(points.length / 4);
+      for (let i = step; i < points.length - 1; i += step) {
+        ticks.push(points[i]);
+      }
+    } else {
+      const step = Math.floor(points.length / 5);
+      for (let i = step; i < points.length - 1; i += step) {
+        ticks.push(points[i]);
+      }
+    }
+
+    if (points.length > 1) {
+      ticks.push(points[points.length - 1]);
+    }
+    return ticks;
+  }, [points]);
+
+  // Glitch-Free Mouse Tracking on the SVG Container (LeetCode Style)
   const handleGraphMouseMove = useCallback((e) => {
-    const svgEl = e.currentTarget;
-    const rect = svgEl.getBoundingClientRect();
+    if (points.length === 0) return;
+    const el = graphContainerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
     const clientX = e.clientX;
     const relativeX = ((clientX - rect.left) / rect.width) * graphWidth;
 
@@ -310,9 +530,10 @@ export default function StreakCard({
 
   // Touch Tracking on the SVG Container for mobile & tablet
   const handleGraphTouch = useCallback((e) => {
-    if (!e.touches || e.touches.length === 0) return;
-    const svgEl = e.currentTarget;
-    const rect = svgEl.getBoundingClientRect();
+    if (!e.touches || e.touches.length === 0 || points.length === 0) return;
+    const el = graphContainerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
     const clientX = e.touches[0].clientX;
     const relativeX = ((clientX - rect.left) / rect.width) * graphWidth;
 
@@ -340,27 +561,83 @@ export default function StreakCard({
 
   const hoveredPoint = hoveredPointIndex !== null ? points[hoveredPointIndex] : null;
 
+  // LeetCode Contest Signature Markers & Active State
+  const peakPoint = useMemo(() => {
+    if (!points || points.length === 0) return null;
+    let maxPt = points[0];
+    for (let i = 1; i < points.length; i++) {
+      if (points[i].score > maxPt.score) {
+        maxPt = points[i];
+      }
+    }
+    return maxPt.score > 0 ? maxPt : null;
+  }, [points]);
+
+  const activeDisplayPoint = useMemo(() => {
+    if (hoveredPointIndex !== null && points[hoveredPointIndex]) {
+      return points[hoveredPointIndex];
+    }
+    if (selectedDay) {
+      const match = points.find(p => p.date === selectedDay.date);
+      if (match) return match;
+    }
+    return points.length > 0 ? points[points.length - 1] : null;
+  }, [hoveredPointIndex, points, selectedDay]);
+
+  const displayDelta = useMemo(() => {
+    if (!activeDisplayPoint) return { text: '', isPositive: null };
+    const idx = activeDisplayPoint.index;
+    if (idx > 0 && points[idx - 1]) {
+      const prevScore = points[idx - 1].score;
+      const diff = activeDisplayPoint.score - prevScore;
+      if (diff > 0) return { text: `+${diff}`, isPositive: true };
+      if (diff < 0) return { text: `${diff}`, isPositive: false };
+      return { text: '0', isPositive: null };
+    }
+    return { text: '', isPositive: null };
+  }, [activeDisplayPoint, points]);
+
+  const startYearOrDate = useMemo(() => {
+    if (points.length === 0) return '';
+    const firstDate = new Date(points[0].date);
+    const lastDate = new Date(points[points.length - 1].date);
+    if (!isNaN(firstDate.getFullYear()) && !isNaN(lastDate.getFullYear()) && firstDate.getFullYear() !== lastDate.getFullYear()) {
+      return `${firstDate.getFullYear()}`;
+    }
+    return points[0].shortDate;
+  }, [points]);
+
+  const endYearOrDate = useMemo(() => {
+    if (points.length === 0) return '';
+    const firstDate = new Date(points[0].date);
+    const lastDate = new Date(points[points.length - 1].date);
+    if (!isNaN(firstDate.getFullYear()) && !isNaN(lastDate.getFullYear()) && firstDate.getFullYear() !== lastDate.getFullYear()) {
+      return `${lastDate.getFullYear()}`;
+    }
+    return points[points.length - 1].shortDate;
+  }, [points]);
+
   return (
-    <div className={`w-full space-y-3 sm:space-y-3.5 ${
+    <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 transition duration-300 relative ${
       isDark 
-        ? 'bg-zinc-950/60 rounded-2xl p-4 sm:p-4.5 transition duration-300 relative shadow-sm' 
-        : ''
+        ? 'bg-zinc-950/60 shadow-sm' 
+        : 'bg-white shadow-xs'
     }`}>
       {/* ── COMMON HEADER ── */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-        isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
+        isDark ? 'border-b border-orange-500/15' : ''
       }`}>
-        <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
               ? 'text-orange-500 bg-orange-950/25' 
               : 'text-orange-600 bg-orange-500/10'
           }`}>
-            <Flame className="w-4 h-4" />
+            <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className={`text-base sm:text-lg font-bold tracking-tight ${
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h3 className={`text-sm sm:text-base md:text-lg font-bold tracking-tight ${
                 isDark ? 'text-zinc-100' : 'text-zinc-900'
               }`}>
                 Consistency & Streak Tracker
@@ -372,9 +649,6 @@ export default function StreakCard({
                 <p>• <strong>Heatmap Depth</strong>: Notes (+4 pts), Targets (+1 to +3 pts), 100% Target Attainment (+3 pts), Lectures (+2 pts), Login (+1 pt).</p>
               </InfoPopover>
             </div>
-            <p className={`text-xs sm:text-[13px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-              Track your daily study streaks, 6-month activity heatmap, and 14-day velocity
-            </p>
           </div>
         </div>
       </div>
@@ -436,7 +710,7 @@ export default function StreakCard({
                 <span className={`text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase ${
                   isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
-                  ACTIVITY HEATMAP (6 Months)
+                  ACTIVITY HEATMAP
                 </span>
                 <InfoPopover title="How Heatmap Depth is Calculated">
                   <p>• <strong>AI Notes Generated</strong>: <code>+4 pts</code> each.</p>
@@ -450,7 +724,7 @@ export default function StreakCard({
 
             {/* LeetCode Month-Grouped Grid */}
             <div className="w-full flex-1 flex flex-col justify-center items-center py-1">
-              <div className="w-full overflow-x-auto custom-scrollbar flex justify-start min-[480px]:justify-center py-1">
+              <div ref={heatmapScrollRef} className="w-full overflow-x-auto custom-scrollbar flex justify-start min-[480px]:justify-center py-1">
                 <div className="flex items-start gap-2 sm:gap-2.5 min-w-max px-0.5">
                 {monthsData.map((month, mIdx) => (
                   <div key={mIdx} className="flex flex-col items-center">
@@ -502,35 +776,107 @@ export default function StreakCard({
           <div className={`col-span-1 sm:col-span-7 lg:col-span-4 sm:order-2 lg:order-3 flex flex-col justify-between p-3 sm:p-3.5 rounded-xl ${
             isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
           }`}>
-            {/* Header (h-6 shrink-0) */}
-            <div className="h-6 shrink-0 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <span className={`text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase ${
-                  isDark ? 'text-zinc-400' : 'text-zinc-500'
-                }`}>
-                  SCORE VELOCITY
-                </span>
-                <InfoPopover title="14-Day Learning Velocity">
-                  <p>This graph tracks your daily learning score over the past 14 days, highlighting study consistency and peak focus days.</p>
-                </InfoPopover>
+            {/* LeetCode Contest Rating Style Header: Score + Trend | Date + Session | App Status Breakdown */}
+            <div className="flex items-start justify-between gap-2 select-none">
+              {/* Left: Score & Trend */}
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-1">
+                  <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase truncate ${
+                    isDark ? 'text-zinc-400' : 'text-zinc-500'
+                  }`}>
+                    Score Velocity
+                  </span>
+                  <InfoPopover title="Learning Score Velocity (Since Signup)">
+                    <p>• <strong>Tracking Window</strong>: Tracks daily score momentum from your account signup date (<strong>{signupFormattedDate}</strong>) to today.</p>
+                    <p>• <strong>Contest-Style Rating</strong>: Hover or drag along the curve to trace your daily score trajectory, delta changes, and focus level.</p>
+                    <p>• <strong>Click to Inspect</strong>: Tap any point to open the complete Day Breakdown modal.</p>
+                  </InfoPopover>
+                </div>
+
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className={`text-xl sm:text-2xl font-black font-mono tracking-tight leading-none ${
+                    isDark ? 'text-zinc-100' : 'text-zinc-900'
+                  }`}>
+                    {activeDisplayPoint ? activeDisplayPoint.score : 0}
+                  </span>
+                  {displayDelta.text && (
+                    <span className={`text-xs sm:text-sm font-bold flex items-center leading-none ${
+                      displayDelta.isPositive === true
+                        ? 'text-emerald-500'
+                        : displayDelta.isPositive === false
+                        ? 'text-rose-500'
+                        : 'text-zinc-400'
+                    }`}>
+                      {displayDelta.isPositive === true ? (
+                        <TrendingUp className="w-3.5 h-3.5 mr-0.5 inline" />
+                      ) : displayDelta.isPositive === false ? (
+                        <TrendingDown className="w-3.5 h-3.5 mr-0.5 inline" />
+                      ) : (
+                        <Minus className="w-3 h-3 mr-0.5 inline" />
+                      )}
+                      {displayDelta.text}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <span className={`text-[9.5px] sm:text-[10.5px] font-mono px-1.5 sm:px-2 py-0.5 rounded-md font-semibold ${
-                  isDark ? 'bg-orange-950/30 text-orange-400' : 'bg-orange-500/10 text-orange-700'
+              {/* Center: Date & Activity Status */}
+              <div className="flex flex-col text-center min-w-0 px-1">
+                <span className={`text-[10px] sm:text-[11px] font-mono font-medium truncate ${
+                  isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
-                  Peak: {maxScoreIn14D} pts
+                  {activeDisplayPoint?.shortDate || 'Today'}
                 </span>
-                <span className={`text-[9.5px] sm:text-[10.5px] font-mono px-1.5 sm:px-2 py-0.5 rounded-md font-semibold ${
-                  isDark ? 'bg-zinc-850/70 text-zinc-300' : 'bg-zinc-200/80 text-zinc-700'
+                <span className={`text-xs font-bold tracking-tight truncate mt-0.5 ${
+                  isDark ? 'text-zinc-200' : 'text-zinc-800'
                 }`}>
-                  Avg: {avgScoreIn14D}
+                  {activeDisplayPoint?.isToday
+                    ? "Today's Study"
+                    : activeDisplayPoint?.score > 0
+                    ? getLevelLabel(activeDisplayPoint.metric?.level || getLevelFromScore(activeDisplayPoint.score))
+                    : "Rest Day"}
                 </span>
+              </div>
+
+              {/* Right: Targets & Notes Solved/Completed */}
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <div className="flex flex-col items-end">
+                  <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase ${
+                    isDark ? 'text-zinc-400' : 'text-zinc-500'
+                  }`}>
+                    Targets
+                  </span>
+                  <span className={`text-xs sm:text-sm font-bold font-mono mt-0.5 leading-none ${
+                    isDark ? 'text-zinc-100' : 'text-zinc-900'
+                  }`}>
+                    {activeDisplayPoint?.metric?.tasksTotal > 0
+                      ? `${activeDisplayPoint.metric.tasksCompleted}/${activeDisplayPoint.metric.tasksTotal}`
+                      : activeDisplayPoint?.metric?.tasksCompleted > 0
+                      ? `${activeDisplayPoint.metric.tasksCompleted}`
+                      : '0/0'}
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-end">
+                  <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase ${
+                    isDark ? 'text-zinc-400' : 'text-zinc-500'
+                  }`}>
+                    Notes
+                  </span>
+                  <span className={`text-xs sm:text-sm font-bold font-mono mt-0.5 leading-none ${
+                    isDark ? 'text-zinc-100' : 'text-zinc-900'
+                  }`}>
+                    {activeDisplayPoint?.metric?.notesCount || 0}
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* SVG Graph with Container-Level Mouse and Touch Tracking */}
-            <div className="w-full flex-1 flex flex-col justify-center items-center relative select-none py-0.5">
+            <div 
+              ref={graphContainerRef}
+              className="w-full flex-1 flex flex-col justify-center items-center relative select-none pt-2 pb-0.5 group"
+            >
               <svg 
                 viewBox={`0 0 ${graphWidth} ${graphHeight}`} 
                 preserveAspectRatio="none"
@@ -543,7 +889,7 @@ export default function StreakCard({
               >
                 <defs>
                   <linearGradient id="scoreAreaGradCol" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.4" />
+                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.25" />
                     <stop offset="100%" stopColor="#f97316" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
@@ -554,7 +900,7 @@ export default function StreakCard({
                   y1={graphHeight - paddingY} 
                   x2={graphWidth - paddingX} 
                   y2={graphHeight - paddingY} 
-                  stroke={isDark ? 'rgba(249, 115, 22, 0.18)' : '#e4e4e7'} 
+                  stroke={isDark ? 'rgba(249, 115, 22, 0.15)' : '#e4e4e7'} 
                   strokeWidth="1" 
                 />
 
@@ -566,97 +912,80 @@ export default function StreakCard({
                   d={svgPathD} 
                   fill="none" 
                   stroke="#f97316" 
-                  strokeWidth="2" 
+                  strokeWidth="2.2" 
                   strokeLinecap="round" 
                   strokeLinejoin="round" 
                 />
 
-                {/* Hover Vertical Crosshair Line */}
-                {hoveredPoint && (
-                  <line
-                    x1={hoveredPoint.x}
-                    y1={hoveredPoint.y}
-                    x2={hoveredPoint.x}
-                    y2={graphHeight - paddingY}
-                    stroke="#f97316"
-                    strokeWidth="1"
-                    strokeDasharray="2 2"
-                    opacity="0.6"
+                {/* Peak Point White Marker Dot (LeetCode Signature Marker) */}
+                {peakPoint && (
+                  <circle 
+                    cx={peakPoint.x} 
+                    cy={peakPoint.y} 
+                    r="3.2" 
+                    fill="#ffffff" 
+                    stroke="#f97316" 
+                    strokeWidth="1.2"
+                    style={{ pointerEvents: 'none' }}
                   />
                 )}
 
-                {/* Layer 1: X-axis date labels (cleanly spaced for 14D) */}
-                {points.map((pt, idx) => {
-                  const shouldShow = idx % 2 === 0 || idx === points.length - 1;
-                  if (!shouldShow) return null;
-                  return (
-                    <text 
-                      key={`label-${pt.date}`}
-                      x={pt.x} 
-                      y={graphHeight - 1} 
-                      textAnchor="middle" 
-                      fontSize="7" 
-                      fill={pt.isToday ? "#ea580c" : isDark ? "#71717a" : "#a1a1aa"} 
-                      fontWeight={pt.isToday || pt.score > 0 ? "bold" : "normal"}
-                      className="font-mono select-none pointer-events-none"
-                    >
-                      {pt.shortDate}
-                    </text>
-                  );
-                })}
-
-                {/* Layer 2: Visible Data Points */}
-                {points.map((pt, pIdx) => {
-                  if (pt.score <= 0 && hoveredPointIndex !== pIdx) return null;
-                  const isHovered = hoveredPointIndex === pIdx;
-                  const isSelected = selectedDay && selectedDay.date === pt.date;
-                  const r = isSelected ? 5.5 : isHovered ? 4.8 : 3;
-
-                  return (
-                    <circle 
-                      key={`circle-${pt.date}`}
-                      cx={pt.x} 
-                      cy={pt.y} 
-                      r={r}
-                      fill={isSelected ? '#f97316' : isHovered ? (isDark ? '#fed7aa' : '#ffedd5') : (isDark ? '#09090b' : '#ffffff')} 
-                      stroke="#f97316" 
-                      strokeWidth={isSelected ? 2.5 : isHovered ? 2.2 : 1.8}
-                      style={{ pointerEvents: 'none', transition: 'r 0.12s ease, fill 0.12s ease' }}
-                    />
-                  );
-                })}
-
-                {/* Tooltip on hover */}
+                {/* Active Hover / Touch Vertical Crosshair Line (LeetCode Style) */}
                 {hoveredPoint && (
-                  <g 
-                    transform={`translate(${Math.max(28, Math.min(graphWidth - 28, hoveredPoint.x))}, ${Math.max(16, hoveredPoint.y - 12)})`}
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    <rect
-                      x="-22"
-                      y="-12"
-                      width="44"
-                      height="14"
-                      rx="3.5"
-                      fill={isDark ? '#18181b' : '#ffffff'}
-                      stroke="#f97316"
-                      strokeWidth="1"
-                      className="shadow-xs"
+                  <line
+                    x1={hoveredPoint.x}
+                    y1={paddingY - 4}
+                    x2={hoveredPoint.x}
+                    y2={graphHeight - paddingY}
+                    stroke="#f97316"
+                    strokeWidth="1.2"
+                    opacity="0.85"
+                  />
+                )}
+
+                {/* Active Hover / Touch Circular Node with LeetCode Glow Halo */}
+                {hoveredPoint && (
+                  <g style={{ pointerEvents: 'none' }}>
+                    {/* Outer Glow Halo Ring */}
+                    <circle
+                      cx={hoveredPoint.x}
+                      cy={hoveredPoint.y}
+                      r="7.5"
+                      fill="#f97316"
+                      fillOpacity="0.25"
                     />
-                    <text
-                      x="0"
-                      y="-2"
-                      textAnchor="middle"
-                      fontSize="7.5"
-                      fontWeight="bold"
-                      fill={isDark ? '#fdba74' : '#c2410c'}
-                      className="font-mono select-none"
-                    >
-                      {hoveredPoint.score} pts
-                    </text>
+                    {/* Middle Accent Circle */}
+                    <circle
+                      cx={hoveredPoint.x}
+                      cy={hoveredPoint.y}
+                      r="4.5"
+                      fill="#f97316"
+                    />
+                    {/* Center Core Dot */}
+                    <circle
+                      cx={hoveredPoint.x}
+                      cy={hoveredPoint.y}
+                      r="2"
+                      fill="#ffffff"
+                    />
                   </g>
                 )}
               </svg>
+
+              {/* Bottom Timeline Axis Labels (LeetCode Style) */}
+              <div className="w-full flex items-center justify-between px-2 pt-1 text-[9px] sm:text-[10px] font-mono select-none">
+                <span className={isDark ? 'text-zinc-500' : 'text-zinc-400'}>
+                  {startYearOrDate}
+                </span>
+                {points.length > 25 && (
+                  <span className={`hidden min-[480px]:inline ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>
+                    {points[Math.floor(points.length / 2)]?.shortDate}
+                  </span>
+                )}
+                <span className={isDark ? 'text-zinc-500' : 'text-zinc-400'}>
+                  {endYearOrDate}
+                </span>
+              </div>
             </div>
 
           </div>

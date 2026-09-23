@@ -21,13 +21,13 @@ export default function MotivationalQuote({ className = '' }) {
   });
 
   return (
-    <div className={`p-2 sm:p-2.5 relative overflow-hidden flex items-start gap-2.5 sm:gap-3 transition duration-300 bg-transparent ${
+    <div className={`hidden sm:flex p-2 sm:p-2.5 relative overflow-hidden flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-start text-center sm:text-left gap-2 sm:gap-3 transition duration-300 bg-transparent ${
       isDark ? 'text-zinc-200' : 'text-zinc-900'
     } ${className}`}>
-      <div className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shrink-0 mt-0.5">
+      <div className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shrink-0">
         <Quote className="w-3.5 h-3.5 sm:w-4 sm:h-4 rotate-180 text-orange-500" />
       </div>
-      <div className="space-y-1 min-w-0">
+      <div className="space-y-1 min-w-0 flex flex-col items-center sm:items-start">
         <p className={`text-xs sm:text-sm font-medium italic leading-relaxed ${
           isDark ? 'text-zinc-200' : 'text-zinc-700'
         }`}>

@@ -5,11 +5,11 @@ export default function DashboardSkeleton() {
   const { isDark } = useTheme();
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="w-full p-3 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-5 md:space-y-6 animate-in fade-in duration-300">
+    <div className={`flex-1 overflow-y-auto custom-scrollbar h-full w-full ${isDark ? 'bg-transparent' : 'bg-zinc-100/50'}`}>
+      <div className="w-full px-3.5 py-4 sm:p-5 md:p-5 lg:p-6 space-y-4 sm:space-y-4.5 md:space-y-4.5 lg:space-y-5 animate-in fade-in duration-300">
         
         {/* ── 1. TOP HERO: 1ST COL (GREETING & QUOTE - 2/3) | 2ND COL (TIME & DATE - 1/3) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5 lg:gap-6 items-stretch w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-4.5 items-stretch w-full">
           {/* 1st Column: Greetings & Motivational Quote (2/3 width) */}
           <div className="md:col-span-2 flex flex-col justify-between space-y-3 h-full">
             <div>
@@ -18,7 +18,7 @@ export default function DashboardSkeleton() {
             </div>
 
             {/* Motivational Quote Card Skeleton */}
-            <div className="p-2 sm:p-2.5 mt-auto flex items-start gap-2.5 sm:gap-3 bg-transparent">
+            <div className="hidden sm:flex p-2 sm:p-2.5 mt-auto items-start gap-2.5 sm:gap-3 bg-transparent">
               <div className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shrink-0 mt-0.5 bg-transparent">
                 <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm bg-orange-500/30" />
               </div>
@@ -49,21 +49,21 @@ export default function DashboardSkeleton() {
         </div>
 
         {/* ── 2. WEEKLY METRICS STATS RIBBON (FULL WIDTH) ── */}
-        <div className={`w-full space-y-3 sm:space-y-3.5 ${
-          isDark ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6' : ''
+        <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 ${
+          isDark ? 'bg-zinc-950/40' : 'bg-white shadow-xs'
         }`}>
           {/* Section Header */}
-          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
-            isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 sm:pb-3 ${
+            isDark ? 'border-b border-orange-500/15' : ''
           }`}>
-            <div className="flex items-center gap-2.5">
-              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
                 isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
               }`}>
                 <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
               </div>
               <div className="space-y-1">
-                <Skeleton className="h-4 sm:h-5 w-40 sm:w-48 rounded" />
+                <Skeleton className="h-4 sm:h-5 w-44 sm:w-56 rounded" />
                 <Skeleton className="h-3 w-52 sm:w-64 rounded" />
               </div>
             </div>
@@ -72,7 +72,7 @@ export default function DashboardSkeleton() {
           </div>
 
           {/* 4-Metric Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 lg:gap-4 w-full pt-0.5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-3.5 w-full pt-0.5">
             {Array.from({ length: 4 }).map((_, idx) => (
               <div 
                 key={idx} 
@@ -97,15 +97,15 @@ export default function DashboardSkeleton() {
         </div>
 
         {/* ── 3. STATUS STREAK (FULL WIDTH) ── */}
-        <div className={`w-full space-y-3 sm:space-y-3.5 ${
-          isDark ? 'bg-zinc-950/60 rounded-2xl p-4 sm:p-4.5 shadow-sm' : ''
+        <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 ${
+          isDark ? 'bg-zinc-950/60 shadow-sm' : 'bg-white shadow-xs'
         }`}>
           {/* Common Header */}
-          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-            isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
+            isDark ? 'border-b border-orange-500/15' : ''
           }`}>
-            <div className="flex items-center gap-2.5">
-              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
                 isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
               }`}>
                 <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
@@ -190,15 +190,15 @@ export default function DashboardSkeleton() {
         </div>
 
         {/* ── 4. STUDY PLANNER: 7-DAY COMPLETION RATE GRAPH | TODAY'S PLANS (ROW LAYOUT) ── */}
-        <div className={`w-full space-y-3 sm:space-y-3.5 ${
-          isDark ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6' : ''
+        <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 ${
+          isDark ? 'bg-zinc-950/40' : 'bg-white shadow-xs'
         }`}>
           {/* Section Header */}
-          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-            isDark ? 'pb-3.5 border-b border-orange-500/15' : 'pb-0.5'
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
+            isDark ? 'border-b border-orange-500/15' : ''
           }`}>
-            <div className="flex items-center gap-2.5">
-              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
                 isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
               }`}>
                 <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
@@ -211,10 +211,10 @@ export default function DashboardSkeleton() {
           </div>
 
           {/* 2-Column Row: Left (Target History 7D) | Right (Today's Targets) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 lg:gap-6 items-stretch pt-1">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-4.5 items-stretch pt-1">
             
             {/* Left Column: Target History (7D) - lg:col-span-6 */}
-            <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+            <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 rounded-xl ${
               isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
             }`}>
               <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-zinc-200/80 dark:border-orange-500/10">
@@ -247,7 +247,7 @@ export default function DashboardSkeleton() {
             </div>
 
             {/* Right Column: Today's Targets - lg:col-span-6 */}
-            <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
+            <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 rounded-xl ${
               isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
             }`}>
               <div className="flex items-center justify-between pb-2.5 border-b border-zinc-200/80 dark:border-orange-500/10">
@@ -283,15 +283,15 @@ export default function DashboardSkeleton() {
         </div>
 
         {/* ── 5. RECENT ACTIVITY: WATCH HISTORY | GENERATED NOTES (FULL WIDTH) ── */}
-        <div className={`w-full space-y-3 sm:space-y-3.5 ${
-          isDark ? 'bg-zinc-950/40 rounded-2xl p-4 sm:p-5 md:p-6' : ''
+        <div className={`w-full space-y-3 sm:space-y-3.5 rounded-2xl p-3.5 sm:p-4.5 md:p-5 ${
+          isDark ? 'bg-zinc-950/40' : 'bg-white shadow-xs'
         }`}>
           {/* Section Header */}
-          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-            isDark ? 'pb-3 border-b border-orange-500/15' : 'pb-0.5'
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
+            isDark ? 'border-b border-orange-500/15' : ''
           }`}>
-            <div className="flex items-center gap-2.5">
-              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 ${
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
                 isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
               }`}>
                 <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />

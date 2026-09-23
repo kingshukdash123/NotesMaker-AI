@@ -20,9 +20,6 @@ export default function SupportBannerSection({ isDark, headingClass, subClass })
               <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
                 Direct Student Support
               </span>
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-400' : 'bg-zinc-100 border-zinc-200 text-zinc-600'}`}>
-                &lt; 2-4h response
-              </span>
             </div>
             <h3 className={`text-lg sm:text-xl font-bold ${headingClass}`}>
               Have questions before starting?
