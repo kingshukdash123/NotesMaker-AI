@@ -4,13 +4,13 @@
 import { SITE_URL, SITE_NAME, COMPANY_DESCRIPTION } from './companyConstants.js';
 
 export { SITE_URL, SITE_NAME, COMPANY_DESCRIPTION };
-export const DEFAULT_IMAGE = `${SITE_URL}/logo2.png`;
+export const DEFAULT_IMAGE = `${SITE_URL}/pwa-512x512.png`;
 export const DEFAULT_IMAGE_ALT = 'Pathshala AI — Distraction-Free Study & Productivity Platform';
 export const DEFAULT_ROBOTS = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 export const NOINDEX_ROBOTS = 'noindex, nofollow';
 export const DEFAULT_TWITTER_CARD = 'summary_large_image';
-export const OG_IMAGE_WIDTH = '1200';
-export const OG_IMAGE_HEIGHT = '630';
+export const OG_IMAGE_WIDTH = '512';
+export const OG_IMAGE_HEIGHT = '512';
 export const OG_LOCALE = 'en_IN';
 
 /**
