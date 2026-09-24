@@ -1,7 +1,7 @@
 export default function OrbitIcon({ className = "w-6 h-6", alt = "Orbit", ...props }) {
   return (
     <img
-      src="/orbit-dp.png"
+      src="/orbit-dp-resize.png"
       alt={alt}
       width="28"
       height="28"

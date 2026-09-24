@@ -19,8 +19,8 @@ export default function ChatMessage({ message, isStreaming = false }) {
   const formatDateTime = (timestamp) => {
     if (!timestamp) return null;
     try {
-      const date = typeof timestamp?.toDate === 'function' 
-        ? timestamp.toDate() 
+      const date = typeof timestamp?.toDate === 'function'
+        ? timestamp.toDate()
         : new Date(timestamp);
       if (isNaN(date.getTime())) return null;
 
@@ -46,16 +46,16 @@ export default function ChatMessage({ message, isStreaming = false }) {
     return (
       <div className="flex flex-col items-end w-full py-1.5 sm:py-2 px-1 sm:px-2">
         <div className={`max-w-[88%] rounded-2xl rounded-tr-xs px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm leading-relaxed font-sans shadow-xs break-words border ${
-          isDark 
-            ? 'bg-zinc-800 border-zinc-700/50 text-zinc-100' 
+          isDark
+            ? 'bg-zinc-800 border-zinc-700/50 text-zinc-100'
             : 'bg-zinc-100 border-zinc-200/80 text-zinc-900 font-medium'
-        }`}>
+          }`}>
           <div className="whitespace-pre-wrap">{text}</div>
         </div>
         {formattedDateTime && (
           <span className={`text-[9px] sm:text-[10px] mt-0.5 pr-1 font-mono select-none ${
             isDark ? 'text-zinc-600' : 'text-zinc-400'
-          }`}>
+            }`}>
             {formattedDateTime}
           </span>
         )}
@@ -67,7 +67,7 @@ export default function ChatMessage({ message, isStreaming = false }) {
     <div className="flex gap-2 sm:gap-2.5 w-full py-2 sm:py-3 px-1 sm:px-2 transition duration-150 relative">
       {/* Orbit Avatar Badge */}
       <img
-        src="/orbit-dp.png"
+        src="/orbit-dp-resize.png"
         alt="Orbit"
         width="24"
         height="24"
@@ -77,10 +77,10 @@ export default function ChatMessage({ message, isStreaming = false }) {
 
       <div className="flex-1 min-w-0">
         <div className={`max-w-none text-xs sm:text-sm leading-relaxed ${
-          isDark 
-            ? 'text-zinc-200 selection:bg-zinc-800' 
+          isDark
+            ? 'text-zinc-200 selection:bg-zinc-800'
             : 'text-zinc-900 selection:bg-zinc-200'
-        }`}>
+          }`}>
           {!text && isStreaming ? (
             <div className="space-y-2 py-1 max-w-md w-full animate-pulse">
               <div className={`h-3 sm:h-3.5 w-4/5 rounded-md ${isDark ? 'bg-zinc-800/90' : 'bg-zinc-200'}`} />
