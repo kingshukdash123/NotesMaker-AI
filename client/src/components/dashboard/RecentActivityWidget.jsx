@@ -254,9 +254,6 @@ export default function RecentActivityWidget({
                           loading="lazy"
                           decoding="async"
                         />
-                        <div className="absolute top-1 right-1 px-1 py-0.2 rounded text-[8px] font-bold bg-orange-500 text-white shadow">
-                          Notes
-                        </div>
                       </div>
 
                       {/* Metadata */}

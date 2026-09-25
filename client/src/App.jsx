@@ -339,7 +339,7 @@ function MainApp() {
       {/* Profile Modal */}
       <ProfileModal />
 
-      {/* Onboarding Wizard Modal */}
+      {/* First Sign-up Celebration Overlay */}
       <OnboardingModal
         isOpen={showOnboarding}
         onClose={() => setIsOnboardingDismissed(true)}

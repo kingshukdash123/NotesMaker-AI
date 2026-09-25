@@ -229,15 +229,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', noti
           email: email.trim() || null,
           phoneNumber: formattedPhone
         });
-        setSuccessMsg('Account created successfully! Logging you in...');
       } else {
         await verifyOtpAndSignIn(confirmationResult, cleanOtp);
-        setSuccessMsg('Signed in successfully!');
       }
 
-      setTimeout(() => {
-        onClose();
-      }, 700);
+      onClose();
     } catch (err) {
       setError(handleAuthError(err));
     } finally {

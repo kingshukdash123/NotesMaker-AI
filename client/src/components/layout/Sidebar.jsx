@@ -325,8 +325,8 @@ export default function Sidebar({
             </span>
           </button>
 
-          {/* Settings Trigger */}
-          <button
+          {/* Settings Trigger (Temporarily commented out) */}
+          {/* <button
             type="button"
             onClick={() => {
               if (activeVideoId) {
@@ -356,7 +356,7 @@ export default function Sidebar({
             }`}>
               Settings
             </span>
-          </button>
+          </button> */}
         </div>
       </aside>
     </>

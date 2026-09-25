@@ -118,9 +118,9 @@ export const SEO_PAGE_CONFIGS = {
     robots: DEFAULT_ROBOTS,
   },
   settings: {
-    title: 'Settings — Mentor Profile & Theme | Pathshala AI',
-    description: 'Configure your personalized Orbit study mentor parameters and theme mode.',
-    keywords: 'Pathshala AI settings, Orbit preferences, student profile, theme settings',
+    title: 'Settings — Theme & Appearance | Pathshala AI',
+    description: 'Configure your appearance theme mode and application settings.',
+    keywords: 'Pathshala AI settings, theme settings, dark mode, appearance settings',
     path: '/settings',
     robots: NOINDEX_ROBOTS,
   },
