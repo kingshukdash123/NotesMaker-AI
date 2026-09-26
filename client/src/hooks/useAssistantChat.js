@@ -249,7 +249,6 @@ export function useAssistantChat(currentUser) {
         : '';
       // Only send the last 4 messages (excluding the placeholder) for context
       const recentMessages = [...cleanHistory, userMessage].slice(-4);
-      const studentProfile = userProfile?.preferences || null;
 
       await streamAssistantChat(
         recentMessages,
@@ -276,8 +275,7 @@ export function useAssistantChat(currentUser) {
         (err) => {
           throw err;
         },
-        userName,
-        studentProfile
+        userName
       );
 
       // Streaming completed successfully

@@ -249,7 +249,7 @@ export default function VideoQa({ videoId, currentUser }) {
                 key={index}
                 className={`flex items-start gap-2.5 sm:gap-3 max-w-[92%] sm:max-w-[85%] ${
                   isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'
-                  }`}
+                }`}
               >
                 {/* Avatar */}
                 {isUser ? (

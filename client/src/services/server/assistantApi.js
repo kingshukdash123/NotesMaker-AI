@@ -19,8 +19,7 @@ export async function streamAssistantChat(
   onChunk,
   onSummaryUpdate,
   onError,
-  userName = '',
-  studentProfile = null
+  userName = ''
 ) {
   const headers = {
     'Content-Type': 'application/json',
@@ -42,8 +41,7 @@ export async function streamAssistantChat(
           content: m.content || m.text
         })),
         summary: summary || '',
-        user_name: userName || '',
-        student_profile: studentProfile || null
+        user_name: userName || ''
       }),
     });
 

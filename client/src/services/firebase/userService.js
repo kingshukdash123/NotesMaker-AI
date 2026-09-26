@@ -11,17 +11,15 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
-import { UserModel, DEFAULT_STUDENT_PREFERENCES } from '../../models/userModel';
-
-export { DEFAULT_STUDENT_PREFERENCES };
+import { UserModel } from '../../models/userModel';
 
 /**
  * Creates or overwrites a user profile document in Firestore using UserModel.
  * @param {string} uid - Firebase Auth User UID
- * @param {Object} data - Profile details { displayName, phoneNumber, email, preferences, hasCompletedOnboarding }
+ * @param {Object} data - Profile details { displayName, phoneNumber, email, hasCompletedOnboarding }
  * @returns {Promise<Object>} Created user profile data
  */
-export async function createUserProfile(uid, { displayName, phoneNumber, email, preferences, hasCompletedOnboarding = false }) {
+export async function createUserProfile(uid, { displayName, phoneNumber, email, hasCompletedOnboarding = false }) {
   if (!uid) throw new Error('User UID is required to create a profile.');
 
   const userModel = new UserModel({
@@ -29,7 +27,6 @@ export async function createUserProfile(uid, { displayName, phoneNumber, email, 
     displayName,
     phoneNumber,
     email,
-    preferences: preferences || DEFAULT_STUDENT_PREFERENCES,
     hasCompletedOnboarding: Boolean(hasCompletedOnboarding),
   });
 
@@ -143,18 +140,15 @@ export async function updateUserProfile(uid, updates) {
 }
 
 /**
- * Updates user learning/mentor preferences in Firestore.
+ * Marks onboarding as completed.
  * @param {string} uid - Firebase Auth User UID
- * @param {Object} preferences - Student academic preferences
- * @param {boolean} hasCompletedOnboarding - Flag indicating onboarding status
  */
-export async function updateUserPreferences(uid, preferences, hasCompletedOnboarding = true) {
-  if (!uid) throw new Error('User UID is required to update preferences.');
+export async function completeOnboarding(uid) {
+  if (!uid) throw new Error('User UID is required.');
 
   const userRef = doc(db, 'users', uid);
   const updatedData = {
-    preferences: UserModel.normalizePreferences(preferences),
-    hasCompletedOnboarding: Boolean(hasCompletedOnboarding),
+    hasCompletedOnboarding: true,
     updatedAt: serverTimestamp(),
   };
 
@@ -162,10 +156,4 @@ export async function updateUserPreferences(uid, preferences, hasCompletedOnboar
   return updatedData;
 }
 
-/**
- * Marks onboarding as skipped and persists default student preferences.
- * @param {string} uid - Firebase Auth User UID
- */
-export async function skipOnboarding(uid) {
-  return updateUserPreferences(uid, DEFAULT_STUDENT_PREFERENCES, true);
-}
+export const skipOnboarding = completeOnboarding;

@@ -356,7 +356,6 @@ class AssistantChatRequest(BaseModel):
     messages: List[Dict[str, Any]]
     summary: Optional[str] = None
     user_name: Optional[str] = None
-    student_profile: Optional[Dict[str, Any]] = None
 
 
 @app.post("/api/assistant/chat")
@@ -384,8 +383,7 @@ async def assistant_chat(
             async for chunk in assistant_service.chat_stream(
                 messages=request.messages,
                 summary=request.summary,
-                user_name=request.user_name,
-                student_profile=request.student_profile
+                user_name=request.user_name
             ):
                 yield chunk + "\n"
         except Exception as e:

@@ -25,11 +25,5 @@ export {
   DEFAULT_PLANS,
 } from './planModel';
 export { 
-  UserModel, 
-  DEFAULT_STUDENT_PREFERENCES, 
-  EDUCATION_LEVELS, 
-  FIELDS_OF_STUDY, 
-  TARGET_GOALS, 
-  EXPLANATION_STYLES, 
-  MENTOR_TONES 
+  UserModel 
 } from './userModel';
