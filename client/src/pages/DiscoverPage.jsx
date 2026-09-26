@@ -20,13 +20,7 @@ import {
 import { extractYouTubeVideoId, extractYouTubePlaylistId } from '../utils/router';
 
 // Icons
-import { AlertCircle, Search, Layers, Video, ListVideo } from 'lucide-react';
-
-const FILTER_TYPES = [
-  { id: 'all', label: 'All', icon: Layers },
-  { id: 'video', label: 'Videos', icon: Video },
-  { id: 'playlist', label: 'Playlists', icon: ListVideo },
-];
+import { AlertCircle, Search } from 'lucide-react';
 
 export default function DiscoverPage() {
   const { currentUser, userProfile } = useAuth();
@@ -76,6 +70,14 @@ export default function DiscoverPage() {
   useEffect(() => {
     setInputQuery(searchQuery || '');
   }, [searchQuery]);
+
+  // React ref for smooth auto-focus on DiscoverPage
+  const searchInputRef = useRef(null);
+  useEffect(() => {
+    if (!activeVideoId && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [activeVideoId]);
 
   const handleSearch = useCallback(async (query, cat = searchCategory, stype = searchType, setSearchedFlag = true) => {
     const rawInput = (typeof query === 'string' ? query : '').trim();
@@ -323,15 +325,6 @@ export default function DiscoverPage() {
   };
 
 
-  // Change content type filter
-  const handleFilterTypeChange = (newType) => {
-    setSearchType(newType);
-    const targetQuery = inputQuery.trim() || searchQuery.trim();
-    if (targetQuery) {
-      handleSearch(targetQuery, searchCategory, newType, true);
-    }
-  };
-
   // If a video is selected, render the unified watch page instead of the search list
   if (activeVideoId) {
     return <VideoContentPage />;
@@ -366,37 +359,16 @@ export default function DiscoverPage() {
         </div>
 
         {/* Search Bar section */}
-        <div className="space-y-3">
+        <div>
           <SearchBar
+            autoFocus
+            inputRef={searchInputRef}
             value={inputQuery}
             onChange={handleInputChange}
             onClear={handleClearSearch}
             onSubmit={() => handleSearch(inputQuery, searchCategory, searchType, true)}
             placeholder="Search lectures, topics, course playlists (or paste any YouTube video / playlist link)..."
           />
-
-          {/* Filter Chips: All, Videos, Playlists, Live Streams */}
-          <div className="flex items-center gap-2 overflow-x-auto py-1.5 px-0.5 custom-scrollbar text-xs">
-            {FILTER_TYPES.map((filter) => {
-              const Icon = filter.icon;
-              const isActive = (searchType || 'all') === filter.id;
-              return (
-                <button
-                  key={filter.id}
-                  type="button"
-                  onClick={() => handleFilterTypeChange(filter.id)}
-                  className={`px-3.5 py-1.5 !rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer hover:!transform-none hover:!translate-y-0 ${
-                    isActive
-                      ? 'btn-primary'
-                      : 'btn-secondary'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-current' : isDark ? 'text-zinc-400' : 'text-zinc-500'}`} />
-                  <span>{filter.label}</span>
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Error Notification */}

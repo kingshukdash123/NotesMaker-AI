@@ -8,6 +8,8 @@ export default function SearchBar({
   onChange,
   onSubmit,
   onClear,
+  autoFocus = false,
+  inputRef,
   placeholder = "Search for courses, lectures, or topics (or paste any YouTube video / playlist link)..."
 }) {
   const { isDark } = useTheme();
@@ -46,7 +48,9 @@ export default function SearchBar({
         )}
 
         <input
+          ref={inputRef}
           type="text"
+          autoFocus={autoFocus}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}

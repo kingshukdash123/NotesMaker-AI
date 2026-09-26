@@ -7,6 +7,7 @@ import {
   LogIn,
   ArrowRight,
   User,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
@@ -113,6 +114,21 @@ export default function Header({
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
+  };
+
+  const handleSearchClick = () => {
+    if (!currentUser) {
+      onOpenAuthModal?.('login');
+      return;
+    }
+
+    resetActiveVideo();
+    setActiveSection('discover');
+    if (window.location.pathname !== '/discover') {
+      window.history.pushState(null, '', '/discover');
+    }
+    setIsMobileMenuOpen(false);
+    setIsSidebarMobileOpen?.(false);
   };
 
   const handleNavClick = (link) => {
@@ -233,20 +249,6 @@ export default function Header({
           {/* Unauthenticated Quick Actions */}
           {!currentUser ? (
             <>
-              {/* Sign In Button */}
-              {/* <button
-                type="button"
-                onClick={() => onOpenAuthModal?.('login')}
-                className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition cursor-pointer ${
-                  isDark
-                    ? 'border-zinc-800 text-zinc-300 hover:text-orange-400 hover:border-orange-500/40 bg-zinc-900/60'
-                    : 'border-zinc-200 text-zinc-700 hover:text-orange-600 hover:border-orange-300 bg-zinc-50 hover:bg-white'
-                }`}
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
-              </button> */}
-
               {/* Get Started Button */}
               <button
                 type="button"
@@ -299,6 +301,26 @@ export default function Header({
               >
                 {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </button>
+
+              {/* Quick Search on Mobile / Phone View */}
+              <button
+                type="button"
+                onClick={handleSearchClick}
+                className={`md:hidden w-8 h-8 rounded-full transition flex items-center justify-center cursor-pointer select-none bg-transparent hover:scale-105 active:scale-95 shrink-0 ${
+                  activeSection === 'discover' && !activeVideoId
+                    ? isDark
+                      ? 'text-orange-400 bg-orange-500/10'
+                      : 'text-orange-600 bg-orange-50'
+                    : isDark
+                    ? 'text-white hover:text-zinc-200'
+                    : 'text-zinc-700 hover:text-zinc-900'
+                }`}
+                title="Search & Discover"
+                aria-label="Search and Discover"
+              >
+                <Search className="w-4.5 h-4.5 shrink-0" />
+              </button>
+
 
               {/* Theme Mode Toggle Button */}
               <ThemeToggle />
