@@ -103,7 +103,7 @@ export default function Sidebar({
               }`}
               title="Go to Dashboard"
             >
-              Studyspace
+              STUDY SPACE
             </button>
           )}
           <button

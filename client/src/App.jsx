@@ -77,12 +77,10 @@ function MainApp() {
     setAssistantMode,
     isSidebarMobileOpen,
     setIsSidebarMobileOpen,
+    authModalState,
+    openAuthModal,
+    closeAuthModal,
   } = useApp();
-
-  // Auth Modal State
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'signup'
-  const [authNotice, setAuthNotice] = useState(null);
 
   // API Status & Disconnect Modal State
   const [apiStatus, setApiStatus] = useState('checking'); // 'healthy' | 'unhealthy' | 'checking'
@@ -251,12 +249,6 @@ function MainApp() {
     activeVideoMetadata,
   ]);
 
-  const handleOpenAuthModal = (mode = 'login', notice = null) => {
-    setAuthModalMode(mode);
-    setAuthNotice(notice);
-    setIsAuthModalOpen(true);
-  };
-
   const handleToggleAssistantMode = (newMode) => {
     const targetMode = typeof newMode === 'string'
       ? newMode
@@ -307,16 +299,16 @@ function MainApp() {
         <Header
           isSidebarMobileOpen={isSidebarMobileOpen}
           setIsSidebarMobileOpen={setIsSidebarMobileOpen}
-          onOpenAuthModal={handleOpenAuthModal}
+          onOpenAuthModal={openAuthModal}
         />
       )}
 
       {/* Auth Modal */}
       <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        initialMode={authModalMode}
-        notice={authNotice}
+        isOpen={authModalState.isOpen}
+        onClose={closeAuthModal}
+        initialMode={authModalState.mode}
+        notice={authModalState.notice}
       />
 
       {/* API Disconnect Modal */}

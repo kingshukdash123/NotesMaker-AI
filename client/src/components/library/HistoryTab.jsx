@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useWatchHistory } from '../../hooks/useWatchHistory';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
+import { normalizeVideoMetadata } from '../../models';
 import LibraryVideoCard from './LibraryVideoCard';
 import VideoGridSkeleton from '../skeletons/VideoGridSkeleton';
 import { Trash2, Clock } from 'lucide-react';
@@ -38,11 +39,8 @@ export default function HistoryTab({
 
   const handleOpenItem = (item) => {
     if (onOpenVideo) {
-      onOpenVideo({
-        videoId: item.videoId,
-        videoUrl: item.videoUrl,
-        metadata: item.metadata,
-      });
+      const norm = normalizeVideoMetadata(item);
+      onOpenVideo(norm);
     }
   };
 
@@ -72,18 +70,14 @@ export default function HistoryTab({
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {history.map((item) => {
-            const videoObject = {
-              videoId: item.videoId,
-              videoUrl: item.videoUrl,
-              metadata: item.metadata,
-            };
+            const videoObject = normalizeVideoMetadata(item);
 
             return (
               <LibraryVideoCard
-                key={item.id}
+                key={item.id || videoObject.videoId}
                 video={videoObject}
                 playlists={playlists}
-                onOpen={() => handleOpenItem(item)}
+                onOpen={() => handleOpenItem(videoObject)}
                 onDelete={async () => {
                   const confirmed = await showConfirm('Are you sure you want to remove this video from your watch history?');
                   if (confirmed) {
@@ -93,7 +87,7 @@ export default function HistoryTab({
                 onAddToPlaylist={onTogglePlaylistAssociation}
                 onCreatePlaylist={onCreatePlaylist}
                 onSave={() => onToggleSave(videoObject)}
-                isSaved={savedVideos.some(v => v.videoId === item.videoId)}
+                isSaved={savedVideos.some(v => (v.videoId || v.id) === videoObject.videoId)}
               />
             );
           })}

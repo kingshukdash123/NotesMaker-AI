@@ -57,6 +57,25 @@ export function AppProvider({ children }) {
   const closeUpgradeModal = () => {
     setUpgradeModalState({ isOpen: false, reason: null });
   };
+
+  // Auth Modal State
+  const [authModalState, setAuthModalState] = useState({
+    isOpen: false,
+    mode: 'login', // 'login' | 'signup'
+    notice: null
+  });
+
+  const openAuthModal = (mode = 'login', notice = null) => {
+    setAuthModalState({
+      isOpen: true,
+      mode: mode || 'login',
+      notice: notice || null
+    });
+  };
+
+  const closeAuthModal = () => {
+    setAuthModalState(prev => ({ ...prev, isOpen: false, notice: null }));
+  };
   
   // States for the active video content page (watch/study)
   const [activeVideoId, setActiveVideoId] = useState(initialRoute.videoId || '');
@@ -331,6 +350,9 @@ export function AppProvider({ children }) {
     upgradeModalState,
     openUpgradeModal,
     closeUpgradeModal,
+    authModalState,
+    openAuthModal,
+    closeAuthModal,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -9,7 +9,6 @@ import {
   deleteDoc,
   doc,
   setDoc,
-  writeBatch
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import { WatchHistoryModel } from '../../models';
@@ -23,13 +22,14 @@ export async function logVideoOpen(userId, videoId, videoUrl, metadata) {
   if (!userId || !videoId) return null;
 
   try {
-    const docId = `${userId}_${videoId}`;
+    const cleanVideoId = String(videoId).trim();
+    const docId = `${userId}_${cleanVideoId}`;
     const docRef = doc(db, 'watch_history', docId);
 
     const model = new WatchHistoryModel({
       id: docId,
       userId,
-      videoId,
+      videoId: cleanVideoId,
       videoUrl,
       metadata,
     });
@@ -52,15 +52,22 @@ export async function getUserWatchHistory(userId) {
   if (!userId) return [];
 
   const historyRef = collection(db, 'watch_history');
-  const q = query(
-    historyRef,
-    where('userId', '==', userId),
-    orderBy('openedAt', 'desc'),
-    limit(100)
-  );
-
   try {
-    const querySnapshot = await getDocs(q);
+    let querySnapshot;
+    try {
+      const q = query(
+        historyRef,
+        where('userId', '==', userId),
+        orderBy('openedAt', 'desc'),
+        limit(100)
+      );
+      querySnapshot = await getDocs(q);
+    } catch (indexErr) {
+      console.warn('Composite index may be missing for watch_history query, falling back to in-memory sorting:', indexErr);
+      const fallbackQ = query(historyRef, where('userId', '==', userId), limit(100));
+      querySnapshot = await getDocs(fallbackQ);
+    }
+
     const history = [];
     const seenVideoIds = new Set();
 
@@ -70,6 +77,12 @@ export async function getUserWatchHistory(userId) {
         seenVideoIds.add(model.videoId);
         history.push(model);
       }
+    });
+
+    history.sort((a, b) => {
+      const timeA = a.openedAt ? new Date(a.openedAt).getTime() : 0;
+      const timeB = b.openedAt ? new Date(b.openedAt).getTime() : 0;
+      return timeB - timeA;
     });
 
     return history;
@@ -100,24 +113,22 @@ export async function deleteHistoryItem(userId, historyId) {
 }
 
 /**
- * Clears the user's entire watch history.
+ * Clears all watch history for the given user.
+ * @param {string} userId - Auth user ID (UID)
  */
-export async function clearUserHistory(userId) {
+export async function clearUserWatchHistory(userId) {
   if (!userId) return;
-
   const historyRef = collection(db, 'watch_history');
   const q = query(historyRef, where('userId', '==', userId));
+  const querySnapshot = await getDocs(q);
 
-  try {
-    const querySnapshot = await getDocs(q);
-    const batch = writeBatch(db);
+  const deletePromises = [];
+  querySnapshot.forEach((docSnap) => {
+    deletePromises.push(deleteDoc(docSnap.ref));
+  });
 
-    querySnapshot.forEach((docSnap) => {
-      batch.delete(docSnap.ref);
-    });
-
-    await batch.commit();
-  } catch (err) {
-    console.error('Error clearing watch history:', err);
-  }
+  await Promise.all(deletePromises);
 }
+
+export const clearUserHistory = clearUserWatchHistory;
+

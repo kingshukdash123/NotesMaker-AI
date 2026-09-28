@@ -15,6 +15,8 @@ import {
   setAllPlaylistVideosWatched,
   renamePlaylist
 } from '../services/firebase/libraryService';
+import { PlaylistModel, SavedVideoModel } from '../models';
+import { formatVideoDuration } from '../utils/formatters';
 
 // Sub-components
 import SavedVideosTab from '../components/library/SavedVideosTab';
@@ -34,6 +36,7 @@ export default function LibraryPage() {
     setLibraryTab, 
     loadVideo, 
     setActiveSection,
+    openAuthModal,
   } = useApp();
 
   const [savedVideos, setSavedVideos] = useState([]);
@@ -52,6 +55,7 @@ export default function LibraryPage() {
         getUserSavedVideos(currentUser.uid),
         getUserPlaylists(currentUser.uid)
       ]);
+
       setSavedVideos(videosData);
       setPlaylists(playlistsData);
     } catch (err) {
@@ -106,41 +110,66 @@ export default function LibraryPage() {
   // Video Actions
   const handleRemoveVideo = async (videoId) => {
     if (!currentUser || !videoId) return;
+    const cleanVideoId = String(videoId).trim();
     try {
-      await removeVideoFromLibrary(currentUser.uid, videoId);
-      setSavedVideos(prev => prev.filter(v => v.videoId !== videoId));
+      await removeVideoFromLibrary(currentUser.uid, cleanVideoId);
+      setSavedVideos(prev => prev.filter(v => (v.videoId || v.id) !== cleanVideoId));
     } catch (err) {
       console.error('Error removing video from library:', err);
     }
   };
 
   const handleToggleSaveVideo = async (video) => {
-    if (!currentUser || !video?.videoId) return;
+    if (!currentUser) {
+      openAuthModal?.('login', 'Sign in to save videos to your library.');
+      return;
+    }
+    const targetVideoId = video?.videoId || video?.id;
+    if (!targetVideoId) return;
 
-    const isCurrentlySaved = savedVideos.some(v => v.videoId === video.videoId);
+    const isCurrentlySaved = savedVideos.some(v => (v.videoId || v.id) === targetVideoId);
     try {
       if (isCurrentlySaved) {
-        await removeVideoFromLibrary(currentUser.uid, video.videoId);
-        setSavedVideos(prev => prev.filter(v => v.videoId !== video.videoId));
+        await removeVideoFromLibrary(currentUser.uid, targetVideoId);
+        setSavedVideos(prev => prev.filter(v => (v.videoId || v.id) !== targetVideoId));
       } else {
+        const rawMeta = video.metadata || video;
+        const metadataToSave = {
+          title: rawMeta.title || video.title || 'YouTube Video',
+          channel: rawMeta.channel || video.channel || 'YouTube Creator',
+          thumbnail: rawMeta.thumbnail || video.thumbnail || `https://img.youtube.com/vi/${targetVideoId}/hqdefault.jpg`,
+          duration: Number(rawMeta.duration || video.duration || 0) || 0,
+          duration_formatted: rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || '',
+          publishedAt: rawMeta.publishedAt || video.publishedAt || '',
+          description: rawMeta.description || video.description || '',
+          view_count: rawMeta.view_count || rawMeta.viewCount || video.viewCount || '',
+          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive),
+        };
+        const videoUrlToSave = video.videoUrl || `https://www.youtube.com/watch?v=${targetVideoId}`;
+
         await saveVideoToLibrary(
           currentUser.uid,
-          video.videoId,
-          video.videoUrl,
-          video.metadata
+          targetVideoId,
+          videoUrlToSave,
+          metadataToSave
         );
+
+        const newModel = new SavedVideoModel({
+          id: `${currentUser.uid}_${targetVideoId}`,
+          userId: currentUser.uid,
+          videoId: targetVideoId,
+          videoUrl: videoUrlToSave,
+          metadata: metadataToSave,
+          savedAt: new Date(),
+        });
+
         setSavedVideos(prev => [
-          {
-            videoId: video.videoId,
-            videoUrl: video.videoUrl,
-            metadata: video.metadata,
-            savedAt: new Date()
-          },
-          ...prev.filter(v => v.videoId !== video.videoId)
+          newModel,
+          ...prev.filter(v => (v.videoId || v.id) !== targetVideoId)
         ]);
       }
     } catch (err) {
-      console.error('Error toggling video save:', err);
+      console.error('Error toggling video save in Library:', err);
     }
   };
 
@@ -150,13 +179,29 @@ export default function LibraryPage() {
     if (!currentUser) return;
 
     try {
+      const rawMeta = videoData?.metadata || videoData || {};
+      const durationSec = Number(rawMeta.duration || videoData?.duration || rawMeta.duration_seconds || videoData?.duration_seconds || 0) || 0;
+      let durationFmt = String(rawMeta.duration_formatted || rawMeta.durationFormatted || videoData?.durationFormatted || videoData?.duration_formatted || '').trim();
+      if (!durationFmt && durationSec > 0) {
+        durationFmt = formatVideoDuration(durationSec);
+      }
+
       const videoEntry = {
         videoId,
         videoUrl: videoData?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
-        metadata: videoData?.metadata || {
-          title: videoData?.title || 'YouTube Video',
-          channel: videoData?.channel || 'Unknown Creator',
-          thumbnail: videoData?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+        duration: durationSec,
+        durationFormatted: durationFmt,
+        metadata: {
+          title: rawMeta.title || videoData?.title || 'YouTube Video',
+          channel: rawMeta.channel || videoData?.channel || 'Unknown Creator',
+          thumbnail: rawMeta.thumbnail || videoData?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+          duration: durationSec,
+          duration_formatted: durationFmt,
+          durationFormatted: durationFmt,
+          publishedAt: rawMeta.publishedAt || videoData?.publishedAt || '',
+          description: rawMeta.description || videoData?.description || '',
+          view_count: rawMeta.view_count || rawMeta.viewCount || videoData?.viewCount || '',
+          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || videoData?.isLive),
         },
         addedAt: new Date().toISOString(),
       };
@@ -165,17 +210,17 @@ export default function LibraryPage() {
         await removeVideoFromPlaylist(currentUser.uid, videoId, playlistId);
         setPlaylists(prev => prev.map(pl => {
           if (pl.id === playlistId) {
-            const updatedVideos = (pl.videos || []).filter(v => v.videoId !== videoId);
+            const updatedVideos = (pl.videos || []).filter(v => (v.videoId || v.id) !== videoId);
             return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
           return pl;
         }));
       } else {
-        await addVideoToPlaylist(currentUser.uid, videoId, playlistId, videoData);
+        await addVideoToPlaylist(currentUser.uid, videoId, playlistId, videoEntry);
         setPlaylists(prev => prev.map(pl => {
           if (pl.id === playlistId) {
             const existing = pl.videos || [];
-            const updatedVideos = existing.some(v => v.videoId === videoId) ? existing : [...existing, videoEntry];
+            const updatedVideos = existing.some(v => (v.videoId || v.id) === videoId) ? existing : [...existing, videoEntry];
             return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
           return pl;

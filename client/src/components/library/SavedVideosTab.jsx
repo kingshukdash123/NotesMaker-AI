@@ -1,3 +1,4 @@
+import { normalizeVideoMetadata } from '../../models';
 import LibraryVideoCard from './LibraryVideoCard';
 import VideoGridSkeleton from '../skeletons/VideoGridSkeleton';
 import { BookOpen } from 'lucide-react';
@@ -18,12 +19,7 @@ export default function SavedVideosTab({
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden space-y-3 sm:space-y-4 animate-in fade-in duration-300">
-        <div className={`border-b ${isDark ? 'border-zinc-900/50' : 'border-zinc-200/80'} pb-2 shrink-0`}>
-          <span className={`text-[10px] font-mono font-bold tracking-wider uppercase ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-            SAVED VIDEOS
-          </span>
-        </div>
+      <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden animate-in fade-in duration-300">
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
           <VideoGridSkeleton count={8} layout="grid" />
         </div>
@@ -59,19 +55,23 @@ export default function SavedVideosTab({
       {/* Grid listing (Only Grid is Scrollable!) */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {savedVideos.map((video) => (
-            <LibraryVideoCard
-              key={video.videoId}
-              video={video}
-              playlists={playlists}
-              onOpen={() => onOpenVideo(video)}
-              onDelete={() => onRemoveVideo(video.videoId)}
-              onAddToPlaylist={onTogglePlaylistAssociation}
-              onCreatePlaylist={onCreatePlaylist}
-              onSave={() => onToggleSave(video)}
-              isSaved={true}
-            />
-          ))}
+          {savedVideos.map((video) => {
+            const normVideo = normalizeVideoMetadata(video);
+            const vidId = normVideo.videoId || normVideo.id;
+            return (
+              <LibraryVideoCard
+                key={vidId}
+                video={normVideo}
+                playlists={playlists}
+                onOpen={() => onOpenVideo(normVideo)}
+                onDelete={() => onRemoveVideo(vidId)}
+                onAddToPlaylist={onTogglePlaylistAssociation}
+                onCreatePlaylist={onCreatePlaylist}
+                onSave={() => onToggleSave(normVideo)}
+                isSaved={true}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

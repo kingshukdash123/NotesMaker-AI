@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserNotes, deleteNotes } from '../../services/firebase/notesService';
+import { normalizeVideoMetadata } from '../../models';
 import LibraryVideoCard from './LibraryVideoCard';
 import VideoGridSkeleton from '../skeletons/VideoGridSkeleton';
 import { BookOpen } from 'lucide-react';
@@ -53,10 +54,11 @@ export default function NotesTab({
 
   const handleOpenNote = (note) => {
     if (onOpenVideo) {
+      const norm = normalizeVideoMetadata(note);
       onOpenVideo({
-        videoId: note.metadata?.video_id || '',
-        videoUrl: note.videoUrl,
-        metadata: note.metadata,
+        videoId: norm?.videoId || note.videoId || '',
+        videoUrl: norm?.videoUrl || note.videoUrl,
+        metadata: norm?.metadata || note.metadata,
         id: note.id,
         result: note.result
       });
@@ -89,11 +91,7 @@ export default function NotesTab({
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {notesList.map((note) => {
-            const videoObject = {
-              videoId: note.metadata?.video_id || '',
-              videoUrl: note.videoUrl,
-              metadata: note.metadata,
-            };
+            const videoObject = normalizeVideoMetadata(note);
 
             return (
               <LibraryVideoCard
@@ -105,7 +103,7 @@ export default function NotesTab({
                 onAddToPlaylist={onTogglePlaylistAssociation}
                 onCreatePlaylist={onCreatePlaylist}
                 onSave={() => onToggleSave(videoObject)}
-                isSaved={savedVideos.some(v => v.videoId === (note.metadata?.video_id || ''))}
+                isSaved={savedVideos.some(v => (v.videoId || v.id) === videoObject.videoId)}
               />
             );
           })}

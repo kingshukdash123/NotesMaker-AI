@@ -13,7 +13,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
-import { PlaylistModel, SavedVideoModel } from '../../models';
+import { PlaylistModel, SavedVideoModel, normalizeVideoMetadata } from '../../models';
 
 /**
  * Creates a new playlist.
@@ -36,30 +36,17 @@ export async function createPlaylist(userId, name) {
  * @param {string} userId - Auth user ID
  * @param {string} name - Playlist title
  * @param {Array} videos - Complete array of video objects in sequence
- * @returns {Promise<{ id: string, name: string, videoCount: number, videos: Array }>}
+ * @param {string} [sourcePlaylistId=''] - YouTube Playlist ID for tracking
+ * @returns {Promise<{ id: string, name: string, videoCount: number, videos: Array, sourcePlaylistId: string }>}
  */
 export async function createPlaylistWithVideos(userId, name, videos = [], sourcePlaylistId = '') {
   if (!userId) throw new Error('User ID is required');
 
-  const formattedVideos = (videos || []).map((v, idx) => ({
-    videoId: v.videoId,
-    videoUrl: v.videoUrl || `https://www.youtube.com/watch?v=${v.videoId}`,
-    metadata: {
-      title: v.metadata?.title || v.title || 'YouTube Video',
-      channel: v.metadata?.channel || v.channel || 'Unknown Creator',
-      thumbnail: v.metadata?.thumbnail || v.thumbnail || (v.videoId ? `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg` : ''),
-    },
-    position: typeof v.position === 'number' ? v.position : idx,
-    addedAt: v.addedAt || new Date().toISOString(),
-    watched: Boolean(v.watched),
-    watchedAt: v.watchedAt || (v.watched ? new Date().toISOString() : null),
-  }));
-
   const model = new PlaylistModel({
     userId,
-    name: name || 'Saved Course',
-    videos: formattedVideos,
-    sourcePlaylistId: sourcePlaylistId || '',
+    name: String(name || 'Saved Course').trim(),
+    videos,
+    sourcePlaylistId: String(sourcePlaylistId || '').trim(),
   });
 
   const playlistRef = collection(db, 'playlists');
@@ -68,37 +55,55 @@ export async function createPlaylistWithVideos(userId, name, videos = [], source
   return {
     id: docRef.id,
     name: model.name,
-    videoCount: formattedVideos.length,
-    videos: formattedVideos,
+    videoCount: model.videos.length,
+    videos: model.videos,
     sourcePlaylistId: model.sourcePlaylistId,
   };
 }
 
 /**
- * Retrieves all playlists created by a user.
+ * Retrieves all playlists created by a user with fallback sorting.
+ * @param {string} userId - Auth user ID
  * @returns {Promise<Array<PlaylistModel>>}
  */
 export async function getUserPlaylists(userId) {
   if (!userId) return [];
 
   const playlistRef = collection(db, 'playlists');
-  const q = query(
-    playlistRef,
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
-  );
-
-  const querySnapshot = await getDocs(q);
-  const playlists = [];
-
-  querySnapshot.forEach((docSnap) => {
-    const playlist = PlaylistModel.fromFirestore(docSnap);
-    if (playlist) {
-      playlists.push(playlist);
+  try {
+    let querySnapshot;
+    try {
+      const q = query(
+        playlistRef,
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+      querySnapshot = await getDocs(q);
+    } catch (indexErr) {
+      console.warn('Composite index may be missing for playlists query, falling back to in-memory sorting:', indexErr);
+      const fallbackQ = query(playlistRef, where('userId', '==', userId));
+      querySnapshot = await getDocs(fallbackQ);
     }
-  });
 
-  return playlists;
+    const playlists = [];
+    querySnapshot.forEach((docSnap) => {
+      const playlist = PlaylistModel.fromFirestore(docSnap);
+      if (playlist) {
+        playlists.push(playlist);
+      }
+    });
+
+    playlists.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    return playlists;
+  } catch (err) {
+    console.error('Error fetching user playlists:', err);
+    return [];
+  }
 }
 
 /**
@@ -149,11 +154,11 @@ export async function renamePlaylist(userId, playlistId, newName) {
 
 /**
  * Adds a video directly into a playlist's videos array.
- * Does NOT touch saved_videos.
  */
 export async function addVideoToPlaylist(userId, videoId, playlistId, videoData = null) {
   if (!userId || !videoId || !playlistId) return;
 
+  const cleanVideoId = String(videoId).trim();
   const playlistDocRef = doc(db, 'playlists', playlistId);
   const playlistSnap = await getDoc(playlistDocRef);
   if (!playlistSnap.exists()) {
@@ -165,15 +170,16 @@ export async function addVideoToPlaylist(userId, videoId, playlistId, videoData 
     throw new Error('Unauthorized: You do not own this playlist.');
   }
 
+  const norm = normalizeVideoMetadata(videoData || { videoId: cleanVideoId }) || {};
+
   // Build the video entry
   const newVideo = {
-    videoId,
-    videoUrl: videoData?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
-    metadata: {
-      title: videoData?.metadata?.title || videoData?.title || 'YouTube Video',
-      channel: videoData?.metadata?.channel || videoData?.channel || 'Unknown Creator',
-      thumbnail: videoData?.metadata?.thumbnail || videoData?.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : ''),
-    },
+    videoId: norm.videoId || cleanVideoId,
+    videoUrl: norm.videoUrl || `https://www.youtube.com/watch?v=${cleanVideoId}`,
+    metadata: norm.metadata || {},
+    duration: norm.duration || 0,
+    durationFormatted: norm.durationFormatted || '',
+    position: (playlist.videos || []).length,
     addedAt: videoData?.addedAt || new Date().toISOString(),
     watched: Boolean(videoData?.watched),
     watchedAt: videoData?.watchedAt || (videoData?.watched ? new Date().toISOString() : null),
@@ -181,7 +187,7 @@ export async function addVideoToPlaylist(userId, videoId, playlistId, videoData 
 
   // Avoid duplicates in playlist
   const existingVideos = playlist.videos || [];
-  const updatedVideos = existingVideos.some(v => v.videoId === videoId)
+  const updatedVideos = existingVideos.some(v => (v.videoId || v.id) === cleanVideoId)
     ? existingVideos
     : [...existingVideos, newVideo];
 
@@ -193,11 +199,11 @@ export async function addVideoToPlaylist(userId, videoId, playlistId, videoData 
 
 /**
  * Removes a video from a playlist's videos array.
- * Does NOT touch saved_videos.
  */
 export async function removeVideoFromPlaylist(userId, videoId, playlistId) {
   if (!userId || !videoId || !playlistId) return;
 
+  const cleanVideoId = String(videoId).trim();
   const playlistDocRef = doc(db, 'playlists', playlistId);
   const playlistSnap = await getDoc(playlistDocRef);
   if (!playlistSnap.exists()) return;
@@ -207,7 +213,7 @@ export async function removeVideoFromPlaylist(userId, videoId, playlistId) {
     throw new Error('Unauthorized: You do not own this playlist.');
   }
 
-  const updatedVideos = (playlist.videos || []).filter(v => v.videoId !== videoId);
+  const updatedVideos = (playlist.videos || []).filter(v => (v.videoId || v.id) !== cleanVideoId);
 
   await updateDoc(playlistDocRef, {
     videos: updatedVideos,
@@ -217,14 +223,11 @@ export async function removeVideoFromPlaylist(userId, videoId, playlistId) {
 
 /**
  * Toggles or updates watched status of a video in a playlist.
- * @param {string} userId - Auth user ID
- * @param {string} playlistId - Firestore document ID
- * @param {string} videoId - YouTube video ID
- * @param {boolean} watched - Watched state
  */
 export async function togglePlaylistVideoWatched(userId, playlistId, videoId, watched) {
   if (!userId || !playlistId || !videoId) return;
 
+  const cleanVideoId = String(videoId).trim();
   const playlistDocRef = doc(db, 'playlists', playlistId);
   const playlistSnap = await getDoc(playlistDocRef);
   if (!playlistSnap.exists()) return;
@@ -235,7 +238,7 @@ export async function togglePlaylistVideoWatched(userId, playlistId, videoId, wa
   }
 
   const updatedVideos = (playlist.videos || []).map((v) => {
-    if (v.videoId === videoId) {
+    if ((v.videoId || v.id) === cleanVideoId) {
       return {
         ...v,
         watched: Boolean(watched),
@@ -253,9 +256,6 @@ export async function togglePlaylistVideoWatched(userId, playlistId, videoId, wa
 
 /**
  * Bulk updates watched status for all videos in a playlist.
- * @param {string} userId - Auth user ID
- * @param {string} playlistId - Firestore document ID
- * @param {boolean} watched - Watched state to set for all videos
  */
 export async function setAllPlaylistVideosWatched(userId, playlistId, watched) {
   if (!userId || !playlistId) return;
@@ -287,10 +287,11 @@ export async function setAllPlaylistVideosWatched(userId, playlistId, watched) {
  */
 export async function getVideoPlaylistIds(userId, videoId) {
   if (!userId || !videoId) return [];
+  const cleanVideoId = String(videoId).trim();
   try {
     const playlists = await getUserPlaylists(userId);
     return playlists
-      .filter(pl => (pl.videos || []).some(v => v.videoId === videoId))
+      .filter(pl => (pl.videos || []).some(v => (v.videoId || v.id) === cleanVideoId))
       .map(pl => pl.id);
   } catch (err) {
     console.error('Error fetching video playlist IDs:', err);
@@ -303,19 +304,20 @@ export async function getVideoPlaylistIds(userId, videoId) {
  * @param {string} userId - Auth user ID
  * @param {string} videoId - YouTube video ID
  * @param {string} videoUrl - YouTube video URL
- * @param {Object} metadata - Video metadata ({ title, channel, thumbnail })
+ * @param {Object} metadata - Video metadata ({ title, channel, thumbnail, duration, ... })
  */
 export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata) {
   if (!userId || !videoId) return;
 
+  const cleanVideoId = String(videoId).trim();
   const model = new SavedVideoModel({
     userId,
-    videoId,
+    videoId: cleanVideoId,
     videoUrl,
     metadata,
   });
 
-  const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
+  const docRef = doc(db, 'saved_videos', `${userId}_${cleanVideoId}`);
   await setDoc(docRef, model.toFirestore({ isNew: true }), { merge: true });
 }
 
@@ -326,7 +328,8 @@ export async function saveVideoToLibrary(userId, videoId, videoUrl, metadata) {
  */
 export async function removeVideoFromLibrary(userId, videoId) {
   if (!userId || !videoId) return;
-  const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
+  const cleanVideoId = String(videoId).trim();
+  const docRef = doc(db, 'saved_videos', `${userId}_${cleanVideoId}`);
   await deleteDoc(docRef);
 }
 
@@ -337,13 +340,14 @@ export async function removeVideoFromLibrary(userId, videoId) {
  */
 export async function isVideoSaved(userId, videoId) {
   if (!userId || !videoId) return false;
-  const docRef = doc(db, 'saved_videos', `${userId}_${videoId}`);
+  const cleanVideoId = String(videoId).trim();
+  const docRef = doc(db, 'saved_videos', `${userId}_${cleanVideoId}`);
   const docSnap = await getDoc(docRef);
   return docSnap.exists();
 }
 
 /**
- * Retrieves all saved videos in the user's library.
+ * Retrieves all saved videos in the user's library with fallback sorting.
  * @param {string} userId - Auth user ID
  * @returns {Promise<Array<SavedVideoModel>>}
  */
@@ -351,23 +355,38 @@ export async function getUserSavedVideos(userId) {
   if (!userId) return [];
 
   const savedRef = collection(db, 'saved_videos');
-  const q = query(
-    savedRef,
-    where('userId', '==', userId),
-    orderBy('savedAt', 'desc')
-  );
-
-  const querySnapshot = await getDocs(q);
-  const savedVideos = [];
-
-  querySnapshot.forEach((docSnap) => {
-    const video = SavedVideoModel.fromFirestore(docSnap);
-    if (video) {
-      savedVideos.push(video);
+  try {
+    let querySnapshot;
+    try {
+      const q = query(
+        savedRef,
+        where('userId', '==', userId),
+        orderBy('savedAt', 'desc')
+      );
+      querySnapshot = await getDocs(q);
+    } catch (indexErr) {
+      console.warn('Composite index may be missing for saved_videos query, falling back to in-memory sorting:', indexErr);
+      const fallbackQ = query(savedRef, where('userId', '==', userId));
+      querySnapshot = await getDocs(fallbackQ);
     }
-  });
 
-  return savedVideos;
+    const savedVideos = [];
+    querySnapshot.forEach((docSnap) => {
+      const video = SavedVideoModel.fromFirestore(docSnap);
+      if (video) {
+        savedVideos.push(video);
+      }
+    });
+
+    savedVideos.sort((a, b) => {
+      const timeA = a.savedAt ? new Date(a.savedAt).getTime() : 0;
+      const timeB = b.savedAt ? new Date(b.savedAt).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    return savedVideos;
+  } catch (err) {
+    console.error('Error fetching user saved videos:', err);
+    return [];
+  }
 }
-
-

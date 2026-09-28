@@ -7,6 +7,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import {
   getUserPlaylists,
   getVideoPlaylistIds,
@@ -31,6 +33,10 @@ export default function AddToPlaylistPopover({
   popoverClassName = '',
 }) {
   const { isDark } = useTheme();
+  const { currentUser: authUser } = useAuth();
+  const { openAuthModal } = useApp() || {};
+  const effectiveUser = currentUser || authUser;
+
   const [isOpen, setIsOpen] = useState(false);
   const [internalPlaylists, setInternalPlaylists] = useState([]);
   const [internalAssignedIds, setInternalAssignedIds] = useState([]);
@@ -44,13 +50,13 @@ export default function AddToPlaylistPopover({
   const currentVideoUrl = video?.videoUrl || videoUrl || (currentVideoId ? `https://www.youtube.com/watch?v=${currentVideoId}` : '');
   const currentMetadata = video?.metadata || metadata || {};
 
-  // Fetch playlists & memberships if currentUser is provided and propPlaylists is not controlled externally
+  // Fetch playlists & memberships if effectiveUser is provided and propPlaylists is not controlled externally
   useEffect(() => {
-    if (isOpen && currentUser && currentVideoId && !propPlaylists) {
+    if (isOpen && effectiveUser && currentVideoId && !propPlaylists) {
       setIsLoadingPlaylists(true);
       Promise.all([
-        getUserPlaylists(currentUser.uid),
-        getVideoPlaylistIds(currentUser.uid, currentVideoId)
+        getUserPlaylists(effectiveUser.uid),
+        getVideoPlaylistIds(effectiveUser.uid, currentVideoId)
       ])
         .then(([playlistsData, assignedIds]) => {
           setInternalPlaylists(playlistsData || []);
@@ -59,7 +65,7 @@ export default function AddToPlaylistPopover({
         .catch((err) => console.error('Failed to load playlists:', err))
         .finally(() => setIsLoadingPlaylists(false));
     }
-  }, [isOpen, currentUser, currentVideoId, propPlaylists]);
+  }, [isOpen, effectiveUser, currentVideoId, propPlaylists]);
 
   // Click outside and escape dismissal
   useEffect(() => {
@@ -97,18 +103,21 @@ export default function AddToPlaylistPopover({
           videoUrl: currentVideoUrl,
           metadata: currentMetadata
         });
-      } else if (currentUser && currentVideoId) {
+      } else if (effectiveUser && currentVideoId) {
         if (isInPlaylist) {
-          await removeVideoFromPlaylist(currentUser.uid, currentVideoId, pl.id);
+          await removeVideoFromPlaylist(effectiveUser.uid, currentVideoId, pl.id);
           setInternalAssignedIds((prev) => prev.filter((id) => id !== pl.id));
         } else {
-          await addVideoToPlaylist(currentUser.uid, currentVideoId, pl.id, {
+          await addVideoToPlaylist(effectiveUser.uid, currentVideoId, pl.id, {
+            videoId: currentVideoId,
             videoUrl: currentVideoUrl,
+            duration: Number(currentMetadata.duration || video?.duration || 0) || 0,
+            durationFormatted: currentMetadata.duration_formatted || currentMetadata.durationFormatted || video?.durationFormatted || '',
             metadata: currentMetadata
           });
           setInternalAssignedIds((prev) => [...prev, pl.id]);
         }
-        const updated = await getUserPlaylists(currentUser.uid);
+        const updated = await getUserPlaylists(effectiveUser.uid);
         setInternalPlaylists(updated);
       }
     } catch (err) {
@@ -128,20 +137,28 @@ export default function AddToPlaylistPopover({
     const name = newPlaylistName.trim();
     if (!name || isCreating) return;
 
+    if (!effectiveUser && !onCreatePlaylist) {
+      openAuthModal?.('login', 'Sign in to create custom playlists.');
+      return;
+    }
+
     setIsCreating(true);
     try {
       if (onCreatePlaylist) {
         await onCreatePlaylist(name);
         setNewPlaylistName('');
-      } else if (currentUser && currentVideoId) {
-        const newPlaylistId = await createPlaylist(currentUser.uid, name);
-        await addVideoToPlaylist(currentUser.uid, currentVideoId, newPlaylistId, {
+      } else if (effectiveUser && currentVideoId) {
+        const newPlaylistId = await createPlaylist(effectiveUser.uid, name);
+        await addVideoToPlaylist(effectiveUser.uid, currentVideoId, newPlaylistId, {
+          videoId: currentVideoId,
           videoUrl: currentVideoUrl,
+          duration: Number(currentMetadata.duration || video?.duration || 0) || 0,
+          durationFormatted: currentMetadata.duration_formatted || currentMetadata.durationFormatted || video?.durationFormatted || '',
           metadata: currentMetadata
         });
         setInternalAssignedIds((prev) => [...prev, newPlaylistId]);
         setNewPlaylistName('');
-        const updated = await getUserPlaylists(currentUser.uid);
+        const updated = await getUserPlaylists(effectiveUser.uid);
         setInternalPlaylists(updated);
       }
     } catch (err) {
@@ -163,6 +180,10 @@ export default function AddToPlaylistPopover({
         disabled={loadingPlaylistIds.size > 0 || isLoadingPlaylists}
         onClick={(e) => {
           e.stopPropagation();
+          if (!effectiveUser && !onAddToPlaylist) {
+            openAuthModal?.('login', 'Sign in to organize videos into playlists.');
+            return;
+          }
           setIsOpen((prev) => !prev);
         }}
         className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center select-none disabled:cursor-wait ${

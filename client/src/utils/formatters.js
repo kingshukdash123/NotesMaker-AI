@@ -35,3 +35,42 @@ export function formatTimeAgo(dateString) {
 export function getChannelInitial(channelName) {
   return (channelName || 'Y').trim().charAt(0).toUpperCase() || 'Y';
 }
+
+/**
+ * Formats a raw view count number or string into a concise human-readable view count (e.g. '1.2M views', '450K views').
+ * @param {number|string} views - The raw view count
+ * @returns {string} Formatted view count string
+ */
+export function formatViews(views) {
+  if (!views && views !== 0) return '';
+  const num = typeof views === 'string' ? parseInt(views, 10) : views;
+  if (isNaN(num) || num <= 0) return '';
+  if (num >= 1_000_000_000) {
+    return `${(num / 1_000_000_000).toFixed(1).replace(/\.0$/, '')}B views`;
+  }
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(1).replace(/\.0$/, '')}M views`;
+  }
+  if (num >= 1_000) {
+    return `${(num / 1_000).toFixed(1).replace(/\.0$/, '')}K views`;
+  }
+  return `${num} views`;
+}
+
+/**
+ * Formats a video duration in seconds or time string into standard 'MM:SS' or 'HH:MM:SS'.
+ * @param {number|string} duration - Duration in seconds or formatted string
+ * @returns {string} Formatted duration string
+ */
+export function formatVideoDuration(duration) {
+  if (!duration && duration !== 0) return '';
+  if (typeof duration === 'string' && duration.includes(':')) return duration;
+  const sec = typeof duration === 'string' ? parseInt(duration, 10) : duration;
+  if (isNaN(sec) || sec <= 0) return '';
+  const hours = Math.floor(sec / 3600);
+  const minutes = Math.floor((sec % 3600) / 60);
+  const seconds = sec % 60;
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+}

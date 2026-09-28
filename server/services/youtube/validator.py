@@ -16,8 +16,9 @@ def extract_video_id(url: str) -> str:
     - Live stream URLs: https://www.youtube.com/live/VIDEO_ID
     - YouTube Shorts: https://www.youtube.com/shorts/VIDEO_ID
     - Embedded URLs: https://www.youtube.com/embed/VIDEO_ID
-    - Mobile URLs: https://m.youtube.com/...
-    - Raw 11-character video IDs
+    - Mobile URLs: https://m.youtube.com/watch?v=VIDEO_ID
+    - Music URLs: https://music.youtube.com/watch?v=VIDEO_ID
+    - Direct 11-character video IDs
     """
     if not url or not isinstance(url, str):
         raise PathshalaError(
@@ -46,7 +47,7 @@ def extract_video_id(url: str) -> str:
                 video_id = parts[0]
 
         # 2. Standard / Mobile / Subdomain YouTube URLs
-        elif "youtube.com" in netloc:
+        elif any(domain in netloc for domain in ("youtube.com", "youtube-nocookie.com")):
             # Check ?v= query parameter
             qs_v = parse_qs(parsed_url.query).get("v", [None])[0]
             if qs_v and re.fullmatch(r"[a-zA-Z0-9_-]{11}", qs_v):
@@ -66,7 +67,7 @@ def extract_video_id(url: str) -> str:
     # Fallback regex search
     if not video_id:
         match = re.search(
-            r"(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|live\/|shorts\/))([\w-]{11})",
+            r"(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|live\/|shorts\/))([\w-]{11})",
             raw_input,
         )
         if match:
@@ -81,4 +82,51 @@ def extract_video_id(url: str) -> str:
         )
 
     logger.info(f"Video resource validated successfully: {video_id}")
-    return video_id
+    return video_id
+
+
+def extract_playlist_id(url_or_id: str) -> str:
+    """
+    Extract YouTube playlist ID from a URL or raw ID string.
+    Supports:
+    - Raw playlist IDs (e.g. PL..., UU..., FL..., RD..., OLAK...)
+    - Playlist URLs: https://www.youtube.com/playlist?list=PLAYLIST_ID
+    - Video + Playlist URLs: https://www.youtube.com/watch?v=...&list=PLAYLIST_ID
+    """
+    if not url_or_id or not isinstance(url_or_id, str):
+        raise PathshalaError(
+            message="Invalid YouTube playlist URL or ID provided.",
+            code="INVALID_PLAYLIST_ID",
+            status_code=400,
+        )
+
+    clean_input = url_or_id.strip()
+
+    # If it's already a clean playlist ID string without URL scheme or query
+    if re.fullmatch(r"[a-zA-Z0-9_-]{10,64}", clean_input) and not any(ch in clean_input for ch in ("/", "?", "=", "&")):
+        return clean_input
+
+    try:
+        parsed = urlparse(clean_input if "://" in clean_input else f"https://{clean_input}")
+        qs = parse_qs(parsed.query)
+        list_param = qs.get("list", [None])[0]
+        if list_param and re.fullmatch(r"[a-zA-Z0-9_-]{10,64}", list_param):
+            return list_param
+    except Exception as e:
+        logger.warning(f"Playlist URL parsing error: {e}")
+
+    # Fallback regex match for list parameter
+    match = re.search(r"[?&]list=([a-zA-Z0-9_-]{10,64})", clean_input)
+    if match:
+        return match.group(1)
+
+    # Return raw input if valid characters
+    if re.fullmatch(r"[a-zA-Z0-9_-]{10,64}", clean_input):
+        return clean_input
+
+    raise PathshalaError(
+        message="Invalid YouTube playlist identifier or URL.",
+        code="INVALID_PLAYLIST_ID",
+        status_code=400,
+    )
+

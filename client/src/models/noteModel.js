@@ -1,4 +1,5 @@
 import { serverTimestamp } from 'firebase/firestore';
+import { normalizeVideoMetadata } from './videoModel';
 
 export class NoteModel {
   constructor({
@@ -10,14 +11,31 @@ export class NoteModel {
     createdAt = null,
     createdAtDate = null,
   } = {}) {
+    const rawMeta = metadata?.metadata || metadata || {};
+    const norm = normalizeVideoMetadata({
+      id,
+      videoUrl,
+      metadata: rawMeta,
+      ...rawMeta,
+    }) || {};
+
     this.id = id;
-    this.userId = userId;
-    this.videoUrl = videoUrl;
-    this.metadata = metadata || {};
+    this.userId = String(userId || '').trim();
+    this.videoUrl = norm.videoUrl || videoUrl || '';
+    this.videoId = norm.videoId || '';
+    this.metadata = norm.metadata || metadata || {};
     this.result = result || {};
     this.createdAt = createdAt;
     this.createdAtDate = createdAtDate || (createdAt?.toDate ? createdAt.toDate() : (createdAt ? new Date(createdAt) : new Date()));
   }
+
+  get title() { return this.metadata.title || ''; }
+  get channel() { return this.metadata.channel || ''; }
+  get thumbnail() { return this.metadata.thumbnail || ''; }
+  get duration() { return this.metadata.duration || 0; }
+  get durationFormatted() { return this.metadata.durationFormatted || ''; }
+  get video_id() { return this.videoId; }
+  get duration_formatted() { return this.durationFormatted; }
 
   static fromFirestore(docSnap) {
     if (!docSnap || !docSnap.exists()) return null;
@@ -41,7 +59,7 @@ export class NoteModel {
   validate() {
     const errors = [];
     if (!this.userId) errors.push('userId is required.');
-    if (!this.videoUrl) errors.push('videoUrl is required.');
+    if (!this.videoUrl && !this.videoId) errors.push('videoUrl or videoId is required.');
     return errors;
   }
 
@@ -65,3 +83,4 @@ export class NoteModel {
     return payload;
   }
 }
+

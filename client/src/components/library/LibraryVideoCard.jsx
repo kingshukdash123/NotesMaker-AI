@@ -1,8 +1,9 @@
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FileCheck2, Square, CheckSquare, Loader2 } from 'lucide-react';
+import { FileCheck2, Square, CheckSquare, Loader2, User } from 'lucide-react';
 import VideoActionButtons from '../common/VideoActionButtons';
-import { formatTimeAgo, getChannelInitial } from '../../utils/formatters';
+import { normalizeVideoMetadata } from '../../models';
+import { getChannelInitial } from '../../utils/formatters';
 
 export default function LibraryVideoCard({
   video,
@@ -20,12 +21,15 @@ export default function LibraryVideoCard({
 }) {
   const { isDark } = useTheme();
   const { processedVideoIds } = useApp();
-  const metadata = video.metadata || {};
+  
+  const norm = normalizeVideoMetadata(video) || {};
+  const currentVideoId = norm.videoId || '';
 
   // Check if notes already exist/processed for this video ID
-  const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(video.videoId));
-  const channelLetter = getChannelInitial(metadata.channel);
-  const timeAgoText = formatTimeAgo(metadata.publishedAt || video.publishedAt);
+  const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(currentVideoId));
+  const channelLetter = getChannelInitial(norm.channel);
+  const timeAgoText = norm.timeAgoText;
+  const durationText = norm.durationFormatted;
 
   return (
     <div className={`group relative flex flex-col h-full cursor-pointer transition-all duration-200 rounded-xl select-none hover:z-20 focus-within:z-30 ${
@@ -42,10 +46,10 @@ export default function LibraryVideoCard({
           isWatched ? 'opacity-85 group-hover:opacity-100' : ''
         }`}
       >
-        {metadata.thumbnail ? (
+        {norm.thumbnail ? (
           <img
-            src={metadata.thumbnail}
-            alt={metadata.title || 'Educational Lecture Thumbnail'}
+            src={norm.thumbnail}
+            alt={norm.title || 'Educational Lecture Thumbnail'}
             className="w-full h-full object-cover transition-transform duration-250 group-hover:scale-[1.02]"
             loading="lazy"
             decoding="async"
@@ -58,81 +62,70 @@ export default function LibraryVideoCard({
           </div>
         )}
 
-        {/* Live Broadcast Badges (Bottom Right) */}
-        {(video.isLive || video.mediaType === 'live') ? (
+        {/* Live Broadcast / Duration Badge (Bottom Right) */}
+        {norm.isLive ? (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-md tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
             <span>LIVE</span>
           </div>
-        ) : video.mediaType === 'live_archive' ? (
+        ) : norm.isLiveArchive ? (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-purple-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow-md tracking-wider">
             <span>LIVE ARCHIVE</span>
           </div>
-        ) : (
-          <div className="absolute bottom-1.5 right-1.5 z-20 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition">
-            <span>Watch</span>
+        ) : durationText ? (
+          <div className="absolute bottom-1.5 right-1.5 z-20 bg-black/85 backdrop-blur-xs text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-md tracking-wide">
+            <span>{durationText}</span>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Details Section (Flex-1 to align Action Bar at bottom) */}
-      <div className="p-3 flex-1 flex flex-col justify-between min-w-0">
-        {/* Top Channel & Title Info */}
-        <div className="flex items-start gap-2.5 min-w-0">
-          {/* Channel Avatar Circle */}
-          <div
+
+      {/* Details Section */}
+      <div className="p-3 flex-1 flex flex-col justify-between gap-2.5 min-w-0">
+        {/* Title & Channel Stack */}
+        <div className="space-y-1 min-w-0">
+          {/* 1. Title */}
+          <h4
             onClick={onOpen}
-            className={`w-8 h-8 rounded-full border font-bold flex items-center justify-center shrink-0 text-xs uppercase mt-0.5 select-none ${
-              isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-700'
+            className={`text-sm font-semibold line-clamp-2 leading-snug transition ${
+              isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
             }`}
+            title={norm.title || ''}
           >
-            {channelLetter}
-          </div>
+            {norm.title || 'Educational Video'}
+          </h4>
 
-          {/* Text Info */}
-          <div className="flex-1 min-w-0">
-            {/* Dynamic title */}
-            <h4
+          {/* 2. Channel Name with User Icon */}
+          <div className="flex items-center gap-1.5 pt-0.5 min-w-0">
+            <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+            {/* Channel Name */}
+            <p
               onClick={onOpen}
-              className={`text-sm font-bold line-clamp-2 leading-snug transition ${
-                isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
+              className={`text-xs truncate font-medium ${
+                isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
               }`}
-              title={metadata.title || ''}
+              title={norm.channel || ''}
             >
-              {metadata.title || 'Educational Video'}
-            </h4>
+              {norm.channel || 'YouTube Creator'}
+            </p>
 
-            {/* 1 Line for Channel Name */}
-            <div className="flex items-center gap-1.5 mt-0.5 pb-2 min-w-0">
-              <p
-                onClick={onOpen}
-                className={`text-xs truncate font-medium ${
-                  isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
-                }`}
-                title={metadata.channel || ''}
-              >
-                {metadata.channel || 'YouTube Creator'}
-              </p>
-              {timeAgoText && (
-                <>
-                  <span className={`text-[10px] shrink-0 ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
-                  <span className={`text-[11px] shrink-0 font-normal ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                    {timeAgoText}
-                  </span>
-                </>
-              )}
-            </div>
+            {timeAgoText && (
+              <>
+                <span className={`text-[10px] shrink-0 ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
+                <span className={`text-[11px] shrink-0 font-normal ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  {timeAgoText}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Action Bar Pinned at the Bottom of the Card: Action Buttons first, Notes Icon in last */}
-        <div className={`mt-auto pt-2 flex items-center justify-between border-t min-h-[32px] ${
-          isDark ? 'border-zinc-800/60' : 'border-zinc-200'
-        }`}>
+        {/* Action Bar */}
+        <div className="mt-auto pt-1.5 flex items-center justify-between min-h-[28px]">
           {/* Action Buttons: Bookmark, Add to Playlist, Delete + Watched Checkbox */}
           <div className="flex items-center gap-1 shrink-0">
             <VideoActionButtons
-              video={video}
+              video={norm}
               playlists={playlists}
               isSaved={isSaved}
               onSave={onSave}

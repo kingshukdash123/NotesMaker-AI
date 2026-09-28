@@ -1,8 +1,9 @@
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FileCheck2, ExternalLink } from 'lucide-react';
+import { FileCheck2, ExternalLink, User } from 'lucide-react';
 import VideoActionButtons from '../common/VideoActionButtons';
-import { formatTimeAgo, getChannelInitial } from '../../utils/formatters';
+import { normalizeVideoMetadata } from '../../models';
+import { getChannelInitial } from '../../utils/formatters';
 
 export default function SearchResultCard({
   video,
@@ -15,29 +16,33 @@ export default function SearchResultCard({
 }) {
   const { isDark } = useTheme();
   const { processedVideoIds } = useApp();
-  const metadata = video.metadata || {};
-
-  const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(video.videoId));
-  const channelLetter = getChannelInitial(metadata.channel);
-  const timeAgoText = formatTimeAgo(metadata.publishedAt || video.publishedAt);
+  
+  const norm = normalizeVideoMetadata(video) || {};
+  const currentVideoId = norm.videoId || '';
+  const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(currentVideoId));
+  const channelLetter = getChannelInitial(norm.channel);
+  const timeAgoText = norm.timeAgoText;
+  const viewsText = norm.viewsText;
+  const durationText = norm.durationFormatted;
+  const descriptionText = norm.description;
 
   return (
     <div 
       onClick={onOpen}
-      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none ${
+      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-3 sm:p-3.5 transition duration-150 select-none ${
         isDark 
-          ? 'hover:bg-zinc-900/40' 
-          : 'hover:bg-zinc-50'
+          ? 'bg-zinc-900/40 hover:bg-zinc-900/70 text-zinc-100' 
+          : 'bg-zinc-100/70 hover:bg-zinc-100 text-zinc-900'
       }`}
     >
       {/* 16:9 Thumbnail Column */}
-      <div className={`relative w-full sm:w-64 md:w-76 lg:w-88 aspect-video rounded-xl overflow-hidden shrink-0 border shadow-xs ${
-        isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100'
+      <div className={`relative w-full sm:w-64 md:w-72 lg:w-76 aspect-video rounded-xl overflow-hidden shrink-0 ${
+        isDark ? 'bg-zinc-900' : 'bg-zinc-200'
       }`}>
-        {metadata.thumbnail ? (
+        {norm.thumbnail ? (
           <img
-            src={metadata.thumbnail}
-            alt={metadata.title || 'Educational Lecture Thumbnail'}
+            src={norm.thumbnail}
+            alt={norm.title || 'Educational Lecture Thumbnail'}
             className="w-full h-full object-cover transition-transform duration-250 group-hover:scale-[1.02]"
             loading="lazy"
             decoding="async"
@@ -50,15 +55,19 @@ export default function SearchResultCard({
           </div>
         )}
 
-        {/* Live Broadcast / Watch Badge (Bottom Right) */}
-        {(video.isLive || video.mediaType === 'live') ? (
+        {/* Live Broadcast / Duration Badge (Bottom Right) */}
+        {norm.isLive ? (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-md tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
             <span>LIVE</span>
           </div>
-        ) : video.mediaType === 'live_archive' ? (
+        ) : norm.isLiveArchive ? (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-purple-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow-md tracking-wider">
             <span>LIVE ARCHIVE</span>
+          </div>
+        ) : durationText ? (
+          <div className="absolute bottom-1.5 right-1.5 z-20 bg-black/90 backdrop-blur-2xs text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm tracking-wide">
+            <span>{durationText}</span>
           </div>
         ) : (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition">
@@ -67,67 +76,81 @@ export default function SearchResultCard({
         )}
       </div>
 
-      {/* Right Content / Info Column (YouTube Search List Style) */}
-      <div className="flex-1 flex flex-col min-w-0 justify-start py-0.5">
-        {/* Full-width Title */}
-        <h3 
-          className={`text-sm sm:text-base md:text-lg font-semibold line-clamp-2 leading-snug transition ${
-            isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
-          }`}
-          title={metadata.title || ''}
-        >
-          {metadata.title || 'Educational Video'}
-        </h3>
+      {/* Right Content / Info Column (Matching screenshot layout) */}
+      <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+        <div>
+          {/* Full-width Title */}
+          <h3 
+            className={`text-sm sm:text-base md:text-lg font-bold line-clamp-1 leading-snug transition ${
+              isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
+            }`}
+            title={norm.title || ''}
+          >
+            {norm.title || 'Educational Video'}
+          </h3>
 
-        {/* Channel Row */}
-        <div className="flex items-center gap-2 mt-2">
-          <div className={`w-5.5 h-5.5 rounded-full border font-bold flex items-center justify-center shrink-0 text-[10px] uppercase select-none ${
-            isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-700'
-          }`}>
-            {channelLetter}
+          {/* Channel Row + YouTube External Link */}
+          <div className="flex items-center justify-between gap-2 mt-1.5">
+            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+              <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+              <p className={`text-xs font-medium truncate max-w-[200px] sm:max-w-[320px] ${
+                isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+              }`}>
+                {norm.channel || 'YouTube Creator'}
+              </p>
+
+              {timeAgoText && (
+                <>
+                  <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
+                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    {timeAgoText}
+                  </span>
+                </>
+              )}
+
+              {viewsText && (
+                <>
+                  <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
+                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    {viewsText}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Direct YouTube link for attribution */}
+            {currentVideoId && (
+              <a
+                href={`https://www.youtube.com/watch?v=${currentVideoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`p-1 rounded-md text-[11px] transition flex items-center gap-1 opacity-70 hover:opacity-100 shrink-0 ${
+                  isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
+                }`}
+                title="Open video on YouTube"
+                aria-label="Open on YouTube"
+              >
+                <span className="hidden sm:inline">YouTube</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
           </div>
 
-          <p className={`text-xs font-medium truncate max-w-[200px] sm:max-w-[320px] ${
-            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
-          }`}>
-            {metadata.channel || 'YouTube Creator'}
-          </p>
-
-          {timeAgoText && (
-            <>
-              <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
-              <span className={`text-xs font-medium ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                {timeAgoText}
-              </span>
-            </>
-          )}
-
-          {/* Direct YouTube link for attribution */}
-          {video.videoId && (
-            <a
-              href={`https://www.youtube.com/watch?v=${video.videoId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className={`ml-auto p-1 rounded-md text-[11px] transition flex items-center gap-1 opacity-70 hover:opacity-100 ${
-                isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
-              }`}
-              title="Open video on YouTube"
-              aria-label="Open on YouTube"
-            >
-              <span className="hidden sm:inline">YouTube</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+          {/* Description Snippet */}
+          {descriptionText && (
+            <p className={`mt-2 text-xs line-clamp-2 leading-relaxed ${
+              isDark ? 'text-zinc-400' : 'text-zinc-600'
+            }`}>
+              {descriptionText}
+            </p>
           )}
         </div>
 
-        {/* Action Bar Below Channel Name: Action Buttons first, Processed Icon last */}
-        <div className={`flex items-center gap-8 sm:gap-10 mt-2.5 pt-2 border-t ${
-          isDark ? 'border-zinc-800/60' : 'border-zinc-200'
-        }`}>
-          {/* Action Buttons Cluster first */}
+        {/* Action Bar at the bottom left */}
+        <div className="flex items-center gap-2 mt-3 sm:mt-auto pt-1">
           <VideoActionButtons
-            video={video}
+            video={norm}
             playlists={playlists}
             isSaved={isSaved}
             onSave={onSave}
@@ -137,7 +160,6 @@ export default function SearchResultCard({
             popoverAlign="left"
           />
 
-          {/* Video Processed Icon in last */}
           {isProcessed && (
             <span
               title="Notes generated & ready"
@@ -153,3 +175,4 @@ export default function SearchResultCard({
     </div>
   );
 }
+

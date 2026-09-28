@@ -14,6 +14,7 @@ from pydantic import BaseModel, HttpUrl
 
 import hashlib
 from utils.logger import get_logger, current_task_id
+from utils.exceptions import PathshalaError
 from services.firebase.firestore import get_cached_search, save_cached_search
 from services.rag.service import RAGService
 from services.assistant.service import AssistantService
@@ -120,16 +121,18 @@ async def root():
 
 
 @app.get("/api/youtube/metadata")
-async def fetch_metadata(url: str = Query(..., description="The YouTube URL to fetch metadata for")):
+async def fetch_metadata(url: str = Query(..., description="The YouTube URL or video ID to fetch metadata for")):
     """
-    Fetches YouTube video metadata directly using YouTube's public oEmbed API.
-    This is designed to be fast and is called before triggering notes generation.
+    Fetches rich YouTube video metadata using the official YouTube Data API v3.
     """
     try:
         logger.info(f"Requested metadata fetch for URL: {url}")
         video_id = extract_video_id(url)
-        metadata = get_video_metadata(video_id)
+        metadata = await asyncio.to_thread(get_video_metadata, video_id)
         return metadata
+    except PathshalaError as pe:
+        logger.error(f"Metadata extraction failed: {pe.message}")
+        raise HTTPException(status_code=pe.status_code, detail=pe.message)
     except Exception as e:
         logger.error(f"Metadata extraction failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -152,7 +155,7 @@ async def search_youtube(
     # 1. Compute query hash including type filter
     normalized_q = q.lower().strip()
     content_type = (type or "all").lower().strip()
-    hash_input = f"{normalized_q}|{category.lower()}|{content_type}"
+    hash_input = f"v3|{normalized_q}|{category.lower()}|{content_type}"
     if pageToken:
         hash_input += f"|{pageToken}"
     query_hash = hashlib.md5(hash_input.encode("utf-8")).hexdigest()
@@ -177,6 +180,9 @@ async def search_youtube(
         
         result["cached"] = False
         return result
+    except PathshalaError as pe:
+        logger.error(f"Search API error: {pe.message}")
+        raise HTTPException(status_code=pe.status_code, detail=pe.message)
     except Exception as e:
         logger.exception("Error in search_youtube endpoint")
         raise HTTPException(status_code=500, detail=str(e))
@@ -184,7 +190,7 @@ async def search_youtube(
 
 @app.get("/api/youtube/playlist")
 async def fetch_playlist(
-    playlistId: str = Query(..., description="YouTube Playlist ID"),
+    playlistId: str = Query(..., description="YouTube Playlist ID or URL"),
     pageToken: Optional[str] = Query(None, description="YouTube playlist pagination page token"),
     fetchAll: Optional[bool] = Query(False, description="Fetch all pages of playlist in sequence")
 ):
@@ -242,9 +248,13 @@ async def fetch_playlist(
         except Exception as cache_save_err:
             logger.warning(f"Error saving playlist cache for {clean_id}: {cache_save_err}")
         return playlist_data
+    except PathshalaError as pe:
+        logger.error(f"Playlist API error: {pe.message}")
+        raise HTTPException(status_code=pe.status_code, detail=pe.message)
     except Exception as e:
         logger.exception(f"Error in fetch_playlist endpoint for playlist {clean_id}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @app.post("/api/notes/generate", status_code=202)

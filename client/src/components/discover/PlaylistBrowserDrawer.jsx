@@ -1,17 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Folder, Play, Check, Bookmark, ListVideo, Loader2 } from 'lucide-react';
+import { X, Folder, Play, Check, Loader2, FolderPlus } from 'lucide-react';
 import { fetchYouTubePlaylistItems } from '../../services/server/api';
 import { useTheme } from '../../context/ThemeContext';
+import VideoActionButtons from '../common/VideoActionButtons';
+import Skeleton from '../common/Skeleton';
+import { normalizeVideoMetadata } from '../../models';
 
 export default function PlaylistBrowserDrawer({
   isOpen,
   playlistId,
   playlistSummary = null,
   userPlaylists = [],
+  savedVideos = [],
   onClose,
   onVideoSelect,
-  onSaveToLibrary
+  onSaveToLibrary,
+  onSaveVideo,
+  onTogglePlaylistAssociation,
+  onCreatePlaylist
 }) {
   const { isDark } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
@@ -102,21 +109,6 @@ export default function PlaylistBrowserDrawer({
         return true;
       }
 
-      // 2. Exact Title match (case-insensitive)
-      const plName = (pl.name || '').trim().toLowerCase();
-      const targetTitle = displayTitle.trim().toLowerCase();
-      if (plName && targetTitle && plName === targetTitle) {
-        return true;
-      }
-
-      // 3. Video ID overlap: if this playlist's first video matches a video in pl.videos
-      if (Array.isArray(pl.videos) && pl.videos.length > 0 && Array.isArray(videos) && videos.length > 0) {
-        const firstVideoId = videos[0]?.videoId || videos[0]?.id;
-        if (firstVideoId && pl.videos.some((v) => (v.videoId || v.id) === firstVideoId)) {
-          return true;
-        }
-      }
-
       return false;
     })
   );
@@ -151,100 +143,101 @@ export default function PlaylistBrowserDrawer({
       <div className={`relative w-full max-w-xl h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300 border-l ${
         isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'
       }`}>
-        {/* Drawer Header - YouTube Playlist Panel Style */}
-        <div className={`p-4 sm:p-5 border-b flex items-start justify-between gap-3 ${
+        {/* Drawer Header - Responsive mobile & desktop layout */}
+        <div className={`p-3.5 sm:p-5 border-b space-y-2 sm:space-y-2.5 ${
           isDark ? 'border-zinc-800/80 bg-zinc-900/60' : 'border-zinc-200 bg-white'
         }`}>
-          <div className="flex items-start gap-3 min-w-0 flex-1">
-            <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 mt-0.5 ${
-              isDark ? 'bg-zinc-800 border-zinc-700/60 text-orange-500' : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
-            }`}>
-              <ListVideo className="w-5 h-5" />
-            </div>
-            <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                  isDark ? 'bg-orange-500/15 text-orange-400' : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
-                }`}>
-                  Playlist
+          {/* Top Row: Tag, Count & Right Actions (Add to Library + Close Cross) */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                isDark ? 'bg-orange-500/15 text-orange-400' : 'bg-orange-500/10 border border-orange-500/20 text-orange-600'
+              }`}>
+                Playlist
+              </span>
+              {videos.length > 0 && (
+                <span className={`text-[11px] sm:text-xs font-medium truncate ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                  {totalResults > videos.length ? `${videos.length} of ${totalResults}` : videos.length} videos
                 </span>
-                {videos.length > 0 && (
-                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    {totalResults > videos.length ? `${videos.length} of ${totalResults}` : videos.length} videos
-                  </span>
-                )}
-              </div>
-              {isLoading && !playlist?.title && !playlistSummary?.title ? (
-                <div className="space-y-1.5 py-0.5 min-w-[200px]">
-                  <div className={`h-5 w-48 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
-                  <div className={`h-3.5 w-28 rounded animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`} />
-                </div>
-              ) : (
-                <>
-                  <h2
-                    title={displayTitle}
-                    className={`text-base sm:text-lg font-bold truncate leading-snug ${
-                      isDark ? 'text-zinc-100' : 'text-zinc-900'
-                    }`}
-                  >
-                    {displayTitle}
-                  </h2>
-                  <p
-                    title={displayChannel}
-                    className={`text-xs font-medium truncate ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}
-                  >
-                    {displayChannel}
-                  </p>
-                </>
               )}
+            </div>
+
+            {/* Right Action Cluster: Added / Add to Library Button followed by Close Cross Button */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {onSaveToLibrary && (
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isPlaylistSaved || isSaving || isLoading}
+                  className={`px-2.5 sm:px-3 py-1 text-xs font-bold flex items-center justify-center gap-1.5 transition shrink-0 rounded-lg select-none ${
+                    isPlaylistSaved
+                      ? isDark
+                        ? 'bg-green-950/80 text-green-400 border border-green-800/40 cursor-default'
+                        : 'bg-green-100 text-green-800 border border-green-200 cursor-default'
+                      : isSaving
+                        ? 'btn-secondary opacity-80 cursor-wait'
+                        : 'btn-primary cursor-pointer'
+                  }`}
+                  title={isSaving ? 'Adding...' : isPlaylistSaved ? 'Added' : 'Add to Library'}
+                  aria-label={isSaving ? 'Adding...' : isPlaylistSaved ? 'Added' : 'Add to Library'}
+                >
+                  {isPlaylistSaved ? (
+                    <>
+                      <Check className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-700'}`} />
+                      <span>Added</span>
+                    </>
+                  ) : isSaving ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+                      <span>Adding...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FolderPlus className="w-3.5 h-3.5" />
+                      <span>Add to Library</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              {/* Close Cross Button */}
+              <button
+                type="button"
+                onClick={onClose}
+                className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer ${
+                  isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
+                }`}
+                aria-label="Close drawer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
-          {/* Right Column: Close Cross Button & Save Playlist Button Below It */}
-          <div className="flex flex-col items-end shrink-0 gap-1.5 sm:gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer ${
-                isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
-              }`}
-              aria-label="Close drawer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {onSaveToLibrary && (
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isPlaylistSaved || isSaving || isLoading}
-                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
-                  isPlaylistSaved
-                    ? isDark
-                      ? 'bg-green-950/80 text-green-400 border border-green-800/40 rounded-lg opacity-90 cursor-default'
-                      : 'bg-green-100 text-green-800 border border-green-200 rounded-lg opacity-90 cursor-default'
-                    : isSaving
-                      ? 'btn-secondary !rounded-lg opacity-80 cursor-wait'
-                      : 'btn-primary !rounded-lg cursor-pointer'
-                }`}
-              >
-                {isPlaylistSaved ? (
-                  <>
-                    <Check className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-700'}`} />
-                    <span>Saved to Library</span>
-                  </>
-                ) : isSaving ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <Bookmark className="w-3.5 h-3.5" />
-                    <span>Save Playlist</span>
-                  </>
-                )}
-              </button>
+          {/* Title & Channel Row */}
+          <div>
+            {isLoading && !playlist?.title && !playlistSummary?.title ? (
+              <div className="space-y-1.5 py-0.5 min-w-[200px]">
+                <Skeleton className="h-5 sm:h-6 w-3/4 rounded-md" />
+                <Skeleton className="h-3.5 w-36 rounded" />
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                <h2
+                  title={displayTitle}
+                  className={`text-sm sm:text-base md:text-lg font-bold line-clamp-2 leading-snug ${
+                    isDark ? 'text-zinc-100' : 'text-zinc-900'
+                  }`}
+                >
+                  {displayTitle}
+                </h2>
+                <p
+                  title={displayChannel}
+                  className={`text-xs font-medium truncate ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}
+                >
+                  {displayChannel}
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -252,19 +245,35 @@ export default function PlaylistBrowserDrawer({
         {/* Video List Body (YouTube Playlist Queue Style) */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-3 space-y-1">
           {isLoading ? (
-            <div className="space-y-2 p-2">
-              {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div className="space-y-1 p-1">
+              {Array.from({ length: 7 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className={`p-2.5 rounded-xl animate-pulse flex items-center gap-3 ${
-                    isDark ? 'bg-zinc-900/40' : 'bg-white border border-zinc-200 shadow-xs'
+                  className={`p-1.5 sm:p-2.5 rounded-xl flex items-center gap-2 sm:gap-3 ${
+                    isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/60'
                   }`}
                 >
-                  <div className={`w-6 h-4 rounded shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
-                  <div className={`w-28 sm:w-32 aspect-video rounded-lg shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
-                  <div className="flex-1 space-y-2">
-                    <div className={`h-3.5 rounded w-3/4 ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
-                    <div className={`h-2.5 rounded w-1/3 ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`} />
+                  {/* Index Number Skeleton */}
+                  <div className="w-4 sm:w-5 flex justify-center shrink-0">
+                    <Skeleton className="w-3.5 h-3.5 rounded" />
+                  </div>
+
+                  {/* Thumbnail Skeleton */}
+                  <div className="relative w-24 min-[400px]:w-28 sm:w-32 aspect-video rounded-lg overflow-hidden shrink-0">
+                    <Skeleton className="w-full h-full rounded-lg" />
+                  </div>
+
+                  {/* Metadata Details Skeleton */}
+                  <div className="flex-1 min-w-0 pr-1 space-y-1.5">
+                    <Skeleton className="h-3.5 sm:h-4 w-5/6 rounded" />
+                    <Skeleton className="h-3 sm:h-3.5 w-1/2 rounded" />
+                    <Skeleton className="h-2.5 sm:h-3 w-1/3 rounded mt-1" />
+                  </div>
+
+                  {/* Action Buttons Skeleton */}
+                  <div className="flex items-center gap-1 shrink-0 pr-1">
+                    <Skeleton className="w-6 h-6 rounded-lg" />
+                    <Skeleton className="w-6 h-6 rounded-lg" />
                   </div>
                 </div>
               ))}
@@ -299,55 +308,85 @@ export default function PlaylistBrowserDrawer({
               <p className="text-[11px]">This playlist may be empty, unlisted, or private.</p>
             </div>
           ) : (
-            videos.map((vid, index) => (
-              <div
-                key={vid.videoId || index}
-                onClick={() => onVideoSelect(vid)}
-                className={`group p-2 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-3 cursor-pointer ${
-                  isDark
-                    ? 'hover:bg-zinc-900/80 text-zinc-100'
-                    : 'hover:bg-zinc-50 text-zinc-900'
-                }`}
-              >
-                {/* Index Number */}
-                <div className={`w-5 text-center text-xs font-semibold shrink-0 ${
-                  isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-400 group-hover:text-zinc-900 font-medium'
-                }`}>
-                  {index + 1}
-                </div>
+            videos.map((vid, index) => {
+              const norm = normalizeVideoMetadata(vid) || {};
+              const vidId = norm.videoId;
+              const isSaved = savedVideos.some(v => (v.videoId || v.id) === vidId);
 
-                {/* Clean YouTube Thumbnail without gaudy center play button */}
-                <div className={`relative w-28 sm:w-32 aspect-video rounded-lg overflow-hidden shrink-0 border ${
-                  isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100 shadow-2xs'
-                }`}>
-                  <img
-                    src={vid.thumbnail}
-                    alt={vid.title || 'Playlist Lecture Video Thumbnail'}
-                    className="w-full h-full object-cover group-hover:scale-[1.02] transition duration-200"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  {/* Subtle hover play overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    <Play className="w-5 h-5 text-white fill-current drop-shadow" />
+              return (
+                <div
+                  key={vidId || index}
+                  onClick={() => onVideoSelect(norm)}
+                  className={`group p-1.5 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-2 sm:gap-3 cursor-pointer ${
+                    isDark
+                      ? 'hover:bg-zinc-900/80 text-zinc-100'
+                      : 'hover:bg-zinc-50 text-zinc-900'
+                  }`}
+                >
+                  {/* Index Number */}
+                  <div className={`w-4 sm:w-5 text-center text-[11px] sm:text-xs font-semibold shrink-0 ${
+                    isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-400 group-hover:text-zinc-900 font-medium'
+                  }`}>
+                    {index + 1}
                   </div>
-                </div>
 
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  <h4 className={`text-xs sm:text-sm font-semibold line-clamp-2 leading-snug transition ${
-                    isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
+                  {/* Clean YouTube Thumbnail with duration badge */}
+                  <div className={`relative w-24 min-[400px]:w-28 sm:w-32 aspect-video rounded-lg overflow-hidden shrink-0 ${
+                    isDark ? 'bg-zinc-900' : 'bg-zinc-200'
                   }`}>
-                    {vid.title}
-                  </h4>
-                  <p className={`text-[11px] truncate mt-0.5 font-normal ${
-                    isDark ? 'text-zinc-400' : 'text-zinc-500'
-                  }`}>
-                    {vid.channel}
-                  </p>
+                    <img
+                      src={norm.thumbnail}
+                      alt={norm.title || 'Playlist Lecture Video Thumbnail'}
+                      className="w-full h-full object-cover group-hover:scale-[1.02] transition duration-200"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    {/* Duration Badge */}
+                    {norm.durationFormatted && (
+                      <div className="absolute bottom-1 right-1 bg-black/80 backdrop-blur-2xs text-white text-[9px] font-semibold px-1 py-0.2 rounded shadow-xs">
+                        {norm.durationFormatted}
+                      </div>
+                    )}
+                    {/* Subtle hover play overlay */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-current drop-shadow" />
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0 pr-1">
+                    <h4 className={`text-xs sm:text-sm font-semibold line-clamp-2 leading-snug transition ${
+                      isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
+                    }`}>
+                      {norm.title}
+                    </h4>
+                    <p className={`text-[10px] sm:text-[11px] truncate mt-0.5 font-normal ${
+                      isDark ? 'text-zinc-400' : 'text-zinc-500'
+                    }`}>
+                      {norm.channel}
+                    </p>
+                  </div>
+
+                  {/* Action Buttons: Save / Bookmark & Add to Playlist */}
+                  {onSaveVideo && (
+                    <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                      <VideoActionButtons
+                        video={norm}
+                        playlists={userPlaylists}
+                        isSaved={isSaved}
+                        onSave={() => onSaveVideo(norm)}
+                        onAddToPlaylist={(videoId, playlistId, alreadyAssociated) =>
+                          onTogglePlaylistAssociation?.(videoId, playlistId, alreadyAssociated, norm)
+                        }
+                        onCreatePlaylist={onCreatePlaylist}
+                        popoverPlacement="left"
+                        popoverAlign="top"
+                      />
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
 
           {/* Pagination: Load More Lectures Button */}
@@ -369,7 +408,7 @@ export default function PlaylistBrowserDrawer({
                     <span>Loading more lectures...</span>
                   </>
                 ) : (
-                  <span>Load More Lectures ({videos.length} of {totalResults})</span>
+                  <span>Load More Lectures</span>
                 )}
               </button>
             </div>

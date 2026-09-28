@@ -1,24 +1,60 @@
-import { ListVideo, Play, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { ListVideo, Play, ExternalLink, Loader2, User, FolderPlus } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { getChannelInitial } from '../../utils/formatters';
+import { getChannelInitial, formatTimeAgo } from '../../utils/formatters';
 
-export default function SearchResultPlaylistCard({ playlist, onOpen }) {
+export default function SearchResultPlaylistCard({
+  playlist,
+  onOpen,
+  userPlaylists = [],
+  onSaveToLibrary
+}) {
   const { isDark } = useTheme();
   const channelLetter = getChannelInitial(playlist.channel);
   const playlistId = playlist.playlistId || playlist.id;
+  const timeAgoText = formatTimeAgo(playlist.publishedAt);
+  const rawDescription = playlist.description || playlist.metadata?.description || playlist.snippet?.description || '';
+  const descriptionText = rawDescription ? rawDescription.replace(/\s+/g, ' ').trim() : '';
+  const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+
+  // Check if this playlist is already saved in the user's library
+  const isAlreadyInLibrary = Boolean(
+    justSaved ||
+    (userPlaylists && userPlaylists.some((pl) => {
+      if (playlistId && (pl.sourcePlaylistId === playlistId || pl.youtubePlaylistId === playlistId || pl.id === playlistId)) {
+        return true;
+      }
+      return false;
+    }))
+  );
+
+  const handleSave = async (e) => {
+    e.stopPropagation();
+    if (!onSaveToLibrary || isAlreadyInLibrary || isSaving) return;
+    setIsSaving(true);
+    try {
+      await onSaveToLibrary(playlist);
+      setJustSaved(true);
+    } catch (err) {
+      console.error('Failed to save playlist:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div
       onClick={() => onOpen(playlist)}
-      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none ${
+      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-3 sm:p-3.5 transition duration-150 select-none ${
         isDark 
-          ? 'hover:bg-zinc-900/40' 
-          : 'hover:bg-zinc-50'
+          ? 'bg-zinc-900/40 hover:bg-zinc-900/70 text-zinc-100' 
+          : 'bg-zinc-100/70 hover:bg-zinc-100 text-zinc-900'
       }`}
     >
       {/* Thumbnail Column with YouTube Playlist Stack Overlay */}
-      <div className={`relative w-full sm:w-64 md:w-76 lg:w-88 aspect-video rounded-xl overflow-hidden shrink-0 border shadow-xs ${
-        isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100'
+      <div className={`relative w-full sm:w-64 md:w-72 lg:w-76 aspect-video rounded-xl overflow-hidden shrink-0 ${
+        isDark ? 'bg-zinc-900' : 'bg-zinc-200'
       }`}>
         {playlist.thumbnail ? (
           <img
@@ -53,61 +89,97 @@ export default function SearchResultPlaylistCard({ playlist, onOpen }) {
         </div>
       </div>
 
-      {/* Info Column */}
-      <div className="flex-1 flex flex-col min-w-0 justify-start py-0.5">
-        <h3 className={`text-sm sm:text-base md:text-lg font-semibold line-clamp-2 leading-snug transition ${
-          isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
-        }`}>
-          {playlist.title}
-        </h3>
-
-        {/* Channel Row */}
-        <div className="flex items-center gap-2 mt-2 sm:mt-2.5">
-          <div className={`w-6 h-6 rounded-full border font-bold flex items-center justify-center shrink-0 text-[10px] uppercase select-none ${
-            isDark ? 'bg-zinc-800 border-zinc-700/60 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-700'
+      {/* Info Column (Matching screenshot layout) */}
+      <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+        <div>
+          {/* Title */}
+          <h3 className={`text-sm sm:text-base md:text-lg font-bold line-clamp-1 leading-snug transition ${
+            isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
           }`}>
-            {channelLetter}
+            {playlist.title}
+          </h3>
+
+          {/* Channel Row + YouTube External Link */}
+          <div className="flex items-center justify-between gap-2 mt-1.5">
+            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+              <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+              <p className={`text-xs font-medium truncate max-w-[200px] sm:max-w-[320px] ${
+                isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+              }`}>
+                {playlist.channel}
+              </p>
+
+              {timeAgoText && (
+                <>
+                  <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
+                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    {timeAgoText}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Direct YouTube Playlist link for attribution */}
+            {playlistId && (
+              <a
+                href={`https://www.youtube.com/playlist?list=${playlistId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`p-1 rounded-md text-[11px] transition flex items-center gap-1 opacity-70 hover:opacity-100 shrink-0 ${
+                  isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
+                }`}
+                title="Open playlist on YouTube"
+                aria-label="Open playlist on YouTube"
+              >
+                <span className="hidden sm:inline">YouTube</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
           </div>
-          <p className={`text-xs font-medium truncate ${
-            isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
-          }`}>
-            {playlist.channel}
-          </p>
 
-          {/* Direct YouTube Playlist link for attribution */}
-          {playlistId && (
-            <a
-              href={`https://www.youtube.com/playlist?list=${playlistId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className={`ml-auto p-1 rounded-md text-[11px] transition flex items-center gap-1 opacity-70 hover:opacity-100 ${
-                isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
-              }`}
-              title="Open playlist on YouTube"
-              aria-label="Open playlist on YouTube"
-            >
-              <span className="hidden sm:inline">YouTube</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+          {/* Description Snippet */}
+          {descriptionText && (
+            <p className={`mt-2 text-xs line-clamp-2 leading-relaxed ${
+              isDark ? 'text-zinc-400' : 'text-zinc-600'
+            }`}>
+              {descriptionText}
+            </p>
           )}
         </div>
 
-        {/* Action Link: View Full Playlist */}
-        <p className="text-xs font-semibold text-orange-500 mt-2 sm:mt-3 flex items-center gap-1 group-hover:underline">
-          <span>View full playlist</span>
-          <span className="transition-transform group-hover:translate-x-0.5">→</span>
-        </p>
-
-        {/* Description Snippet */}
-        {playlist.description && (
-          <p className={`mt-2 text-xs line-clamp-1 sm:line-clamp-2 leading-relaxed ${
-            isDark ? 'text-zinc-500' : 'text-zinc-500'
-          }`}>
-            {playlist.description}
-          </p>
-        )}
+        {/* Bottom Row: Add Playlist to Library action on left */}
+        <div className="flex items-center justify-between gap-2 mt-3 sm:mt-auto pt-1">
+          {onSaveToLibrary ? (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving || isAlreadyInLibrary}
+              className={`p-1.5 rounded-lg transition select-none flex items-center gap-1.5 cursor-pointer disabled:cursor-default ${
+                isAlreadyInLibrary
+                  ? 'text-orange-500 bg-orange-500/15 hover:bg-orange-500/25'
+                  : isSaving
+                    ? 'opacity-80 cursor-wait'
+                    : isDark
+                      ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
+              }`}
+              title={isSaving ? 'Adding...' : isAlreadyInLibrary ? 'Added' : 'Add to Library'}
+              aria-label={isAlreadyInLibrary ? 'Added' : 'Add to Library'}
+            >
+              {isSaving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+              ) : (
+                <FolderPlus className={`w-3.5 h-3.5 ${isAlreadyInLibrary ? 'fill-current' : ''}`} />
+              )}
+            </button>
+          ) : (
+            <div />
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
+

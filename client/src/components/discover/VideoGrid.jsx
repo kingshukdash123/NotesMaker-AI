@@ -3,6 +3,7 @@ import SearchResultCard from './SearchResultCard';
 import SearchResultPlaylistCard from './SearchResultPlaylistCard';
 import VideoGridSkeleton from '../skeletons/VideoGridSkeleton';
 import { Film } from 'lucide-react';
+import { normalizeVideoMetadata } from '../../models';
 
 export default function VideoGrid({
   videos = [],
@@ -13,6 +14,7 @@ export default function VideoGrid({
   savedVideos = [],
   playlists = [],
   onSaveVideo,
+  onSavePlaylistToLibrary,
   onTogglePlaylistAssociation,
   onCreatePlaylist
 }) {
@@ -59,41 +61,33 @@ export default function VideoGrid({
             <SearchResultPlaylistCard
               key={item.playlistId || item.id}
               playlist={item}
+              userPlaylists={playlists}
+              onSaveToLibrary={onSavePlaylistToLibrary}
               onOpen={() => onPlaylistClick && onPlaylistClick(item)}
             />
           );
         }
 
         // Otherwise item is a Video / Live Stream
-        const isSaved = savedVideos.some(v => v.videoId === item.videoId);
-        const matchSaved = savedVideos.find(v => v.videoId === item.videoId);
-
-        const videoObject = {
-          videoId: item.videoId,
-          videoUrl: `https://www.youtube.com/watch?v=${item.videoId}`,
-          isLive: item.isLive,
-          mediaType: item.mediaType,
-          description: item.description || '',
-          metadata: {
-            title: item.title,
-            channel: item.channel,
-            thumbnail: item.thumbnail,
-            description: item.description || '',
-            is_live: item.isLive,
-          },
-          playlistIds: matchSaved?.playlistIds || []
-        };
+        const normalized = normalizeVideoMetadata(item) || {};
+        const rawVidId = normalized.videoId;
+        const isSaved = savedVideos.some(v => (v.videoId || v.id) === rawVidId);
+        const matchSaved = savedVideos.find(v => (v.videoId || v.id) === rawVidId);
+        
+        if (matchSaved?.playlistIds) {
+          normalized.playlistIds = matchSaved.playlistIds;
+        }
 
         return (
           <SearchResultCard
-            key={item.videoId || item.id}
-            video={videoObject}
+            key={rawVidId}
+            video={normalized}
             playlists={playlists}
             isSaved={isSaved}
-            onOpen={() => onVideoClick(item)}
-            onSave={() => onSaveVideo(videoObject)}
+            onOpen={() => onVideoClick(normalized)}
+            onSave={() => onSaveVideo(normalized)}
             onAddToPlaylist={(videoId, playlistId, alreadyAssociated) =>
-              onTogglePlaylistAssociation(videoId, playlistId, alreadyAssociated, item)
+              onTogglePlaylistAssociation(videoId, playlistId, alreadyAssociated, normalized)
             }
             onCreatePlaylist={onCreatePlaylist}
           />
@@ -102,3 +96,4 @@ export default function VideoGrid({
     </div>
   );
 }
+

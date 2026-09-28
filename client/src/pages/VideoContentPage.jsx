@@ -27,7 +27,8 @@ export default function VideoContentPage() {
     isVideoFullscreen,
     setIsVideoFullscreen,
     isVideoCollapsed,
-    setIsVideoCollapsed
+    setIsVideoCollapsed,
+    openAuthModal,
   } = useApp();
 
   const { processStatus, processError, processVideo } = useVideoProcessor();
@@ -48,7 +49,10 @@ export default function VideoContentPage() {
 
   // Check if video is saved in library
   useEffect(() => {
-    if (!currentUser || !activeVideoId) return;
+    if (!currentUser || !activeVideoId) {
+      setIsSaved(false);
+      return;
+    }
 
     const checkSavedStatus = async () => {
       setIsCheckingSaved(true);
@@ -66,7 +70,11 @@ export default function VideoContentPage() {
   }, [activeVideoId, currentUser]);
 
   const handleToggleSave = async () => {
-    if (!currentUser || !activeVideoId || isSaving) return;
+    if (!currentUser) {
+      openAuthModal?.('login', 'Sign in to save videos to your library.');
+      return;
+    }
+    if (!activeVideoId || isSaving) return;
     setIsSaving(true);
     try {
       if (isSaved) {
@@ -82,7 +90,7 @@ export default function VideoContentPage() {
         setIsSaved(true);
       }
     } catch (err) {
-      console.error('Error toggling save:', err);
+      console.error('Error toggling save in VideoContentPage:', err);
     } finally {
       setIsSaving(false);
     }

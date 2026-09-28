@@ -17,7 +17,9 @@ import {
   createPlaylist,
   createPlaylistWithVideos
 } from '../services/firebase/libraryService';
+import { PlaylistModel, SavedVideoModel } from '../models';
 import { extractYouTubeVideoId, extractYouTubePlaylistId } from '../utils/router';
+import { formatVideoDuration } from '../utils/formatters';
 
 // Icons
 import { AlertCircle, Search } from 'lucide-react';
@@ -37,6 +39,7 @@ export default function DiscoverPage() {
     activePlaylistId,
     setActivePlaylistId,
     openUpgradeModal,
+    openAuthModal,
   } = useApp();
 
   const [inputQuery, setInputQuery] = useState(searchQuery || '');
@@ -155,6 +158,7 @@ export default function DiscoverPage() {
           getUserSavedVideos(currentUser.uid),
           getUserPlaylists(currentUser.uid)
         ]);
+
         setSavedVideos(videosData);
         setPlaylists(playlistsData);
       } catch (err) {
@@ -197,7 +201,11 @@ export default function DiscoverPage() {
 
   // Batch import complete playlist into user's Library with all pages in strict sequence
   const handleSavePlaylistToLibrary = async (playlistData, currentVideos = []) => {
-    if (!currentUser || !playlistData) return;
+    if (!currentUser) {
+      openAuthModal?.('login', 'Sign in to save playlists to your library.');
+      return;
+    }
+    if (!playlistData) return;
 
     const targetPlaylistId = playlistData.playlistId || playlistData.id || selectedPlaylistId;
     if (!targetPlaylistId) return;
@@ -221,49 +229,74 @@ export default function DiscoverPage() {
     const playlistTitle = playlistData.title || selectedPlaylistSummary?.title || 'Course Playlist';
     const created = await createPlaylistWithVideos(currentUser.uid, playlistTitle, orderedVideos, targetPlaylistId);
 
+    const newModel = new PlaylistModel({
+      id: created.id,
+      name: created.name,
+      videos: created.videos,
+      sourcePlaylistId: targetPlaylistId,
+      userId: currentUser.uid,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
     setPlaylists(prev => [
-      {
-        id: created.id,
-        name: created.name,
-        videoCount: created.videoCount,
-        userId: currentUser.uid,
-        createdAt: new Date(),
-        videos: created.videos,
-        sourcePlaylistId: targetPlaylistId,
-      },
-      ...prev
+      newModel,
+      ...prev.filter(pl => pl.id !== created.id && pl.sourcePlaylistId !== targetPlaylistId)
     ]);
   };
 
   // Toggle Save/Bookmark state of a search result card
   const handleToggleSaveVideo = async (video) => {
-    if (!currentUser || !video?.videoId) return;
+    if (!currentUser) {
+      openAuthModal?.('login', 'Sign in to save videos to your library.');
+      return;
+    }
+    const targetVideoId = video?.videoId || video?.id;
+    if (!targetVideoId) return;
 
-    const isCurrentlySaved = savedVideos.some(v => v.videoId === video.videoId);
+    const isCurrentlySaved = savedVideos.some(v => (v.videoId || v.id) === targetVideoId);
     try {
       if (isCurrentlySaved) {
-        await removeVideoFromLibrary(currentUser.uid, video.videoId);
-        setSavedVideos(prev => prev.filter(v => v.videoId !== video.videoId));
+        await removeVideoFromLibrary(currentUser.uid, targetVideoId);
+        setSavedVideos(prev => prev.filter(v => (v.videoId || v.id) !== targetVideoId));
       } else {
+        const rawMeta = video.metadata || video;
+        const metadataToSave = {
+          title: rawMeta.title || video.title || 'YouTube Video',
+          channel: rawMeta.channel || video.channel || 'YouTube Creator',
+          thumbnail: rawMeta.thumbnail || video.thumbnail || `https://img.youtube.com/vi/${targetVideoId}/hqdefault.jpg`,
+          duration: Number(rawMeta.duration || video.duration || 0) || 0,
+          duration_formatted: rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || '',
+          publishedAt: rawMeta.publishedAt || video.publishedAt || '',
+          description: rawMeta.description || video.description || '',
+          view_count: rawMeta.view_count || rawMeta.viewCount || video.viewCount || '',
+          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive),
+        };
+        const videoUrlToSave = video.videoUrl || `https://www.youtube.com/watch?v=${targetVideoId}`;
+
         await saveVideoToLibrary(
           currentUser.uid,
-          video.videoId,
-          video.videoUrl,
-          video.metadata
+          targetVideoId,
+          videoUrlToSave,
+          metadataToSave
         );
 
+        const newSavedModel = new SavedVideoModel({
+          id: `${currentUser.uid}_${targetVideoId}`,
+          userId: currentUser.uid,
+          videoId: targetVideoId,
+          videoUrl: videoUrlToSave,
+          metadata: metadataToSave,
+          savedAt: new Date(),
+        });
+
         setSavedVideos(prev => [
-          ...prev.filter(v => v.videoId !== video.videoId),
-          {
-            videoId: video.videoId,
-            videoUrl: video.videoUrl,
-            metadata: video.metadata,
-            playlistIds: []
-          }
+          newSavedModel,
+          ...prev.filter(v => (v.videoId || v.id) !== targetVideoId)
         ]);
       }
     } catch (err) {
-      console.error('Failed to toggle save video:', err);
+      console.error('Failed to toggle save video in Discover:', err);
     }
   };
 
@@ -274,13 +307,29 @@ export default function DiscoverPage() {
     if (!currentUser) return;
 
     try {
+      const rawMeta = video?.metadata || video || {};
+      const durationSec = Number(rawMeta.duration || video?.duration || rawMeta.duration_seconds || video?.duration_seconds || 0) || 0;
+      let durationFmt = String(rawMeta.duration_formatted || rawMeta.durationFormatted || video?.durationFormatted || video?.duration_formatted || '').trim();
+      if (!durationFmt && durationSec > 0) {
+        durationFmt = formatVideoDuration(durationSec);
+      }
+
       const videoEntry = {
         videoId,
-        videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        videoUrl: video?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
+        duration: durationSec,
+        durationFormatted: durationFmt,
         metadata: {
-          title: video.title || 'YouTube Video',
-          channel: video.channel || 'Unknown Creator',
-          thumbnail: video.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+          title: rawMeta.title || video?.title || 'YouTube Video',
+          channel: rawMeta.channel || video?.channel || 'Unknown Creator',
+          thumbnail: rawMeta.thumbnail || video?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+          duration: durationSec,
+          duration_formatted: durationFmt,
+          durationFormatted: durationFmt,
+          publishedAt: rawMeta.publishedAt || video?.publishedAt || '',
+          description: rawMeta.description || video?.description || '',
+          view_count: rawMeta.view_count || rawMeta.viewCount || video?.viewCount || '',
+          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video?.isLive),
         },
         addedAt: new Date().toISOString(),
       };
@@ -289,7 +338,7 @@ export default function DiscoverPage() {
         await removeVideoFromPlaylist(currentUser.uid, videoId, playlistId);
         setPlaylists(prev => prev.map(pl => {
           if (pl.id === playlistId) {
-            const updatedVideos = (pl.videos || []).filter(v => v.videoId !== videoId);
+            const updatedVideos = (pl.videos || []).filter(v => (v.videoId || v.id) !== videoId);
             return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
           return pl;
@@ -299,7 +348,7 @@ export default function DiscoverPage() {
         setPlaylists(prev => prev.map(pl => {
           if (pl.id === playlistId) {
             const existing = pl.videos || [];
-            const updatedVideos = existing.some(v => v.videoId === videoId) ? existing : [...existing, videoEntry];
+            const updatedVideos = existing.some(v => (v.videoId || v.id) === videoId) ? existing : [...existing, videoEntry];
             return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
           }
           return pl;
@@ -390,9 +439,11 @@ export default function DiscoverPage() {
             savedVideos={savedVideos}
             playlists={playlists}
             onSaveVideo={handleToggleSaveVideo}
+            onSavePlaylistToLibrary={handleSavePlaylistToLibrary}
             onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
             onCreatePlaylist={handleCreatePlaylist}
           />
+
         </div>
       </div>
 
@@ -403,9 +454,13 @@ export default function DiscoverPage() {
         playlistId={selectedPlaylistId}
         playlistSummary={selectedPlaylistSummary}
         userPlaylists={playlists}
+        savedVideos={savedVideos}
         onClose={handleClosePlaylistDrawer}
         onVideoSelect={handleDrawerVideoSelect}
         onSaveToLibrary={handleSavePlaylistToLibrary}
+        onSaveVideo={handleToggleSaveVideo}
+        onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
+        onCreatePlaylist={handleCreatePlaylist}
       />
     </div>
   );

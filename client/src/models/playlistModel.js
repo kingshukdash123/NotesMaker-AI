@@ -1,4 +1,5 @@
 import { serverTimestamp } from 'firebase/firestore';
+import { normalizeVideoMetadata } from './videoModel';
 
 export class PlaylistModel {
   constructor({
@@ -11,10 +12,24 @@ export class PlaylistModel {
     updatedAt = null,
   } = {}) {
     this.id = id;
-    this.userId = userId;
-    this.name = name || '';
-    this.videos = Array.isArray(videos) ? videos : [];
-    this.sourcePlaylistId = sourcePlaylistId || '';
+    this.userId = String(userId || '').trim();
+    this.name = String(name || '').trim();
+    this.videos = Array.isArray(videos)
+      ? videos
+          .map((v, idx) => {
+            const norm = normalizeVideoMetadata(v);
+            if (!norm || !norm.videoId) return null;
+            return {
+              ...norm,
+              position: typeof v?.position === 'number' ? v.position : idx,
+              addedAt: v?.addedAt || null,
+              watched: Boolean(v?.watched),
+              watchedAt: v?.watchedAt || null,
+            };
+          })
+          .filter(Boolean)
+      : [];
+    this.sourcePlaylistId = String(sourcePlaylistId || '').trim();
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -88,10 +103,29 @@ export class PlaylistModel {
       throw new Error(`PlaylistModel validation failed: ${errors.join(', ')}`);
     }
 
+    const cleanVideos = (this.videos || [])
+      .map((v, idx) => {
+        const norm = normalizeVideoMetadata(v);
+        if (!norm || !norm.videoId) return null;
+
+        return {
+          videoId: norm.videoId,
+          videoUrl: norm.videoUrl || `https://www.youtube.com/watch?v=${norm.videoId}`,
+          metadata: norm.metadata,
+          duration: norm.duration,
+          durationFormatted: norm.durationFormatted,
+          position: typeof v.position === 'number' ? v.position : idx,
+          addedAt: v.addedAt || new Date().toISOString(),
+          watched: Boolean(v.watched),
+          watchedAt: v.watchedAt || (v.watched ? new Date().toISOString() : null),
+        };
+      })
+      .filter(Boolean);
+
     const payload = {
       userId: this.userId,
       name: this.name.trim(),
-      videos: this.videos,
+      videos: cleanVideos,
       updatedAt: serverTimestamp(),
     };
 
@@ -106,3 +140,4 @@ export class PlaylistModel {
     return payload;
   }
 }
+

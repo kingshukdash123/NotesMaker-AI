@@ -71,7 +71,7 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className={`flex flex-col rounded-xl overflow-hidden ${
+          className={`flex flex-col h-full rounded-xl select-none ${
             isDark
               ? 'bg-zinc-900/40'
               : 'bg-zinc-100/70'
@@ -79,55 +79,40 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
         >
           {/* 16:9 Thumbnail Skeleton */}
           <div
-            className={`relative w-full aspect-video overflow-hidden ${
-              isDark ? 'bg-zinc-900/50' : 'bg-zinc-200'
+            className={`relative w-full aspect-video rounded-t-xl overflow-hidden shrink-0 ${
+              isDark ? 'bg-zinc-900' : 'bg-zinc-200'
             }`}
           >
             <Skeleton className="w-full h-full rounded-none border-0" />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div
-                className={`w-9 h-9 rounded-full border flex items-center justify-center opacity-40 ${
-                  isDark
-                    ? 'bg-zinc-900/80 border-zinc-800/60'
-                    : 'bg-zinc-100 border-zinc-200'
-                }`}
-              >
-                <div
-                  className={`w-0 h-0 border-t-4 border-t-transparent border-l-7 border-b-4 border-b-transparent ml-0.5 ${
-                    isDark ? 'border-l-zinc-600' : 'border-l-zinc-400'
-                  }`}
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Info Area Skeleton */}
-          <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
-            <div className="space-y-2">
+          {/* Details Section Skeleton */}
+          <div className="p-3 flex-1 flex flex-col justify-between gap-2.5 min-w-0">
+            {/* Title & Channel Stack */}
+            <div className="space-y-1.5 min-w-0">
               {/* Dual-line title placeholder */}
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-3/4 rounded-md" />
+              <Skeleton className="h-4 w-5/6 rounded-md" />
+              <Skeleton className="h-4 w-3/5 rounded-md" />
 
-              {/* Channel name placeholder */}
-              <div className="pt-0.5">
-                <Skeleton className="h-3 w-1/3 rounded" />
+              {/* Channel Row Placeholder */}
+              <div className="flex items-center gap-1.5 pt-1 min-w-0">
+                <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" />
+                <Skeleton className="h-3 w-24 rounded" />
+                <span className={`text-[10px] ${isDark ? 'text-zinc-700' : 'text-zinc-300'}`}>•</span>
+                <Skeleton className="h-3 w-12 rounded" />
               </div>
             </div>
 
-            {/* Action strip placeholder */}
-            <div
-              className={`flex items-center justify-between pt-2 border-t min-h-[28px] ${
-                isDark ? 'border-zinc-900/60' : 'border-zinc-200'
-              }`}
-            >
-              {/* Left buttons silhouette */}
-              <div className="flex items-center gap-1">
-                <Skeleton className="w-6 h-6 rounded-lg" />
-                <Skeleton className="w-6 h-6 rounded-lg" />
+            {/* Action Bar Placeholder */}
+            <div className="mt-auto pt-1.5 flex items-center justify-between min-h-[28px]">
+              {/* Left action buttons */}
+              <div className="flex items-center gap-1 shrink-0">
+                <Skeleton className="w-6.5 h-6.5 rounded-lg" />
+                <Skeleton className="w-6.5 h-6.5 rounded-lg" />
               </div>
 
-              {/* Right icon silhouette */}
-              <Skeleton className="w-6 h-6 rounded-lg" />
+              {/* Right status icon placeholder */}
+              <Skeleton className="w-6.5 h-6.5 rounded-lg" />
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { serverTimestamp } from 'firebase/firestore';
+import { normalizeVideoMetadata } from './videoModel';
 
 export class WatchHistoryModel {
   constructor({
@@ -9,17 +10,31 @@ export class WatchHistoryModel {
     metadata = {},
     openedAt = null,
   } = {}) {
-    this.id = id || `${userId}_${videoId}`;
-    this.userId = userId;
-    this.videoId = videoId;
-    this.videoUrl = videoUrl;
-    this.metadata = {
-      title: metadata?.title || 'YouTube Video',
-      channel: metadata?.channel || 'Unknown Creator',
-      thumbnail: metadata?.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : ''),
-    };
+    const rawMeta = metadata?.metadata || metadata || {};
+    const norm = normalizeVideoMetadata({
+      id,
+      videoId,
+      videoUrl,
+      metadata: rawMeta,
+      ...rawMeta,
+    }) || {};
+
+    const cleanVideoId = norm.videoId || String(videoId || '').trim();
+    this.id = id || (userId && cleanVideoId ? `${userId}_${cleanVideoId}` : null);
+    this.userId = String(userId || '').trim();
+    this.videoId = cleanVideoId;
+    this.videoUrl = norm.videoUrl || videoUrl || (cleanVideoId ? `https://www.youtube.com/watch?v=${cleanVideoId}` : '');
+    this.metadata = norm.metadata || {};
     this.openedAt = openedAt;
   }
+
+  get title() { return this.metadata.title || ''; }
+  get channel() { return this.metadata.channel || ''; }
+  get thumbnail() { return this.metadata.thumbnail || ''; }
+  get duration() { return this.metadata.duration || 0; }
+  get durationFormatted() { return this.metadata.durationFormatted || ''; }
+  get video_id() { return this.videoId; }
+  get duration_formatted() { return this.durationFormatted; }
 
   static fromFirestore(docSnap) {
     if (!docSnap || !docSnap.exists()) return null;
@@ -51,11 +66,13 @@ export class WatchHistoryModel {
     const payload = {
       userId: this.userId,
       videoId: this.videoId,
-      videoUrl: this.videoUrl,
-      metadata: this.metadata,
+      videoUrl: this.videoUrl || `https://www.youtube.com/watch?v=${this.videoId}`,
+      metadata: this.metadata || {},
       openedAt: serverTimestamp(),
     };
 
     return payload;
   }
 }
+
+

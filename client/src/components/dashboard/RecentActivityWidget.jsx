@@ -1,6 +1,7 @@
 import { History, FileText, PlayCircle, ArrowRight, BookOpen, Clock, Sparkles } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import CustomButton from '../common/CustomButton';
+import { normalizeVideoMetadata } from '../../models';
 
 export default function RecentActivityWidget({
   watchHistory = [],
@@ -116,16 +117,17 @@ export default function RecentActivityWidget({
             ) : (
               <div className="space-y-2 overflow-y-auto max-h-[185px] sm:max-h-[215px] custom-scrollbar pr-1">
                 {recentHistory.map((item) => {
-                  const videoId = item.videoId || item.metadata?.video_id || '';
-                  const thumbnail = item.metadata?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                  const title = item.metadata?.title || 'Educational Lecture';
-                  const channel = item.metadata?.channel || item.metadata?.author || 'YouTube';
+                  const norm = normalizeVideoMetadata(item) || {};
+                  const videoId = norm.videoId;
+                  const thumbnail = norm.thumbnail;
+                  const title = norm.title;
+                  const channel = norm.channel;
                   const timeAgo = formatRelativeTime(item.openedAt || item.createdAt);
 
                   return (
                     <div
                       key={item.id || videoId}
-                      onClick={() => onOpenVideo && onOpenVideo(item)}
+                      onClick={() => onOpenVideo && onOpenVideo(norm)}
                       className={`group min-h-[48px] p-2 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none ${
                         isDark 
                           ? 'bg-zinc-950/30 hover:bg-zinc-900/60' 
@@ -227,16 +229,17 @@ export default function RecentActivityWidget({
             ) : (
               <div className="space-y-2 overflow-y-auto max-h-[185px] sm:max-h-[215px] custom-scrollbar pr-1">
                 {recentNotes.map((note) => {
-                  const videoId = note.metadata?.video_id || '';
-                  const thumbnail = note.metadata?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                  const title = note.metadata?.title || 'Academic Outline';
-                  const channel = note.metadata?.channel || note.metadata?.author || 'YouTube';
-                  const timeAgo = formatRelativeTime(note.createdAt);
+                  const norm = normalizeVideoMetadata(note) || {};
+                  const videoId = norm.videoId || '';
+                  const thumbnail = norm.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                  const title = norm.title || 'Academic Outline';
+                  const channel = norm.channel || 'YouTube';
+                  const timeAgo = formatRelativeTime(note.createdAt || norm.publishedAt);
 
                   return (
                     <div
-                      key={note.id}
-                      onClick={() => onOpenVideo && onOpenVideo(note)}
+                      key={note.id || videoId}
+                      onClick={() => onOpenVideo && onOpenVideo(norm)}
                       className={`group min-h-[48px] p-2 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none ${
                         isDark 
                           ? 'bg-zinc-950/30 hover:bg-zinc-900/60' 

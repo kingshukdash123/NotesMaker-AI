@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
+import { normalizeVideoMetadata } from '../../models';
 import LibraryVideoCard from './LibraryVideoCard';
 import {
   Folder,
@@ -684,23 +685,27 @@ export default function PlaylistsTab({
                     ? 'lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3'
                     : 'lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4'
                 } gap-4 sm:gap-5`}>
-                  {displayedVideos.map((video) => (
-                    <LibraryVideoCard
-                      key={video.videoId}
-                      video={video}
-                      playlists={playlists}
-                      onOpen={() => onOpenVideo(video)}
-                      onDelete={() => onTogglePlaylistAssociation(video.videoId, activePlaylist.id, true, video)}
-                      onAddToPlaylist={onTogglePlaylistAssociation}
-                      onCreatePlaylist={onCreatePlaylist}
-                      onSave={() => onToggleSave(video)}
-                      isSaved={savedVideos.some(v => v.videoId === video.videoId)}
-                      showCheckbox={true}
-                      isWatched={Boolean(video.watched)}
-                      isLoadingWatched={togglingVideoIds.has(video.videoId)}
-                      onToggleWatched={() => handleVideoWatchedToggle(video)}
-                    />
-                  ))}
+                  {displayedVideos.map((video) => {
+                    const normVideo = normalizeVideoMetadata(video);
+                    const vidId = normVideo.videoId || normVideo.id;
+                    return (
+                      <LibraryVideoCard
+                        key={vidId}
+                        video={normVideo}
+                        playlists={playlists}
+                        onOpen={() => onOpenVideo(normVideo)}
+                        onDelete={() => onTogglePlaylistAssociation(vidId, activePlaylist.id, true, normVideo)}
+                        onAddToPlaylist={onTogglePlaylistAssociation}
+                        onCreatePlaylist={onCreatePlaylist}
+                        onSave={() => onToggleSave(normVideo)}
+                        isSaved={savedVideos.some(v => (v.videoId || v.id) === vidId)}
+                        showCheckbox={true}
+                        isWatched={Boolean(normVideo.watched)}
+                        isLoadingWatched={togglingVideoIds.has(vidId)}
+                        onToggleWatched={() => handleVideoWatchedToggle(normVideo)}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>

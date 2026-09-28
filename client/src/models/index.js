@@ -3,6 +3,7 @@ export { PlannerTaskModel } from './plannerTaskModel';
 export { SavedVideoModel } from './savedVideoModel';
 export { PlaylistModel } from './playlistModel';
 export { WatchHistoryModel } from './watchHistoryModel';
+export { VideoModel, normalizeVideoMetadata } from './videoModel';
 export { AssistantThreadModel } from './assistantThreadModel';
 export { AssistantMessageModel } from './assistantMessageModel';
 export { VideoQnAModel } from './videoQnAModel';
