@@ -126,7 +126,7 @@ export class VideoModel {
       rawMeta.snippet?.description ||
       item.snippet?.description ||
       '';
-    const description = String(rawDesc || '').replace(/\s+/g, ' ').trim();
+    const description = String(rawDesc || '').replace(/\r\n/g, '\n').trim();
 
     const isLive = Boolean(
       rawMeta.is_live ||

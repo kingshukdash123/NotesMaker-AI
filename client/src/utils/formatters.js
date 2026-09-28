@@ -73,4 +73,5 @@ export function formatVideoDuration(duration) {
   if (hours > 0) {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }

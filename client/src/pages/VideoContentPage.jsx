@@ -111,7 +111,7 @@ export default function VideoContentPage() {
         activeTab === 'qa' ? 'h-full overflow-hidden' : 'md:min-h-0 md:overflow-hidden'
       }`}>
         {/* Left Side: Video Player with Tools (Adaptive Desktop Width & Mobile Sticky Header) */}
-        <div className={`flex flex-col shrink-0 min-h-0 sticky top-0 z-30 md:static transition-all duration-300 ${
+        <div className={`flex flex-col shrink-0 min-h-0 sticky top-0 z-30 md:static md:h-full md:min-h-0 transition-all duration-300 ${
           isVideoCollapsed 
             ? 'w-full md:w-auto pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 md:p-0 overflow-visible' 
             : 'w-full md:w-[48%] lg:w-[45%] xl:w-[42%] pt-2 pb-1.5 px-3 sm:pt-3 sm:pb-2 md:p-0'
