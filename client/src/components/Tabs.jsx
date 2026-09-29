@@ -77,10 +77,10 @@ export default function Tabs({
                 className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center select-none ${
                   isActive
                     ? isDark 
-                      ? 'bg-orange-500/15 text-orange-400 font-bold' 
-                      : 'bg-orange-500/10 text-orange-600 font-bold border border-orange-500/20 shadow-xs'
+                      ? 'bg-zinc-800 text-zinc-100 font-semibold' 
+                      : 'bg-zinc-200 text-zinc-900 font-semibold shadow-2xs'
                     : isDark
-                      ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
+                      ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
                       : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
                 }`}
               >
@@ -107,15 +107,15 @@ export default function Tabs({
               className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center select-none ${
                 isVideoCollapsed
                   ? isDark 
-                    ? 'bg-orange-500/15 text-orange-400 font-bold' 
-                    : 'bg-orange-500/10 text-orange-600 font-bold border border-orange-500/20 shadow-xs'
+                    ? 'bg-zinc-800 text-zinc-100 font-semibold' 
+                    : 'bg-zinc-200 text-zinc-900 font-semibold shadow-2xs'
                   : isDark
-                    ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
                     : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
               }`}
             >
               {isVideoCollapsed ? (
-                <Eye className="w-3.5 h-3.5 text-orange-500" />
+                <Eye className="w-3.5 h-3.5" />
               ) : (
                 <EyeOff className="w-3.5 h-3.5" />
               )}
@@ -132,10 +132,10 @@ export default function Tabs({
               className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center select-none ${
                 isFullscreen
                   ? isDark 
-                    ? 'bg-orange-500/15 text-orange-400 font-bold' 
-                    : 'bg-orange-500/10 text-orange-600 font-bold border border-orange-500/20 shadow-xs'
+                    ? 'bg-zinc-800 text-zinc-100 font-semibold' 
+                    : 'bg-zinc-200 text-zinc-900 font-semibold shadow-2xs'
                   : isDark
-                    ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
                     : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
               }`}
             >
@@ -158,15 +158,15 @@ export default function Tabs({
               className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center select-none ${
                 isSaved
                   ? isDark 
-                    ? 'bg-orange-500/15 text-orange-400' 
-                    : 'bg-orange-500/10 text-orange-600 border border-orange-500/20 shadow-xs'
+                    ? 'text-zinc-100 hover:text-white hover:bg-zinc-800/60' 
+                    : 'text-zinc-900 hover:text-black hover:bg-zinc-100'
                   : isDark
-                    ? 'text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10'
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
                     : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
               }`}
             >
               {isCheckingSaved ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
               ) : (
                 <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
               )}

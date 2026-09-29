@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { getUserNotes } from '../services/firebase/notesService';
+import { subscribeUserNotes, extractYoutubeVideoId } from '../services/firebase/notesService';
 import { subscribeUserMonthlyUsage } from '../services/firebase/usageService';
 import { UsageModel } from '../models/usageModel';
 import { parseLocation } from '../utils/router';
@@ -206,16 +206,15 @@ export function AppProvider({ children }) {
 
     setIsUsageLoading(true);
 
-    const fetchNotesArchive = async () => {
-      try {
-        const notes = await getUserNotes(currentUser.uid);
-        const ids = new Set(notes.map(n => n.metadata?.video_id).filter(Boolean));
-        setProcessedVideoIds(ids);
-      } catch (err) {
-        console.error("Failed to load processed video IDs:", err);
-      }
-    };
-    fetchNotesArchive();
+    // Subscribe to real-time generated notes archive
+    const unsubscribeNotes = subscribeUserNotes(currentUser.uid, (notes) => {
+      const ids = new Set(
+        notes
+          .map((n) => n.videoId || n.video_id || n.metadata?.videoId || n.metadata?.video_id || (n.videoUrl ? extractYoutubeVideoId(n.videoUrl) : ''))
+          .filter(Boolean)
+      );
+      setProcessedVideoIds(ids);
+    });
 
     // Subscribe to real-time 30-day billing cycle usage
     const cyclePeriod = UsageModel.getCurrentPeriod(userProfile);
@@ -229,6 +228,7 @@ export function AppProvider({ children }) {
     );
 
     return () => {
+      unsubscribeNotes();
       unsubscribeUsage();
     };
   }, [

@@ -1,6 +1,6 @@
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FileCheck2, Square, CheckSquare, Loader2, User } from 'lucide-react';
+import { Cpu, Square, CheckSquare, Loader2, User } from 'lucide-react';
 import VideoActionButtons from '../common/VideoActionButtons';
 import { normalizeVideoMetadata } from '../../models';
 import { getChannelInitial } from '../../utils/formatters';
@@ -21,30 +21,26 @@ export default function LibraryVideoCard({
 }) {
   const { isDark } = useTheme();
   const { processedVideoIds } = useApp();
-  
+
   const norm = normalizeVideoMetadata(video) || {};
   const currentVideoId = norm.videoId || '';
 
   // Check if notes already exist/processed for this video ID
   const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(currentVideoId));
   const channelLetter = getChannelInitial(norm.channel);
-  const timeAgoText = norm.timeAgoText;
   const durationText = norm.durationFormatted;
 
   return (
-    <div className={`group relative flex flex-col h-full cursor-pointer transition-all duration-200 rounded-xl select-none hover:z-20 focus-within:z-30 ${
-      isDark
+    <div className={`group relative flex flex-col h-full cursor-pointer transition-all duration-200 rounded-xl select-none hover:z-20 focus-within:z-30 ${isDark
         ? 'bg-zinc-900/40 hover:bg-zinc-900/70'
         : 'bg-zinc-100/70 hover:bg-zinc-100'
-    }`}>
+      }`}>
       {/* 16:9 Clean YouTube Thumbnail */}
       <div
         onClick={onOpen}
-        className={`relative w-full aspect-video rounded-t-xl overflow-hidden shrink-0 transition-colors duration-150 ${
-          isDark ? 'bg-zinc-900' : 'bg-zinc-200'
-        } ${
-          isWatched ? 'opacity-85 group-hover:opacity-100' : ''
-        }`}
+        className={`relative w-full aspect-video rounded-t-xl overflow-hidden shrink-0 transition-colors duration-150 ${isDark ? 'bg-zinc-900' : 'bg-zinc-200'
+          } ${isWatched ? 'opacity-85 group-hover:opacity-100' : ''
+          }`}
       >
         {norm.thumbnail ? (
           <img
@@ -55,9 +51,8 @@ export default function LibraryVideoCard({
             decoding="async"
           />
         ) : (
-          <div className={`w-full h-full flex items-center justify-center ${
-            isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-100 text-zinc-400'
-          }`}>
+          <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-100 text-zinc-400'
+            }`}>
             <span className="text-xs font-semibold">Video</span>
           </div>
         )}
@@ -84,12 +79,11 @@ export default function LibraryVideoCard({
       <div className="p-3 flex-1 flex flex-col justify-between gap-2.5 min-w-0">
         {/* Title & Channel Stack */}
         <div className="space-y-1 min-w-0">
-          {/* 1. Title */}
+          {/* 1. Title (1 line clamp) */}
           <h4
             onClick={onOpen}
-            className={`text-sm font-semibold line-clamp-2 leading-snug transition ${
-              isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
-            }`}
+            className={`text-sm font-semibold line-clamp-1 leading-snug transition ${isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
+              }`}
             title={norm.title || ''}
           >
             {norm.title || 'Educational Video'}
@@ -101,22 +95,12 @@ export default function LibraryVideoCard({
             {/* Channel Name */}
             <p
               onClick={onOpen}
-              className={`text-xs truncate font-medium ${
-                isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
-              }`}
+              className={`text-xs truncate font-medium ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+                }`}
               title={norm.channel || ''}
             >
               {norm.channel || 'YouTube Creator'}
             </p>
-
-            {timeAgoText && (
-              <>
-                <span className={`text-[10px] shrink-0 ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
-                <span className={`text-[11px] shrink-0 font-normal ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  {timeAgoText}
-                </span>
-              </>
-            )}
           </div>
         </div>
 
@@ -145,24 +129,19 @@ export default function LibraryVideoCard({
                   e.stopPropagation();
                   onToggleWatched?.(video);
                 }}
-                className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-not-allowed ${
-                  isWatched
+                className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-not-allowed ${isWatched
                     ? isDark
-                      ? 'text-green-400 bg-green-950/60 hover:bg-green-900/60'
-                      : 'text-green-800 bg-green-100 hover:bg-green-200'
+                      ? 'text-zinc-100 hover:text-white hover:bg-zinc-800/60'
+                      : 'text-zinc-900 hover:text-black hover:bg-zinc-100'
                     : isDark
-                      ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
-                      : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
-                }`}
+                      ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
+                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
+                  }`}
                 title={isLoadingWatched ? 'Updating status...' : isWatched ? 'Mark as unwatched' : 'Mark as watched'}
                 aria-label={isLoadingWatched ? 'Updating status...' : isWatched ? 'Mark as unwatched' : 'Mark as watched'}
               >
                 {isLoadingWatched ? (
-                  <Loader2 className={`w-3.5 h-3.5 animate-spin ${
-                    isWatched 
-                      ? isDark ? 'text-green-400' : 'text-green-700'
-                      : isDark ? 'text-zinc-300' : 'text-zinc-600'
-                  }`} />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
                 ) : isWatched ? (
                   <CheckSquare className="w-3.5 h-3.5" />
                 ) : (
@@ -176,14 +155,12 @@ export default function LibraryVideoCard({
           {isProcessed ? (
             <span
               title="Notes generated & ready"
-              className={`inline-flex items-center justify-center p-1.5 rounded-lg shrink-0 ${
-                isDark ? 'text-green-500 bg-green-500/15' : 'text-green-700 bg-green-700/15'
-              }`}
+              className="inline-flex items-center justify-center p-1 shrink-0 text-emerald-500 dark:text-emerald-400"
             >
-              <FileCheck2 className="w-3.5 h-3.5" />
+              <Cpu className="w-4 h-4" />
             </span>
           ) : (
-            <div className="w-6.5" />
+            <div className="w-6" />
           )}
         </div>
       </div>

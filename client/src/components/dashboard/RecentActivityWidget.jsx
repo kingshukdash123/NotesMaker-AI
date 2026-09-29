@@ -161,7 +161,10 @@ export default function RecentActivityWidget({
                           isDark ? 'text-zinc-500' : 'text-zinc-500'
                         }`}>
                           <span className="truncate max-w-[100px] min-[380px]:max-w-[140px]">{channel}</span>
-                          <span className="shrink-0">{timeAgo}</span>
+                          <span className="shrink-0 flex items-center gap-1">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            <span>{timeAgo}</span>
+                          </span>
                         </div>
                       </div>
 
@@ -270,7 +273,10 @@ export default function RecentActivityWidget({
                           isDark ? 'text-zinc-500' : 'text-zinc-500'
                         }`}>
                           <span className="truncate max-w-[100px] min-[380px]:max-w-[140px]">{channel}</span>
-                          <span className="shrink-0">{timeAgo}</span>
+                          <span className="shrink-0 flex items-center gap-1">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            <span>{timeAgo}</span>
+                          </span>
                         </div>
                       </div>
 

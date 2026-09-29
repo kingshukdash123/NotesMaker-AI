@@ -61,16 +61,18 @@ export default function VideoActionButtons({
           onClick={handleSave}
           className={`p-1.5 rounded-lg transition cursor-pointer disabled:cursor-wait ${
             isSaved
-              ? 'text-orange-500 bg-orange-500/15 hover:bg-orange-500/25'
+              ? isDark
+                ? 'text-zinc-100 hover:text-white hover:bg-zinc-800/60'
+                : 'text-zinc-900 hover:text-black hover:bg-zinc-100'
               : isDark
-                ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
                 : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
           }`}
           title={isSaving ? 'Saving...' : isSaved ? 'Saved in Library' : 'Save to Library'}
           aria-label={isSaved ? 'Remove from saved' : 'Save video'}
         >
           {isSaving ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
           ) : (
             <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
           )}

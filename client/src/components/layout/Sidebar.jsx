@@ -80,15 +80,15 @@ export default function Sidebar({
       {/* Left Navigation Sidebar with smooth width & transform transitions */}
       <aside
         className={`fixed top-[53px] bottom-0 left-0 border-r z-[80] flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto custom-scrollbar p-3 ${
-          isSidebarCollapsed ? 'w-64 md:w-16 md:items-center' : 'w-64'
+          isSidebarCollapsed ? 'w-64 lg:w-16 lg:items-center' : 'w-64'
         } ${
-          isSidebarMobileOpen ? 'translate-x-0 shadow-2xl w-64' : '-translate-x-full md:translate-x-0'
+          isSidebarMobileOpen ? 'translate-x-0 shadow-2xl w-64' : '-translate-x-full lg:translate-x-0'
         } ${
           isDark ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-zinc-200'
         }`}
       >
         {/* Toggle Collapse Button for Desktop */}
-        <div className={`hidden md:flex items-center mb-3 min-h-[32px] w-full ${
+        <div className={`hidden lg:flex items-center mb-3 min-h-[32px] w-full ${
           isSidebarCollapsed ? 'justify-center' : 'justify-between px-1'
         }`}>
           {!isSidebarCollapsed && (
@@ -99,7 +99,7 @@ export default function Sidebar({
                 setActiveSection('dashboard');
               }}
               className={`text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left whitespace-nowrap truncate ${
-                isDark ? 'text-zinc-500 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
+                isDark ? 'text-zinc-500 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
               }`}
               title="Go to Dashboard"
             >
@@ -109,8 +109,8 @@ export default function Sidebar({
           <button
             type="button"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className={`rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
-              isSidebarCollapsed ? 'w-10 h-8' : 'w-7 h-7'
+            className={`flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+              isSidebarCollapsed ? 'w-10 h-10 rounded-full' : 'w-7 h-7 rounded-lg'
             } ${
               isDark ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
@@ -121,8 +121,8 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Mobile Header indicator with Close button */}
-        <div className="md:hidden flex items-center justify-between px-1.5 mb-3 min-h-[32px]">
+        {/* Mobile/Tablet Header indicator with Close button */}
+        <div className="lg:hidden flex items-center justify-between px-1.5 mb-3 min-h-[32px]">
           <button
             type="button"
             onClick={() => {
@@ -131,7 +131,7 @@ export default function Sidebar({
               if (setIsSidebarMobileOpen) setIsSidebarMobileOpen(false);
             }}
             className={`text-[11px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer text-left ${
-              isDark ? 'text-zinc-400 hover:text-orange-400' : 'text-zinc-500 hover:text-zinc-900'
+              isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
             }`}
             title="Go to Dashboard"
           >
@@ -151,10 +151,10 @@ export default function Sidebar({
         </div>
 
         {/* Navigation Links */}
-        <nav className={`flex-1 flex flex-col gap-1.5 w-full ${isSidebarCollapsed ? 'md:items-center' : ''}`}>
+        <nav className={`flex-1 flex flex-col gap-1.5 w-full ${isSidebarCollapsed ? 'lg:items-center' : ''}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeSection === item.id;
+            const isActive = !activeVideoId && activeSection === item.id;
             const isDisabled = Boolean(item.disabled);
 
             if (isDisabled) {
@@ -163,8 +163,8 @@ export default function Sidebar({
                   key={item.id}
                   type="button"
                   disabled
-                  className={`flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
-                    isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
+                  className={`flex items-center text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
+                    isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0 lg:rounded-full rounded-xl' : 'rounded-xl'
                   } ${
                     isDark
                       ? 'text-zinc-500 hover:text-zinc-400 bg-zinc-900/10'
@@ -176,13 +176,13 @@ export default function Sidebar({
                     <Icon className="w-4 h-4 shrink-0" />
                   </div>
                   <span className={`truncate whitespace-nowrap text-left max-w-[140px] ml-3 ${
-                    isSidebarCollapsed ? 'block md:hidden' : 'block'
+                    isSidebarCollapsed ? 'block lg:hidden' : 'block'
                   }`}>
                     {item.label}
                   </span>
                   {item.maintenance && (
                     <span className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap ${
-                      isSidebarCollapsed ? 'inline-flex md:hidden' : 'inline-flex'
+                      isSidebarCollapsed ? 'inline-flex lg:hidden' : 'inline-flex'
                     }`}>
                       <Wrench className="w-2.5 h-2.5 shrink-0" />
                       <span>{item.badge || 'Soon'}</span>
@@ -202,13 +202,13 @@ export default function Sidebar({
                   setActiveSection(item.id);
                   setIsSidebarMobileOpen(false);
                 }}
-                className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
-                  isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
+                className={`flex items-center text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
+                  isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0 lg:rounded-full rounded-xl' : 'rounded-xl'
                 } ${
                   isActive
                     ? isDark
-                      ? 'bg-orange-950/20 text-orange-400 font-bold'
-                      : 'bg-zinc-100 text-zinc-900 font-bold'
+                      ? 'bg-zinc-900 text-zinc-100 font-bold border-none'
+                      : 'bg-zinc-100 text-zinc-900 font-bold border-none'
                     : isDark
                       ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
                       : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
@@ -219,7 +219,7 @@ export default function Sidebar({
                   <Icon className={`${item.id === 'assistant' ? 'w-6 h-6' : 'w-4 h-4'} shrink-0`} />
                 </div>
                 <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
-                  isSidebarCollapsed ? 'block md:hidden' : 'block'
+                  isSidebarCollapsed ? 'block lg:hidden' : 'block'
                 }`}>
                   {item.label}
                 </span>
@@ -229,46 +229,14 @@ export default function Sidebar({
         </nav>
 
         {/* Footer controls: Billing, Refer, Legal, Settings */}
-        <div className={`pt-3 border-t space-y-1.5 w-full ${isSidebarCollapsed ? 'flex flex-col md:items-center' : ''} ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
-          {/* Billing & Usage Tab */}
-          <button
-            type="button"
-            onClick={() => {
-              if (activeVideoId) {
-                resetActiveVideo();
-              }
-              setActiveSection('billing');
-              setIsSidebarMobileOpen(false);
-            }}
-            className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
-              isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
-            } ${
-              activeSection === 'billing'
-                ? isDark
-                  ? 'bg-orange-950/20 text-orange-400 font-bold'
-                  : 'bg-zinc-100 text-zinc-900 font-bold'
-                : isDark
-                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
-            }`}
-            title="Billing & Resource Usage"
-          >
-            <div className="shrink-0 flex items-center justify-center w-5 h-5">
-              <CreditCard className="w-4 h-4 shrink-0" />
-            </div>
-            <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
-              isSidebarCollapsed ? 'block md:hidden' : 'block'
-            }`}>
-              Billing &amp; Usage
-            </span>
-          </button>
+        <div className={`pt-3 border-t space-y-1.5 w-full ${isSidebarCollapsed ? 'flex flex-col lg:items-center' : ''} ${isDark ? 'border-zinc-900' : 'border-zinc-200'}`}>
 
           {/* Refer & Rewards Tab (Disabled / Maintenance) */}
           <button
             type="button"
             disabled
-            className={`flex items-center rounded-xl text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
-              isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
+            className={`flex items-center text-xs font-semibold tracking-wide select-none cursor-not-allowed opacity-60 overflow-hidden transition-colors w-full h-10 px-2.5 ${
+              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0 lg:rounded-full rounded-xl' : 'rounded-xl'
             } ${
               isDark
                 ? 'text-zinc-500 hover:text-zinc-400 bg-zinc-900/10'
@@ -280,15 +248,48 @@ export default function Sidebar({
               <Gift className="w-4 h-4 shrink-0" />
             </div>
             <span className={`truncate whitespace-nowrap text-left max-w-[140px] ml-3 ${
-              isSidebarCollapsed ? 'block md:hidden' : 'block'
+              isSidebarCollapsed ? 'block lg:hidden' : 'block'
             }`}>
               Refer &amp; Rewards
             </span>
             <span className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap ${
-              isSidebarCollapsed ? 'inline-flex md:hidden' : 'inline-flex'
+              isSidebarCollapsed ? 'inline-flex lg:hidden' : 'inline-flex'
             }`}>
               <Wrench className="w-2.5 h-2.5 shrink-0" />
               <span>Soon</span>
+            </span>
+          </button>
+
+          {/* Billing & Usage Tab */}
+          <button
+            type="button"
+            onClick={() => {
+              if (activeVideoId) {
+                resetActiveVideo();
+              }
+              setActiveSection('billing');
+              setIsSidebarMobileOpen(false);
+            }}
+            className={`flex items-center text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
+              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0 lg:rounded-full rounded-xl' : 'rounded-xl'
+            } ${
+              !activeVideoId && activeSection === 'billing'
+                ? isDark
+                  ? 'bg-zinc-900 text-zinc-100 font-bold border-none'
+                  : 'bg-zinc-100 text-zinc-900 font-bold border-none'
+                : isDark
+                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+            }`}
+            title="Billing & Resource Usage"
+          >
+            <div className="shrink-0 flex items-center justify-center w-5 h-5">
+              <CreditCard className="w-4 h-4 shrink-0" />
+            </div>
+            <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
+              isSidebarCollapsed ? 'block lg:hidden' : 'block'
+            }`}>
+              Billing &amp; Usage
             </span>
           </button>
 
@@ -302,13 +303,13 @@ export default function Sidebar({
               setActiveSection(LEGAL_SECTIONS.has(activeSection) ? activeSection : 'privacy');
               setIsSidebarMobileOpen(false);
             }}
-            className={`flex items-center rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
-              isSidebarCollapsed ? 'md:w-10 md:h-10 md:justify-center md:p-0' : ''
+            className={`flex items-center text-xs font-semibold tracking-wide transition-colors cursor-pointer overflow-hidden w-full h-10 px-2.5 ${
+              isSidebarCollapsed ? 'lg:w-10 lg:h-10 lg:justify-center lg:p-0 lg:rounded-full rounded-xl' : 'rounded-xl'
             } ${
-              LEGAL_SECTIONS.has(activeSection)
+              !activeVideoId && LEGAL_SECTIONS.has(activeSection)
                 ? isDark
-                  ? 'bg-orange-950/20 text-orange-400 font-bold'
-                  : 'bg-zinc-100 text-zinc-900 font-bold'
+                  ? 'bg-zinc-900 text-zinc-100 font-bold border-none'
+                  : 'bg-zinc-100 text-zinc-900 font-bold border-none'
                 : isDark
                   ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
                   : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
@@ -319,7 +320,7 @@ export default function Sidebar({
               <Scale className="w-4 h-4 shrink-0" />
             </div>
             <span className={`truncate whitespace-nowrap text-left max-w-[160px] ml-3 ${
-              isSidebarCollapsed ? 'block md:hidden' : 'block'
+              isSidebarCollapsed ? 'block lg:hidden' : 'block'
             }`}>
               Legal &amp; Policies
             </span>

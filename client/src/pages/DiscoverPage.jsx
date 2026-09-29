@@ -23,6 +23,7 @@ import { formatVideoDuration } from '../utils/formatters';
 
 // Icons
 import { AlertCircle, Search } from 'lucide-react';
+import YouTubeIcon from '../components/common/YouTubeIcon';
 
 export default function DiscoverPage() {
   const { currentUser, userProfile } = useAuth();
@@ -380,10 +381,10 @@ export default function DiscoverPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="w-full p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
-        {/* Page Header */}
-        <div className="flex items-center justify-between gap-2">
+    <div className="flex-1 w-full h-full flex flex-col min-h-0 overflow-hidden">
+      <div className="w-full p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 pb-2 sm:pb-4 animate-in fade-in duration-300">
+        {/* Page Header (Pinned) */}
+        <div className="flex items-center justify-between gap-2 shrink-0">
           <div className="min-w-0">
             <h1 className={`text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2 sm:gap-2.5 truncate ${
               isDark ? 'text-zinc-100' : 'text-zinc-900'
@@ -399,16 +400,13 @@ export default function DiscoverPage() {
               ? 'text-zinc-400' 
               : 'text-zinc-500'
           }`}>
-            <svg className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24">
-              <path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
-              <polygon fill="#FFFFFF" points="9.545,15.568 15.818,12 9.545,8.432" />
-            </svg>
+            <YouTubeIcon className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
             <span>Powered by YouTube</span>
           </div>
         </div>
 
-        {/* Search Bar section */}
-        <div>
+        {/* Search Bar section (Pinned) */}
+        <div className="shrink-0">
           <SearchBar
             autoFocus
             inputRef={searchInputRef}
@@ -422,14 +420,14 @@ export default function DiscoverPage() {
 
         {/* Error Notification */}
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
+          <div className="p-3.5 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs flex items-center gap-3 shrink-0">
             <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Search Results Grid */}
-        <div className="space-y-4">
+        {/* Search Results Grid (Scrollable) */}
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 -mr-1 pb-4">
           <VideoGrid
             videos={results}
             isLoading={isLoading}
@@ -443,7 +441,6 @@ export default function DiscoverPage() {
             onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
             onCreatePlaylist={handleCreatePlaylist}
           />
-
         </div>
       </div>
 

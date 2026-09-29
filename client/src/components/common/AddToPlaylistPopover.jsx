@@ -189,17 +189,17 @@ export default function AddToPlaylistPopover({
         className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center select-none disabled:cursor-wait ${
           isOpen
             ? isDark
-              ? 'bg-orange-500/15 text-orange-400'
-              : 'bg-orange-500/10 text-orange-600 border border-orange-500/20 shadow-xs'
+              ? 'text-zinc-100 hover:text-white hover:bg-zinc-800/60'
+              : 'text-zinc-900 hover:text-black hover:bg-zinc-100'
             : isDark
-              ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+              ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
               : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
         } ${buttonClassName}`}
         title="Add to Playlist"
         aria-label="Add to playlist"
       >
         {loadingPlaylistIds.size > 0 || isLoadingPlaylists ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
         ) : (
           <FolderPlus className="w-3.5 h-3.5" />
         )}
@@ -240,7 +240,7 @@ export default function AddToPlaylistPopover({
           <div className="space-y-0.5 max-h-[105px] overflow-y-auto custom-scrollbar my-1 pr-1">
             {isLoadingPlaylists ? (
               <div className="p-3 text-center">
-                <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto text-orange-500" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto text-zinc-400" />
               </div>
             ) : effectivePlaylists.length > 0 ? (
               effectivePlaylists.map((pl) => {
@@ -264,9 +264,9 @@ export default function AddToPlaylistPopover({
                   >
                     <span className="truncate pr-2">{pl.name}</span>
                     {isLoadingThis ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500 shrink-0" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400 shrink-0" />
                     ) : isInPlaylist ? (
-                      <Check className="w-3.5 h-3.5 text-orange-500 shrink-0 stroke-[2.5]" />
+                      <Check className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100 shrink-0 stroke-[2.5]" />
                     ) : null}
                   </button>
                 );

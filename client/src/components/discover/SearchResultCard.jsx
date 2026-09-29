@@ -1,6 +1,6 @@
-import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FileCheck2, ExternalLink, User } from 'lucide-react';
+import { User, Clock, Eye } from 'lucide-react';
+import YouTubeIcon from '../common/YouTubeIcon';
 import VideoActionButtons from '../common/VideoActionButtons';
 import { normalizeVideoMetadata } from '../../models';
 import { getChannelInitial } from '../../utils/formatters';
@@ -15,11 +15,9 @@ export default function SearchResultCard({
   onCreatePlaylist
 }) {
   const { isDark } = useTheme();
-  const { processedVideoIds } = useApp();
-  
+
   const norm = normalizeVideoMetadata(video) || {};
   const currentVideoId = norm.videoId || '';
-  const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(currentVideoId));
   const channelLetter = getChannelInitial(norm.channel);
   const timeAgoText = norm.timeAgoText;
   const viewsText = norm.viewsText;
@@ -27,18 +25,16 @@ export default function SearchResultCard({
   const descriptionText = norm.description;
 
   return (
-    <div 
+    <div
       onClick={onOpen}
-      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-3 sm:p-3.5 transition duration-150 select-none ${
-        isDark 
-          ? 'bg-zinc-900/40 hover:bg-zinc-900/70 text-zinc-100' 
+      className={`group flex flex-col sm:flex-row gap-3 sm:gap-4.5 cursor-pointer rounded-2xl p-3 sm:p-3.5 transition duration-150 select-none ${isDark
+          ? 'bg-zinc-900/40 hover:bg-zinc-900/70 text-zinc-100'
           : 'bg-zinc-100/70 hover:bg-zinc-100 text-zinc-900'
-      }`}
+        }`}
     >
       {/* 16:9 Thumbnail Column */}
-      <div className={`relative w-full sm:w-64 md:w-72 lg:w-76 aspect-video rounded-xl overflow-hidden shrink-0 ${
-        isDark ? 'bg-zinc-900' : 'bg-zinc-200'
-      }`}>
+      <div className={`relative w-full sm:w-64 md:w-72 lg:w-76 aspect-video rounded-xl overflow-hidden shrink-0 ${isDark ? 'bg-zinc-900' : 'bg-zinc-200'
+        }`}>
         {norm.thumbnail ? (
           <img
             src={norm.thumbnail}
@@ -48,9 +44,8 @@ export default function SearchResultCard({
             decoding="async"
           />
         ) : (
-          <div className={`w-full h-full flex items-center justify-center ${
-            isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-100 text-zinc-400'
-          }`}>
+          <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-100 text-zinc-400'
+            }`}>
             <span className="text-xs font-semibold">Video</span>
           </div>
         )}
@@ -76,100 +71,156 @@ export default function SearchResultCard({
         )}
       </div>
 
-      {/* Right Content / Info Column (Matching screenshot layout) */}
+      {/* Right Content / Info Column */}
       <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
         <div>
-          {/* Full-width Title */}
-          <h3 
-            className={`text-sm sm:text-base md:text-lg font-bold line-clamp-1 leading-snug transition ${
-              isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
-            }`}
+          {/* Full-width Title (2 lines on phone view) */}
+          <h3
+            className={`text-sm sm:text-base md:text-lg font-bold line-clamp-2 leading-snug transition ${isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
+              }`}
             title={norm.title || ''}
           >
             {norm.title || 'Educational Video'}
           </h3>
 
-          {/* Channel Row + YouTube External Link */}
-          <div className="flex items-center justify-between gap-2 mt-1.5">
-            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-              <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-              <p className={`text-xs font-medium truncate max-w-[200px] sm:max-w-[320px] ${
-                isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
-              }`}>
-                {norm.channel || 'YouTube Creator'}
-              </p>
+          {/* ── Mobile Layout (< sm): Channel/Ago-Views on Left, Actions & YouTube on Right ── */}
+          <div className="flex sm:hidden items-center justify-between gap-2 min-w-0 mt-1.5">
+            {/* Left: Channel + Ago & Views */}
+            <div className="min-w-0">
+              {/* Channel Row */}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+                <p className={`text-xs font-medium truncate max-w-[150px] ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+                  }`}>
+                  {norm.channel || 'YouTube Creator'}
+                </p>
+              </div>
 
-              {timeAgoText && (
-                <>
-                  <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
-                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    {timeAgoText}
-                  </span>
-                </>
-              )}
-
-              {viewsText && (
-                <>
-                  <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-300'}`}>•</span>
-                  <span className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    {viewsText}
-                  </span>
-                </>
+              {/* Time Ago & Views */}
+              {(timeAgoText || viewsText) && (
+                <div className={`flex items-center gap-2 text-xs font-medium mt-0.5 ${isDark ? 'text-zinc-500' : 'text-zinc-500'
+                  }`}>
+                  {timeAgoText && (
+                    <span className="flex items-center gap-1 shrink-0">
+                      <Clock className="w-3 h-3 shrink-0" />
+                      <span>{timeAgoText}</span>
+                    </span>
+                  )}
+                  {viewsText && (
+                    <span className="flex items-center gap-1 shrink-0">
+                      <Eye className="w-3 h-3 shrink-0" />
+                      <span>{viewsText}</span>
+                    </span>
+                  )}
+                </div>
               )}
             </div>
 
-            {/* Direct YouTube link for attribution */}
-            {currentVideoId && (
-              <a
-                href={`https://www.youtube.com/watch?v=${currentVideoId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className={`p-1 rounded-md text-[11px] transition flex items-center gap-1 opacity-70 hover:opacity-100 shrink-0 ${
-                  isDark ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80' : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
-                }`}
-                title="Open video on YouTube"
-                aria-label="Open on YouTube"
-              >
-                <span className="hidden sm:inline">YouTube</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
+            {/* Mobile Actions: Buttons & YouTube */}
+            <div className="flex items-center gap-1 shrink-0">
+              <VideoActionButtons
+                video={norm}
+                playlists={playlists}
+                isSaved={isSaved}
+                onSave={onSave}
+                onAddToPlaylist={onAddToPlaylist}
+                onCreatePlaylist={onCreatePlaylist}
+                popoverPlacement="bottom"
+                popoverAlign="right"
+              />
+
+              {/* YouTube link at extreme right */}
+              {currentVideoId && (
+                <a
+                  href={`https://www.youtube.com/watch?v=${currentVideoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className={`p-1.5 rounded-lg transition-all flex items-center justify-center shrink-0 opacity-80 hover:opacity-100 ${isDark
+                      ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200'
+                      : 'hover:bg-zinc-200/70 text-zinc-500 hover:text-zinc-900'
+                    }`}
+                  title="Watch on YouTube"
+                  aria-label="Watch on YouTube"
+                >
+                  <YouTubeIcon className="w-4 h-4 transition-transform hover:scale-110" />
+                </a>
+              )}
+            </div>
           </div>
 
-          {/* Description Snippet */}
-          {descriptionText && (
-            <p className={`mt-2 text-xs line-clamp-2 leading-relaxed ${
-              isDark ? 'text-zinc-400' : 'text-zinc-600'
-            }`}>
-              {descriptionText}
-            </p>
-          )}
-        </div>
+          {/* ── Larger Devices Layout (>= sm): Channel -> Ago/Views -> Action Buttons -> Description ── */}
+          <div className="hidden sm:block">
+            {/* Channel Row */}
+            <div className="flex items-center gap-1.5 min-w-0 mt-1.5">
+              <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+              <p className={`text-xs font-medium truncate max-w-[320px] ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+                }`}>
+                {norm.channel || 'YouTube Creator'}
+              </p>
+            </div>
 
-        {/* Action Bar at the bottom left */}
-        <div className="flex items-center gap-2 mt-3 sm:mt-auto pt-1">
-          <VideoActionButtons
-            video={norm}
-            playlists={playlists}
-            isSaved={isSaved}
-            onSave={onSave}
-            onAddToPlaylist={onAddToPlaylist}
-            onCreatePlaylist={onCreatePlaylist}
-            popoverPlacement="bottom"
-            popoverAlign="left"
-          />
+            {/* Time Ago & Views */}
+            {(timeAgoText || viewsText) && (
+              <div className={`flex items-center gap-2.5 text-xs font-medium mt-1 ${isDark ? 'text-zinc-500' : 'text-zinc-500'
+                }`}>
+                {timeAgoText && (
+                  <span className="flex items-center gap-1 shrink-0">
+                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <span>{timeAgoText}</span>
+                  </span>
+                )}
+                {viewsText && (
+                  <span className="flex items-center gap-1 shrink-0">
+                    <Eye className="w-3.5 h-3.5 shrink-0" />
+                    <span>{viewsText}</span>
+                  </span>
+                )}
+              </div>
+            )}
 
-          {isProcessed && (
-            <span
-              title="Notes generated & ready"
-              className={`inline-flex items-center justify-center p-1.5 rounded-lg shrink-0 ${
-                isDark ? 'text-green-500 bg-green-500/15' : 'text-green-700 bg-green-700/15'
-              }`}
-            >
-              <FileCheck2 className="w-3.5 h-3.5" />
-            </span>
-          )}
+            {/* Action Bar: Placed between Ago-Views and Description */}
+            <div className="flex items-center justify-between gap-2 mt-2 pt-0.5">
+              <div className="flex items-center gap-1.5">
+                <VideoActionButtons
+                  video={norm}
+                  playlists={playlists}
+                  isSaved={isSaved}
+                  onSave={onSave}
+                  onAddToPlaylist={onAddToPlaylist}
+                  onCreatePlaylist={onCreatePlaylist}
+                  popoverPlacement="bottom"
+                  popoverAlign="left"
+                />
+              </div>
+
+              {/* YouTube Link on extreme right of Action Bar */}
+              {currentVideoId && (
+                <a
+                  href={`https://www.youtube.com/watch?v=${currentVideoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className={`p-1.5 rounded-lg transition-all flex items-center justify-center shrink-0 opacity-80 hover:opacity-100 ${isDark
+                      ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200'
+                      : 'hover:bg-zinc-200/70 text-zinc-500 hover:text-zinc-900'
+                    }`}
+                  title="Watch on YouTube"
+                  aria-label="Watch on YouTube"
+                >
+                  <YouTubeIcon className="w-4 h-4 transition-transform hover:scale-110" />
+                </a>
+              )}
+            </div>
+
+            {/* Description Snippet (2-line clamped on sm+) */}
+            {descriptionText && (
+              <p className={`line-clamp-2 mt-2 text-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'
+                }`}>
+                {descriptionText}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

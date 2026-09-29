@@ -55,10 +55,10 @@ export default function SearchBar({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full rounded-2xl pl-11 pr-36 sm:pr-44 py-3 text-xs sm:text-sm transition font-medium focus:outline-none focus:ring-1 ${
+          className={`w-full rounded-2xl pl-11 pr-36 sm:pr-44 py-3 text-xs sm:text-sm transition duration-150 font-medium border border-transparent focus:outline-none focus:ring-0 ${
             isDark
-              ? 'bg-zinc-950/60 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-700 focus:ring-zinc-700'
-              : 'bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-orange-500 focus:ring-orange-500/20 shadow-xs'
+              ? 'bg-zinc-900/60 text-zinc-100 placeholder-zinc-500 focus:border-zinc-800 focus:bg-zinc-900/90'
+              : 'bg-zinc-100/80 text-zinc-900 placeholder-zinc-400 focus:border-zinc-300 focus:bg-zinc-100'
           }`}
         />
 

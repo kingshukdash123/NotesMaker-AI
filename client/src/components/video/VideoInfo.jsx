@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 import { 
   ChevronDown, 
-  ChevronUp 
+  ChevronUp,
+  Clock,
+  Eye,
+  User
 } from 'lucide-react';
+import YouTubeIcon from '../common/YouTubeIcon';
+import Skeleton from '../common/Skeleton';
 import { useTheme } from '../../context/ThemeContext';
 import { normalizeVideoMetadata } from '../../models';
-import { getChannelInitial, formatViews, formatTimeAgo } from '../../utils/formatters';
+import { formatViews, formatTimeAgo } from '../../utils/formatters';
 
 /**
  * Converts a timestamp string (e.g. "0:01:24", "1:13:09", "12:34", "0:32") into total seconds.
@@ -66,7 +71,7 @@ function renderDescriptionContent(text) {
             window.dispatchEvent(new CustomEvent('seek-video', { detail: { seconds } }));
           }}
           title={`Seek video to ${part}`}
-          className="inline-flex items-center font-mono font-bold text-[11.5px] sm:text-xs text-orange-500 hover:text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 px-1 py-0.5 my-0.5 rounded transition cursor-pointer select-none align-baseline active:scale-95"
+          className="inline-flex items-center font-mono font-semibold text-[11.5px] sm:text-xs text-blue-600 dark:text-blue-400 hover:underline bg-blue-500/10 hover:bg-blue-500/20 px-1 py-0.5 my-0.5 rounded transition cursor-pointer select-none align-baseline active:scale-95"
         >
           <span>{part}</span>
         </button>
@@ -103,9 +108,41 @@ export default function VideoInfo({
   }, [videoId]);
 
   const norm = normalizeVideoMetadata(metadata) || normalizeVideoMetadata({ videoId, videoUrl }) || {};
+  const isLoading = !metadata || (!metadata.title && !metadata.channel && !norm.title && !norm.channel);
+
+  if (isLoading) {
+    return (
+      <div className={`w-full flex flex-col gap-2 bg-transparent border-0 select-none animate-in fade-in duration-200 ${className}`}>
+        {/* Title skeleton + toggle */}
+        <div className="w-full flex items-start justify-between gap-2.5">
+          <Skeleton className="h-5 sm:h-6 w-4/5 rounded-md" />
+          <Skeleton className="w-6 h-6 rounded-lg shrink-0" />
+        </div>
+        {/* Channel & Stats row skeleton */}
+        <div className="flex items-center justify-between gap-2 pt-0.5">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" />
+              <Skeleton className="h-4 w-28 sm:w-36 rounded" />
+            </div>
+            <span className={`text-xs ${isDark ? 'text-zinc-700' : 'text-zinc-300'}`}>•</span>
+            <Skeleton className="h-3 w-16 rounded" />
+          </div>
+          <Skeleton className="w-7 h-7 rounded-lg shrink-0" />
+        </div>
+        {/* Description skeleton box */}
+        <div className={`mt-2 p-3 sm:p-3.5 rounded-xl space-y-2 ${
+          isDark ? 'bg-zinc-900/40' : 'bg-zinc-100/70'
+        }`}>
+          <Skeleton className="h-3.5 w-full rounded" />
+          <Skeleton className="h-3.5 w-11/12 rounded" />
+          <Skeleton className="h-3.5 w-3/4 rounded" />
+        </div>
+      </div>
+    );
+  }
   const title = norm.title || metadata?.title || 'YouTube Video';
   const channel = norm.channel || metadata?.channel || metadata?.channelTitle || metadata?.author || 'YouTube Creator';
-  const channelInitial = getChannelInitial(channel);
   const viewsText = norm.viewsText || (norm.viewCount ? formatViews(norm.viewCount) : '');
   const timeAgoText = norm.timeAgoText || (norm.publishedAt ? formatTimeAgo(norm.publishedAt) : '');
   const description = (norm.description || metadata?.description || '').trim();
@@ -158,9 +195,9 @@ export default function VideoInfo({
           }`}
         >
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-orange-500" />
+            <ChevronUp className="w-4 h-4" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-orange-500" />
+            <ChevronDown className="w-4 h-4" />
           )}
         </button>
       </div>
@@ -168,42 +205,50 @@ export default function VideoInfo({
       {/* 2. Expanded Content: Channel Row + Description (Hidden when collapsed) */}
       {isExpanded && (
         <div className="flex flex-col gap-2 animate-in fade-in duration-150">
-          {/* Channel & Metadata Stats Row */}
-          <div className="flex items-center justify-between gap-2 flex-wrap pt-0.5">
-            <div className="flex items-center gap-2 min-w-0 flex-wrap">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-orange-500/15 border border-orange-500/25 flex items-center justify-center font-bold text-[11px] sm:text-xs text-orange-500 shrink-0">
-                {channelInitial}
+          {/* Channel & Metadata Stats Row (Matching SearchResultCard layout) */}
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            <div className="min-w-0">
+              {/* Channel Row */}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+                <span className={`text-xs sm:text-sm font-semibold truncate ${
+                  isDark ? 'text-zinc-300' : 'text-zinc-700'
+                }`}>
+                  {channel}
+                </span>
+
+                {isLive && (
+                  <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[9.5px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 tracking-wider ml-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                    LIVE
+                  </span>
+                )}
+
+                {isLiveArchive && (
+                  <span className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-[9.5px] font-bold px-1.5 py-0.5 rounded tracking-wider ml-1">
+                    LIVE ARCHIVE
+                  </span>
+                )}
               </div>
 
-              <span className={`text-xs sm:text-sm font-semibold truncate ${
-                isDark ? 'text-zinc-300' : 'text-zinc-700'
-              }`}>
-                {channel}
-              </span>
-
-              {viewsText && (
-                <span className={`text-[11px] sm:text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  &bull; {viewsText}
-                </span>
-              )}
-
-              {timeAgoText && (
-                <span className={`text-[11px] sm:text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  &bull; {timeAgoText}
-                </span>
-              )}
-
-              {isLive && (
-                <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[9.5px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-                  LIVE
-                </span>
-              )}
-
-              {isLiveArchive && (
-                <span className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-[9.5px] font-bold px-1.5 py-0.5 rounded tracking-wider">
-                  LIVE ARCHIVE
-                </span>
+              {/* Time Ago & Views (Next Line with Icons) */}
+              {(timeAgoText || viewsText) && (
+                <div className={`flex items-center gap-2.5 text-xs font-medium mt-1 ${
+                  isDark ? 'text-zinc-500' : 'text-zinc-500'
+                }`}>
+                  {timeAgoText && (
+                    <span className="flex items-center gap-1 shrink-0">
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      <span>{timeAgoText}</span>
+                    </span>
+                  )}
+                  {viewsText && (
+                    <span className="flex items-center gap-1 shrink-0">
+                      <Eye className="w-3.5 h-3.5 shrink-0" />
+                      <span>{viewsText}</span>
+                    </span>
+                  )}
+                </div>
               )}
             </div>
 
@@ -215,16 +260,13 @@ export default function VideoInfo({
                 rel="noopener noreferrer"
                 title="Watch on YouTube"
                 aria-label="Watch on YouTube"
-                className={`p-1 rounded-lg transition cursor-pointer select-none flex items-center justify-center ${
+                className={`p-1 rounded-lg transition cursor-pointer select-none flex items-center justify-center shrink-0 self-start mt-0.5 ${
                   isDark 
                     ? 'hover:bg-zinc-800/60 text-zinc-400 hover:text-zinc-200' 
                     : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
                 }`}
               >
-                <svg className="w-4 h-4 shrink-0 transition-transform hover:scale-110" viewBox="0 0 24 24">
-                  <path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
-                  <polygon fill="#FFFFFF" points="9.545,15.568 15.818,12 9.545,8.432" />
-                </svg>
+                <YouTubeIcon className="w-4 h-4 transition-transform hover:scale-110" />
               </a>
             )}
           </div>

@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import ThreeDotMenu from '../common/ThreeDotMenu';
 import ActionModal from '../common/ActionModal';
+import Skeleton from '../common/Skeleton';
+import VideoGridSkeleton from '../skeletons/VideoGridSkeleton';
 
 export default function PlaylistsTab({
   playlists = [],
@@ -175,10 +177,13 @@ export default function PlaylistsTab({
         {/* Separately Scrollable Playlist List (No borders on items) */}
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2 space-y-1">
           {isLoading && playlists.length === 0 ? (
-            <div className="p-1 space-y-2 animate-pulse">
-              <div className={`h-8 rounded-xl ${isDark ? 'bg-zinc-900/60' : 'bg-zinc-100'}`} />
-              <div className={`h-8 rounded-xl ${isDark ? 'bg-zinc-900/60' : 'bg-zinc-100'}`} />
-              <div className={`h-8 rounded-xl ${isDark ? 'bg-zinc-900/60' : 'bg-zinc-100'}`} />
+            <div className="p-1 space-y-1.5 animate-in fade-in duration-200">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl">
+                  <Skeleton className="w-4 h-4 rounded shrink-0" />
+                  <Skeleton className="h-3.5 w-3/4 rounded" />
+                </div>
+              ))}
             </div>
           ) : playlists.length === 0 ? (
             <div className={`text-center py-8 px-3 rounded-xl text-xs space-y-1 ${isDark ? 'text-zinc-500' : 'text-zinc-400'
@@ -386,9 +391,9 @@ export default function PlaylistsTab({
                         aria-label="Mark all videos as watched"
                       >
                         {isBulkLoading ? (
-                          <Loader2 className={`w-3.5 h-3.5 animate-spin ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
                         ) : (
-                          <CheckCheck className={`w-3.5 h-3.5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                          <CheckCheck className="w-3.5 h-3.5 text-zinc-400" />
                         )}
                         <span>{isBulkLoading ? 'Updating...' : 'Mark All Watched'}</span>
                       </button>
@@ -550,9 +555,9 @@ export default function PlaylistsTab({
                         aria-label="Mark all videos as watched"
                       >
                         {isBulkLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-green-400" />
+                          <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
                         ) : (
-                          <CheckCheck className="w-4 h-4 text-green-400" />
+                          <CheckCheck className="w-4 h-4 text-zinc-400" />
                         )}
                       </button>
                     ) : (
@@ -694,7 +699,6 @@ export default function PlaylistsTab({
                         video={normVideo}
                         playlists={playlists}
                         onOpen={() => onOpenVideo(normVideo)}
-                        onDelete={() => onTogglePlaylistAssociation(vidId, activePlaylist.id, true, normVideo)}
                         onAddToPlaylist={onTogglePlaylistAssociation}
                         onCreatePlaylist={onCreatePlaylist}
                         onSave={() => onToggleSave(normVideo)}
@@ -710,6 +714,22 @@ export default function PlaylistsTab({
               )}
             </div>
           </>
+        ) : isLoading ? (
+          <div className="flex-1 flex flex-col space-y-4 animate-in fade-in duration-200">
+            {/* Header Skeleton */}
+            <div className={`px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl flex items-center justify-between gap-3 shrink-0 ${
+              isDark ? 'bg-zinc-950/90' : 'bg-white border border-zinc-200/80 shadow-xs'
+            }`}>
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <Skeleton className="h-6 w-48 rounded-lg" />
+              </div>
+              <Skeleton className="h-8 w-32 rounded-xl" />
+            </div>
+            {/* Grid Skeleton */}
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
+              <VideoGridSkeleton count={4} layout="grid" />
+            </div>
+          </div>
         ) : (
           <div className={`text-center py-16 rounded-2xl flex flex-col items-center justify-center gap-2 p-6 border ${isDark ? 'bg-zinc-950/40 border-zinc-900 text-zinc-400' : 'bg-white border-zinc-200/80 text-zinc-600 shadow-xs'
             }`}>

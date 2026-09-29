@@ -10,53 +10,51 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
         {Array.from({ length: count }).map((_, index) => (
           <div
             key={index}
-            className="flex flex-col sm:flex-row gap-3 sm:gap-4.5 rounded-2xl p-2 sm:p-2.5 transition duration-150 select-none"
+            className={`flex flex-col sm:flex-row gap-3 sm:gap-4.5 rounded-2xl p-3 sm:p-3.5 select-none ${isDark ? 'bg-zinc-900/40' : 'bg-zinc-100/70'
+              }`}
           >
             {/* 16:9 Thumbnail Skeleton Column */}
             <div
-              className={`relative w-full sm:w-64 md:w-76 lg:w-88 aspect-video rounded-xl overflow-hidden shrink-0 border ${
-                isDark ? 'border-zinc-800/60 bg-zinc-900' : 'border-zinc-200 bg-zinc-100'
-              }`}
+              className={`relative w-full sm:w-64 md:w-72 lg:w-76 aspect-video rounded-xl overflow-hidden shrink-0 ${isDark ? 'bg-zinc-900' : 'bg-zinc-200'
+                }`}
             >
               <Skeleton className="w-full h-full rounded-none border-0" />
             </div>
 
             {/* Right Info Column (Matches SearchResultCard) */}
-            <div className="flex-1 flex flex-col justify-start py-0.5 min-w-0">
-              {/* Dual-line Title Skeleton */}
-              <div className="space-y-1.5">
-                <Skeleton className="h-4.5 sm:h-5 w-4/5 rounded-md" />
-                <Skeleton className="h-4 sm:h-4.5 w-3/5 rounded-md" />
+            <div className="flex-1 flex flex-col justify-between py-0.5 min-w-0">
+              <div>
+                {/* Dual-line Title Skeleton */}
+                <div className="space-y-1.5">
+                  <Skeleton className="h-4.5 sm:h-5 w-4/5 rounded-md" />
+                  <Skeleton className="h-4 sm:h-4.5 w-3/5 rounded-md" />
+                </div>
+
+                {/* Channel Row Skeleton */}
+                <div className="flex items-center gap-1.5 min-w-0 mt-2">
+                  <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" />
+                  <Skeleton className="h-3.5 w-28 sm:w-36 rounded" />
+                </div>
+
+                {/* Time Ago & Views Skeleton */}
+                <div className="flex items-center gap-2.5 mt-1.5">
+                  <div className="flex items-center gap-1">
+                    <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" />
+                    <Skeleton className="h-3 w-16 rounded" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" />
+                    <Skeleton className="h-3 w-14 rounded" />
+                  </div>
+                </div>
               </div>
 
-              {/* Channel Row Skeleton */}
-              <div className="flex items-center gap-2 mt-2">
-                {/* Channel Avatar */}
-                <Skeleton className="w-5.5 h-5.5 rounded-full shrink-0" />
-
-                {/* Channel Name */}
-                <Skeleton className="h-3.5 w-28 sm:w-36 rounded" />
-
-                {/* Dot Separator */}
-                <span className={`text-xs ${isDark ? 'text-zinc-700' : 'text-zinc-300'}`}>•</span>
-
-                {/* Time Ago */}
-                <Skeleton className="h-3 w-16 rounded" />
-              </div>
-
-              {/* Action Bar Below Channel Name */}
-              <div
-                className={`flex items-center gap-8 sm:gap-10 mt-2.5 pt-2 border-t ${
-                  isDark ? 'border-zinc-800/40' : 'border-zinc-200/60'
-                }`}
-              >
-                {/* Action Buttons Cluster */}
-                <div className="flex items-center gap-1">
+              {/* Action Bar */}
+              <div className="flex items-center justify-between gap-2 mt-2 pt-0.5">
+                <div className="flex items-center gap-1.5">
                   <Skeleton className="w-7 h-7 rounded-lg" />
                   <Skeleton className="w-7 h-7 rounded-lg" />
                 </div>
-
-                {/* Video Processed Notes Icon */}
                 <Skeleton className="w-7 h-7 rounded-lg" />
               </div>
             </div>
@@ -71,17 +69,13 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className={`flex flex-col h-full rounded-xl select-none ${
-            isDark
-              ? 'bg-zinc-900/40'
-              : 'bg-zinc-100/70'
-          }`}
+          className={`flex flex-col h-full rounded-xl select-none ${isDark ? 'bg-zinc-900/40' : 'bg-zinc-100/70'
+            }`}
         >
           {/* 16:9 Thumbnail Skeleton */}
           <div
-            className={`relative w-full aspect-video rounded-t-xl overflow-hidden shrink-0 ${
-              isDark ? 'bg-zinc-900' : 'bg-zinc-200'
-            }`}
+            className={`relative w-full aspect-video rounded-t-xl overflow-hidden shrink-0 ${isDark ? 'bg-zinc-900' : 'bg-zinc-200'
+              }`}
           >
             <Skeleton className="w-full h-full rounded-none border-0" />
           </div>
@@ -89,17 +83,14 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
           {/* Details Section Skeleton */}
           <div className="p-3 flex-1 flex flex-col justify-between gap-2.5 min-w-0">
             {/* Title & Channel Stack */}
-            <div className="space-y-1.5 min-w-0">
-              {/* Dual-line title placeholder */}
-              <Skeleton className="h-4 w-5/6 rounded-md" />
-              <Skeleton className="h-4 w-3/5 rounded-md" />
+            <div className="space-y-1 min-w-0">
+              {/* Single line title placeholder */}
+              <Skeleton className="h-4 w-4/5 rounded-md" />
 
               {/* Channel Row Placeholder */}
-              <div className="flex items-center gap-1.5 pt-1 min-w-0">
+              <div className="flex items-center gap-1.5 pt-0.5 min-w-0">
                 <Skeleton className="w-3.5 h-3.5 rounded-full shrink-0" />
-                <Skeleton className="h-3 w-24 rounded" />
-                <span className={`text-[10px] ${isDark ? 'text-zinc-700' : 'text-zinc-300'}`}>•</span>
-                <Skeleton className="h-3 w-12 rounded" />
+                <Skeleton className="h-3 w-28 rounded" />
               </div>
             </div>
 
@@ -112,7 +103,7 @@ export default function VideoGridSkeleton({ count = 8, layout = 'grid' }) {
               </div>
 
               {/* Right status icon placeholder */}
-              <Skeleton className="w-6.5 h-6.5 rounded-lg" />
+              <Skeleton className="w-4 h-4 rounded-md" />
             </div>
           </div>
         </div>

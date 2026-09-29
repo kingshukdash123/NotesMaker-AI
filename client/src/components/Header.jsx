@@ -188,7 +188,7 @@ export default function Header({
             <button
               type="button"
               onClick={() => setIsSidebarMobileOpen?.(!isSidebarMobileOpen)}
-              className={`md:hidden p-1.5 cursor-pointer bg-transparent transition-colors ${
+              className={`lg:hidden p-1.5 cursor-pointer bg-transparent transition-colors ${
                 isDark ? 'text-white hover:text-zinc-200' : 'text-zinc-600 hover:text-zinc-900'
               }`}
               aria-label="Toggle sidebar menu"
@@ -230,7 +230,7 @@ export default function Header({
 
         {/* Center: Desktop Navigation Links (For Unauthenticated Visitors) */}
         {!currentUser && (
-          <nav className="hidden md:flex items-center gap-1 xl:gap-2" aria-label="Main Navigation">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Main Navigation">
             {NAV_LINKS.map((link) => (
               <button
                 key={link.id}
@@ -262,11 +262,11 @@ export default function Header({
               {/* Theme Mode Toggle Button */}
               <ThemeToggle />
 
-              {/* Mobile Menu Hamburger Button */}
+              {/* Mobile/Tablet Menu Hamburger Button */}
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`md:hidden w-8 h-8 flex items-center justify-center transition cursor-pointer bg-transparent ${
+                className={`lg:hidden w-8 h-8 flex items-center justify-center transition cursor-pointer bg-transparent ${
                   isDark ? 'text-white hover:text-zinc-200' : 'text-zinc-700 hover:text-zinc-900'
                 }`}
                 aria-label="Toggle navigation menu"
@@ -302,11 +302,11 @@ export default function Header({
                 {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </button>
 
-              {/* Quick Search on Mobile / Phone View */}
+              {/* Quick Search on Mobile / Tablet / Phone View */}
               <button
                 type="button"
                 onClick={handleSearchClick}
-                className={`md:hidden w-8 h-8 rounded-full transition flex items-center justify-center cursor-pointer select-none bg-transparent hover:scale-105 active:scale-95 shrink-0 ${
+                className={`lg:hidden w-8 h-8 rounded-full transition flex items-center justify-center cursor-pointer select-none bg-transparent hover:scale-105 active:scale-95 shrink-0 ${
                   activeSection === 'discover' && !activeVideoId
                     ? isDark
                       ? 'text-orange-400 bg-orange-500/10'
