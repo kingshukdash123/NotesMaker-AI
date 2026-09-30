@@ -239,4 +239,58 @@ export async function fetchYouTubePlaylistItems(playlistId, pageToken = '', fetc
   return response.json();
 }
 
+/**
+ * Fetches student-focused YouTube channel profile.
+ * @param {string} channelId - The YouTube channel ID or handle
+ * @returns {Promise<Object>} Channel profile object
+ */
+export async function fetchYouTubeChannelProfile(channelId) {
+  const url = `${API_BASE_URL}/youtube/channel?channelId=${encodeURIComponent(channelId)}`;
+  const response = await apiFetch(url);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to load channel profile (${response.status})`);
+  }
+  return response.json();
+}
+
+/**
+ * Fetches all public uploads/videos published by the channel.
+ * @param {string} channelId - The YouTube channel ID
+ * @param {string} [pageToken=''] - Optional pagination token
+ * @returns {Promise<Object>} Channel videos list, uploadsPlaylistId, and nextPageToken
+ */
+export async function fetchYouTubeChannelVideos(channelId, pageToken = '') {
+  let url = `${API_BASE_URL}/youtube/channel/videos?channelId=${encodeURIComponent(channelId)}`;
+  if (pageToken) {
+    url += `&pageToken=${encodeURIComponent(pageToken)}`;
+  }
+  const response = await apiFetch(url);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to load channel videos (${response.status})`);
+  }
+  return response.json();
+}
+
+/**
+ * Fetches public playlists created by the given channel.
+ * @param {string} channelId - The YouTube channel ID
+ * @param {string} [pageToken=''] - Optional pagination token
+ * @returns {Promise<Object>} Channel playlists list and nextPageToken
+ */
+export async function fetchYouTubeChannelPlaylists(channelId, pageToken = '') {
+  let url = `${API_BASE_URL}/youtube/channel/playlists?channelId=${encodeURIComponent(channelId)}`;
+  if (pageToken) {
+    url += `&pageToken=${encodeURIComponent(pageToken)}`;
+  }
+  const response = await apiFetch(url);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to load channel playlists (${response.status})`);
+  }
+  return response.json();
+}
+
+
 

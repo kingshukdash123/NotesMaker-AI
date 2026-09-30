@@ -143,6 +143,29 @@ export function parseLocation(
   const rawList = searchParams.get('list') || searchParams.get('playlist') || '';
   let playlistId = rawList ? (extractYouTubePlaylistId(rawList, { allowPlainId: true }) || rawList.trim()) : '';
 
+  // Channel drawer parameter: ?channel=CHANNEL_ID_OR_NAME or ?channelId=CHANNEL_ID or /channel/ID
+  const rawChannel = searchParams.get('channel') || searchParams.get('channelId') || searchParams.get('c') || '';
+  let channelId = '';
+  let channelTitle = '';
+
+  if (rawChannel) {
+    const cleanCh = rawChannel.trim();
+    if (cleanCh.startsWith('UC') && cleanCh.length >= 20) {
+      channelId = cleanCh;
+    } else {
+      channelTitle = cleanCh;
+    }
+  } else if (firstPart === 'channel' || firstPart === 'c') {
+    if (secondPart) {
+      const cleanSecond = secondPart.trim();
+      if (cleanSecond.startsWith('UC') && cleanSecond.length >= 20) {
+        channelId = cleanSecond;
+      } else {
+        channelTitle = cleanSecond;
+      }
+    }
+  }
+
   // 1. Check for video watch URL
   // Formats: /watch?v=ID, /watch/ID, /discover/ID, /video/ID, or ?v=ID anywhere
   const queryV = searchParams.get('v');
@@ -230,6 +253,8 @@ export function parseLocation(
     searchCategory,
     searchType,
     playlistId,
+    channelId,
+    channelTitle,
   };
 }
 
@@ -246,7 +271,9 @@ export function parseLocation(
  * @param {string} [state.searchCategory] - Category filter
  * @param {string} [state.searchType] - Media type filter: 'all' | 'video' | 'playlist' | 'live'
  * @param {string} [state.playlistId] - YouTube playlist ID for playlist drawer
- * @returns {string} Clean relative URL path, e.g. "/watch?v=_MR1Dp8-F8w&tab=summary" or "/discover?list=PL123"
+ * @param {string} [state.channelId] - YouTube channel ID for channel explorer drawer
+ * @param {string} [state.channelTitle] - YouTube channel title for channel explorer drawer
+ * @returns {string} Clean relative URL path, e.g. "/watch?v=_MR1Dp8-F8w&tab=summary" or "/discover?channel=CampusX"
  */
 export function buildUrl({
   section = 'dashboard',
@@ -258,24 +285,44 @@ export function buildUrl({
   searchCategory = 'all',
   searchType = 'all',
   playlistId = '',
+  channelId = '',
+  channelTitle = '',
 } = {}) {
+  const channelTarget = (channelId || channelTitle || '').trim();
+
   // If watching a video: clean YouTube-style watch URL
   if (videoId) {
     const tabParam = videoTab && videoTab !== 'notes' ? `&tab=${videoTab}` : '';
     const listParam = playlistId ? `&list=${encodeURIComponent(playlistId)}` : '';
-    return `/watch?v=${videoId}${listParam}${tabParam}`;
+    const chParam = channelTarget ? `&channel=${encodeURIComponent(channelTarget)}` : '';
+    return `/watch?v=${videoId}${listParam}${chParam}${tabParam}`;
   }
 
   if (section === 'library') {
-    return `/library/${libraryTab || 'history'}`;
+    const params = new URLSearchParams();
+    if (channelTarget) {
+      params.set('channel', channelTarget);
+    }
+    const qs = params.toString();
+    return `/library/${libraryTab || 'history'}${qs ? `?${qs}` : ''}`;
   }
 
   if (section === 'planner') {
-    return `/planner/${plannerTab || 'daily'}`;
+    const params = new URLSearchParams();
+    if (channelTarget) {
+      params.set('channel', channelTarget);
+    }
+    const qs = params.toString();
+    return `/planner/${plannerTab || 'daily'}${qs ? `?${qs}` : ''}`;
   }
 
   if (section === 'dashboard') {
-    return '/dashboard';
+    const params = new URLSearchParams();
+    if (channelTarget) {
+      params.set('channel', channelTarget);
+    }
+    const qs = params.toString();
+    return `/dashboard${qs ? `?${qs}` : ''}`;
   }
 
   if (section === 'discover' || section === 'search') {
@@ -292,12 +339,20 @@ export function buildUrl({
     if (playlistId && playlistId.trim()) {
       params.set('list', playlistId.trim());
     }
+    if (channelTarget) {
+      params.set('channel', channelTarget);
+    }
     const queryString = params.toString();
     return queryString ? `/discover?${queryString}` : '/discover';
   }
 
   if (section === 'assistant') {
-    return '/assistant';
+    const params = new URLSearchParams();
+    if (channelTarget) {
+      params.set('channel', channelTarget);
+    }
+    const qs = params.toString();
+    return `/assistant${qs ? `?${qs}` : ''}`;
   }
 
   // Legal / policy pages — clean direct URLs

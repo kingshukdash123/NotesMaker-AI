@@ -21,6 +21,11 @@ from services.assistant.service import AssistantService
 from services.youtube.metadata import get_video_metadata
 from services.youtube.search import search_youtube_videos
 from services.youtube.playlist import get_youtube_playlist_items, get_all_youtube_playlist_items
+from services.youtube.channel import (
+    get_youtube_channel_profile,
+    get_youtube_channel_playlists,
+    get_youtube_channel_videos,
+)
 from services.youtube.validator import extract_video_id
 from graph.graph_builder import graph
 from services.firebase.plan_service import (
@@ -253,6 +258,141 @@ async def fetch_playlist(
         raise HTTPException(status_code=pe.status_code, detail=pe.message)
     except Exception as e:
         logger.exception(f"Error in fetch_playlist endpoint for playlist {clean_id}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/youtube/channel")
+async def fetch_channel(
+    channelId: str = Query(..., description="YouTube Channel ID or Handle (e.g. UC... or @handle)")
+):
+    """
+    Fetches student-focused YouTube channel profile (avatar, title, description, uploads playlist ID, YouTube URL).
+    Consumes only 1 quota unit and caches in Firestore.
+    """
+    clean_id = (channelId or "").strip()
+    if not clean_id:
+        raise HTTPException(status_code=400, detail="channelId is required")
+
+    cache_key = f"channel_profile_{clean_id}"
+    try:
+        cached = await get_cached_search(cache_key)
+        if cached:
+            cached_data = cached.get("items")
+            if isinstance(cached_data, dict) and "channelId" in cached_data:
+                return cached_data
+    except Exception as cache_err:
+        logger.warning(f"Error checking channel profile cache for {clean_id}: {cache_err}")
+
+    try:
+        profile_data = await get_youtube_channel_profile(clean_id)
+        try:
+            await save_cached_search(
+                query_hash=cache_key,
+                query=clean_id,
+                category="channel",
+                results=profile_data,
+                next_page_token=None
+            )
+        except Exception as cache_save_err:
+            logger.warning(f"Error saving channel profile cache for {clean_id}: {cache_save_err}")
+        return profile_data
+    except PathshalaError as pe:
+        logger.error(f"Channel profile API error: {pe.message}")
+        raise HTTPException(status_code=pe.status_code, detail=pe.message)
+    except Exception as e:
+        logger.exception(f"Error in fetch_channel endpoint for {clean_id}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/youtube/channel/videos")
+async def fetch_channel_videos(
+    channelId: str = Query(..., description="YouTube Channel ID"),
+    pageToken: Optional[str] = Query(None, description="Pagination token")
+):
+    """
+    Fetches public videos/uploads published by the channel with duration and stats enrichment.
+    Consumes only 1-2 quota units per 50 videos (saves 99% quota compared to search.list).
+    """
+    clean_id = (channelId or "").strip()
+    if not clean_id:
+        raise HTTPException(status_code=400, detail="channelId is required")
+
+    clean_token = (pageToken or "").strip()
+    cache_key = f"channel_videos_{clean_id}_{clean_token}" if clean_token else f"channel_videos_{clean_id}"
+
+    try:
+        cached = await get_cached_search(cache_key)
+        if cached:
+            cached_data = cached.get("items")
+            if isinstance(cached_data, dict) and "videos" in cached_data:
+                return cached_data
+    except Exception as cache_err:
+        logger.warning(f"Error checking channel videos cache for {clean_id}: {cache_err}")
+
+    try:
+        videos_data = await get_youtube_channel_videos(clean_id, page_token=clean_token or None)
+        try:
+            await save_cached_search(
+                query_hash=cache_key,
+                query=clean_id,
+                category="channel_videos",
+                results=videos_data,
+                next_page_token=videos_data.get("nextPageToken")
+            )
+        except Exception as cache_save_err:
+            logger.warning(f"Error saving channel videos cache for {clean_id}: {cache_save_err}")
+        return videos_data
+    except PathshalaError as pe:
+        logger.error(f"Channel videos API error: {pe.message}")
+        raise HTTPException(status_code=pe.status_code, detail=pe.message)
+    except Exception as e:
+        logger.exception(f"Error in fetch_channel_videos endpoint for {clean_id}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/youtube/channel/playlists")
+async def fetch_channel_playlists(
+    channelId: str = Query(..., description="YouTube Channel ID"),
+    pageToken: Optional[str] = Query(None, description="Pagination token")
+):
+    """
+    Fetches public playlists created by the given channel.
+    Consumes 1 quota unit per 50 playlists.
+    """
+    clean_id = (channelId or "").strip()
+    if not clean_id:
+        raise HTTPException(status_code=400, detail="channelId is required")
+
+    clean_token = (pageToken or "").strip()
+    cache_key = f"channel_playlists_{clean_id}_{clean_token}" if clean_token else f"channel_playlists_{clean_id}"
+
+    try:
+        cached = await get_cached_search(cache_key)
+        if cached:
+            cached_data = cached.get("items")
+            if isinstance(cached_data, dict) and "items" in cached_data:
+                return cached_data
+    except Exception as cache_err:
+        logger.warning(f"Error checking channel playlists cache for {clean_id}: {cache_err}")
+
+    try:
+        playlists_data = await get_youtube_channel_playlists(clean_id, page_token=clean_token or None)
+        try:
+            await save_cached_search(
+                query_hash=cache_key,
+                query=clean_id,
+                category="channel_playlists",
+                results=playlists_data,
+                next_page_token=playlists_data.get("nextPageToken")
+            )
+        except Exception as cache_save_err:
+            logger.warning(f"Error saving channel playlists cache for {clean_id}: {cache_save_err}")
+        return playlists_data
+    except PathshalaError as pe:
+        logger.error(f"Channel playlists API error: {pe.message}")
+        raise HTTPException(status_code=pe.status_code, detail=pe.message)
+    except Exception as e:
+        logger.exception(f"Error in fetch_channel_playlists endpoint for {clean_id}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ListVideo, Play, Loader2, User, Clock, FolderPlus } from 'lucide-react';
 import YouTubeIcon from '../common/YouTubeIcon';
 import { useTheme } from '../../context/ThemeContext';
+import { useApp } from '../../context/AppContext';
 import { getChannelInitial, formatTimeAgo } from '../../utils/formatters';
 
 export default function SearchResultPlaylistCard({
@@ -11,6 +12,7 @@ export default function SearchResultPlaylistCard({
   onSaveToLibrary
 }) {
   const { isDark } = useTheme();
+  const { openChannelExplorer } = useApp() || {};
   const channelLetter = getChannelInitial(playlist.channel);
   const playlistId = playlist.playlistId || playlist.id;
   const timeAgoText = formatTimeAgo(playlist.publishedAt);
@@ -101,9 +103,18 @@ export default function SearchResultPlaylistCard({
             {/* Left: Channel + Time Ago */}
             <div className="min-w-0">
               {/* Channel Row */}
-              <div className="flex items-center gap-1.5 min-w-0">
-                <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-                <p className={`text-xs font-medium truncate max-w-[150px] ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (openChannelExplorer) {
+                    openChannelExplorer(playlist.channelId, playlist.channel);
+                  }
+                }}
+                className="flex items-center gap-1.5 min-w-0 cursor-pointer group/channel"
+                title={`Explore channel: ${playlist.channel}`}
+              >
+                <User className={`w-3.5 h-3.5 shrink-0 transition-colors ${isDark ? 'text-zinc-500 group-hover/channel:text-zinc-200' : 'text-zinc-400 group-hover/channel:text-zinc-700'}`} />
+                <p className={`text-xs font-medium truncate max-w-[150px] transition-colors ${isDark ? 'text-zinc-400 group-hover/channel:text-zinc-200 group-hover/channel:underline' : 'text-zinc-600 group-hover/channel:text-zinc-900 group-hover/channel:underline'
                   }`}>
                   {playlist.channel}
                 </p>
@@ -170,9 +181,18 @@ export default function SearchResultPlaylistCard({
           {/* ── Larger Devices Layout (>= sm): Channel -> Time Ago -> Action Buttons -> Description ── */}
           <div className="hidden sm:block">
             {/* Channel Row */}
-            <div className="flex items-center gap-1.5 min-w-0 mt-1.5">
-              <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-              <p className={`text-xs font-medium truncate max-w-[320px] ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                if (openChannelExplorer) {
+                  openChannelExplorer(playlist.channelId, playlist.channel);
+                }
+              }}
+              className="flex items-center gap-1.5 min-w-0 mt-1.5 cursor-pointer group/channel inline-flex"
+              title={`Explore channel: ${playlist.channel}`}
+            >
+              <User className={`w-3.5 h-3.5 shrink-0 transition-colors ${isDark ? 'text-zinc-500 group-hover/channel:text-zinc-200' : 'text-zinc-400 group-hover/channel:text-zinc-700'}`} />
+              <p className={`text-xs font-medium truncate max-w-[320px] transition-colors ${isDark ? 'text-zinc-400 group-hover/channel:text-zinc-200 group-hover/channel:underline' : 'text-zinc-600 group-hover/channel:text-zinc-900 group-hover/channel:underline'
                 }`}>
                 {playlist.channel}
               </p>

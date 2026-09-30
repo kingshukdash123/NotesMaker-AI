@@ -61,6 +61,16 @@ export class VideoModel {
       'YouTube Creator'
     ).trim();
 
+    const channelId = String(
+      rawMeta.channelId ||
+      rawMeta.channel_id ||
+      item.channelId ||
+      item.channel_id ||
+      rawMeta.snippet?.channelId ||
+      item.snippet?.channelId ||
+      ''
+    ).trim();
+
     const thumbnail = String(
       rawMeta.thumbnail ||
       item.thumbnail ||
@@ -163,6 +173,7 @@ export class VideoModel {
     this.videoUrl = videoUrl;
     this.title = title;
     this.channel = channel;
+    this.channelId = channelId;
     this.thumbnail = thumbnail;
     this.duration = durationSec;
     this.durationFormatted = durationFormatted;
@@ -193,6 +204,7 @@ export class VideoModel {
     return {
       title: this.title,
       channel: this.channel,
+      channelId: this.channelId,
       thumbnail: this.thumbnail,
       duration: this.duration,
       durationFormatted: this.durationFormatted,

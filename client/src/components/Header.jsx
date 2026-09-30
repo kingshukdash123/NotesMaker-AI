@@ -177,8 +177,8 @@ export default function Header({
     : 'text-zinc-600 hover:text-orange-600 hover:bg-orange-50';
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-5 py-2.5 sm:py-3 transition-colors duration-200 border-b bg-transparent ${
-      isDark ? 'border-zinc-800/80' : 'border-zinc-200/80 shadow-xs'
+    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-5 py-2.5 sm:py-3 transition-colors duration-200 border-b ${
+      isDark ? 'bg-black/90 border-zinc-800/80' : 'bg-white/90 border-zinc-200/80 shadow-xs'
     }`}>
       <div className="w-full flex items-center justify-between gap-3 sm:gap-6">
         
@@ -309,8 +309,8 @@ export default function Header({
                 className={`lg:hidden w-8 h-8 rounded-full transition flex items-center justify-center cursor-pointer select-none bg-transparent hover:scale-105 active:scale-95 shrink-0 ${
                   activeSection === 'discover' && !activeVideoId
                     ? isDark
-                      ? 'text-orange-400 bg-orange-500/10'
-                      : 'text-orange-600 bg-orange-50'
+                      ? 'text-white bg-zinc-800/80'
+                      : 'text-zinc-900 bg-zinc-100'
                     : isDark
                     ? 'text-white hover:text-zinc-200'
                     : 'text-zinc-700 hover:text-zinc-900'

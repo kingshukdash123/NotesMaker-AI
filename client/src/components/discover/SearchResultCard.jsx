@@ -1,4 +1,5 @@
 import { useTheme } from '../../context/ThemeContext';
+import { useApp } from '../../context/AppContext';
 import { User, Clock, Eye } from 'lucide-react';
 import YouTubeIcon from '../common/YouTubeIcon';
 import VideoActionButtons from '../common/VideoActionButtons';
@@ -15,6 +16,7 @@ export default function SearchResultCard({
   onCreatePlaylist
 }) {
   const { isDark } = useTheme();
+  const { openChannelExplorer } = useApp() || {};
 
   const norm = normalizeVideoMetadata(video) || {};
   const currentVideoId = norm.videoId || '';
@@ -88,9 +90,18 @@ export default function SearchResultCard({
             {/* Left: Channel + Ago & Views */}
             <div className="min-w-0">
               {/* Channel Row */}
-              <div className="flex items-center gap-1.5 min-w-0">
-                <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-                <p className={`text-xs font-medium truncate max-w-[150px] ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (openChannelExplorer) {
+                    openChannelExplorer(norm.channelId, norm.channel);
+                  }
+                }}
+                className="flex items-center gap-1.5 min-w-0 cursor-pointer group/channel"
+                title={`Explore channel: ${norm.channel || 'YouTube Creator'}`}
+              >
+                <User className={`w-3.5 h-3.5 shrink-0 transition-colors ${isDark ? 'text-zinc-500 group-hover/channel:text-zinc-200' : 'text-zinc-400 group-hover/channel:text-zinc-700'}`} />
+                <p className={`text-xs font-medium truncate max-w-[150px] transition-colors ${isDark ? 'text-zinc-400 group-hover/channel:text-zinc-200 group-hover/channel:underline' : 'text-zinc-600 group-hover/channel:text-zinc-900 group-hover/channel:underline'
                   }`}>
                   {norm.channel || 'YouTube Creator'}
                 </p>
@@ -152,9 +163,18 @@ export default function SearchResultCard({
           {/* ── Larger Devices Layout (>= sm): Channel -> Ago/Views -> Action Buttons -> Description ── */}
           <div className="hidden sm:block">
             {/* Channel Row */}
-            <div className="flex items-center gap-1.5 min-w-0 mt-1.5">
-              <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-              <p className={`text-xs font-medium truncate max-w-[320px] ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                if (openChannelExplorer) {
+                  openChannelExplorer(norm.channelId, norm.channel);
+                }
+              }}
+              className="flex items-center gap-1.5 min-w-0 mt-1.5 cursor-pointer group/channel inline-flex"
+              title={`Explore channel: ${norm.channel || 'YouTube Creator'}`}
+            >
+              <User className={`w-3.5 h-3.5 shrink-0 transition-colors ${isDark ? 'text-zinc-500 group-hover/channel:text-zinc-200' : 'text-zinc-400 group-hover/channel:text-zinc-700'}`} />
+              <p className={`text-xs font-medium truncate max-w-[320px] transition-colors ${isDark ? 'text-zinc-400 group-hover/channel:text-zinc-200 group-hover/channel:underline' : 'text-zinc-600 group-hover/channel:text-zinc-900 group-hover/channel:underline'
                 }`}>
                 {norm.channel || 'YouTube Creator'}
               </p>

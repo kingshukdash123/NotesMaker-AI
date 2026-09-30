@@ -10,6 +10,8 @@ import AuthModal from './components/AuthModal';
 import ApiDisconnectModal from './components/ApiDisconnectModal';
 import UpgradeModal from './components/common/UpgradeModal';
 import RightAssistantSidebar from './components/chat/RightAssistantSidebar';
+import ChannelExplorerDrawer from './components/discover/ChannelExplorerDrawer';
+import PlaylistBrowserDrawer from './components/discover/PlaylistBrowserDrawer';
 import HomeSection from './components/layout/HomeSection';
 
 // Pages
@@ -61,6 +63,16 @@ function MainApp() {
     setSearchType,
     activePlaylistId,
     setActivePlaylistId,
+    activePlaylistSummary,
+    setActivePlaylistSummary,
+    playlistReturnChannel,
+    setPlaylistReturnChannel,
+    savedVideos,
+    userPlaylists,
+    handleToggleSaveVideo,
+    handleTogglePlaylistAssociation,
+    handleCreatePlaylist,
+    handleSavePlaylistToLibrary,
     activeVideoId,
     setActiveVideoId,
     setActiveVideoUrl,
@@ -80,7 +92,56 @@ function MainApp() {
     authModalState,
     openAuthModal,
     closeAuthModal,
+    loadVideo,
+    channelDrawerState,
+    openChannelExplorer,
+    closeChannelExplorer,
   } = useApp();
+
+  const handleGlobalChannelVideoSelect = useCallback((video) => {
+    closeChannelExplorer();
+    loadVideo(video.videoId, video.videoUrl || (video.videoId ? `https://www.youtube.com/watch?v=${video.videoId}` : ''), video);
+  }, [closeChannelExplorer, loadVideo]);
+
+  const handleGlobalChannelPlaylistSelect = useCallback((playlist) => {
+    // Preserve the current channel context so the Back button in playlist drawer returns smoothly
+    if (channelDrawerState?.isOpen && (channelDrawerState.channelId || channelDrawerState.channelTitle)) {
+      setPlaylistReturnChannel({
+        channelId: channelDrawerState.channelId,
+        channelTitle: channelDrawerState.channelTitle
+      });
+    }
+    closeChannelExplorer();
+    const pid = playlist.playlistId || playlist.id;
+    setActivePlaylistSummary(playlist);
+    setActivePlaylistId(pid);
+  }, [channelDrawerState, setPlaylistReturnChannel, closeChannelExplorer, setActivePlaylistSummary, setActivePlaylistId]);
+
+  const handleClosePlaylistDrawer = useCallback(() => {
+    setActivePlaylistId('');
+    setActivePlaylistSummary(null);
+    setPlaylistReturnChannel(null);
+  }, [setActivePlaylistId, setActivePlaylistSummary, setPlaylistReturnChannel]);
+
+  const handleBackFromPlaylistDrawer = useCallback(() => {
+    if (playlistReturnChannel?.channelId || playlistReturnChannel?.channelTitle) {
+      const { channelId, channelTitle } = playlistReturnChannel;
+      setActivePlaylistId('');
+      setActivePlaylistSummary(null);
+      setPlaylistReturnChannel(null);
+      openChannelExplorer(channelId, channelTitle);
+    } else {
+      setActivePlaylistId('');
+      setActivePlaylistSummary(null);
+    }
+  }, [playlistReturnChannel, setActivePlaylistId, setActivePlaylistSummary, setPlaylistReturnChannel, openChannelExplorer]);
+
+  const handleGlobalPlaylistVideoSelect = useCallback((video) => {
+    setActivePlaylistId('');
+    setActivePlaylistSummary(null);
+    setPlaylistReturnChannel(null);
+    loadVideo(video.videoId, video.videoUrl || (video.videoId ? `https://www.youtube.com/watch?v=${video.videoId}` : ''), video);
+  }, [setActivePlaylistId, setActivePlaylistSummary, setPlaylistReturnChannel, loadVideo]);
 
   // API Status & Disconnect Modal State
   const [apiStatus, setApiStatus] = useState('checking'); // 'healthy' | 'unhealthy' | 'checking'
@@ -129,6 +190,12 @@ function MainApp() {
         setSearchType(parsed.searchType);
       }
       setActivePlaylistId(parsed.playlistId || '');
+
+      if (parsed.channelId || parsed.channelTitle) {
+        openChannelExplorer(parsed.channelId, parsed.channelTitle);
+      } else {
+        closeChannelExplorer();
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -146,7 +213,9 @@ function MainApp() {
     setSearchCategory,
     setSearchType,
     setActivePlaylistId,
-    resetActiveVideo
+    resetActiveVideo,
+    openChannelExplorer,
+    closeChannelExplorer,
   ]);
 
   // Auto-fetch metadata if activeVideoId is present but metadata is missing
@@ -218,6 +287,8 @@ function MainApp() {
       searchCategory: activeSection === 'discover' ? searchCategory : 'all',
       searchType: activeSection === 'discover' ? searchType : 'all',
       playlistId: activeSection === 'discover' ? activePlaylistId : '',
+      channelId: channelDrawerState?.isOpen ? (channelDrawerState.channelId || '') : '',
+      channelTitle: channelDrawerState?.isOpen ? (channelDrawerState.channelTitle || '') : '',
     });
 
     const currentUrl = window.location.pathname + window.location.search;
@@ -247,6 +318,7 @@ function MainApp() {
     searchType,
     activePlaylistId,
     activeVideoMetadata,
+    channelDrawerState,
   ]);
 
   const handleToggleAssistantMode = (newMode) => {
@@ -462,6 +534,37 @@ function MainApp() {
               {activeSection === 'billing' && <BillingPage />}
               {activeSection === 'settings' && <SettingsPage />}
               {LEGAL_SECTIONS.has(activeSection) && <PolicyPage slug={activeSection} />}
+
+              {/* Global Playlist Browser Drawer (Rendered inside content pane so it never covers Orbit chat sidebar) */}
+              <PlaylistBrowserDrawer
+                isOpen={Boolean(activePlaylistId)}
+                playlistId={activePlaylistId}
+                playlistSummary={activePlaylistSummary}
+                userPlaylists={userPlaylists}
+                savedVideos={savedVideos}
+                onClose={handleClosePlaylistDrawer}
+                onBack={handleBackFromPlaylistDrawer}
+                onVideoSelect={handleGlobalPlaylistVideoSelect}
+                onSaveToLibrary={handleSavePlaylistToLibrary}
+                onSaveVideo={handleToggleSaveVideo}
+                onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
+                onCreatePlaylist={handleCreatePlaylist}
+              />
+
+              {/* Global Channel Explorer Drawer (Rendered inside content pane so it never covers Orbit chat sidebar) */}
+              <ChannelExplorerDrawer
+                isOpen={Boolean(channelDrawerState?.isOpen)}
+                channelId={channelDrawerState?.channelId}
+                channelTitle={channelDrawerState?.channelTitle}
+                userPlaylists={userPlaylists}
+                savedVideos={savedVideos}
+                onClose={closeChannelExplorer}
+                onVideoSelect={handleGlobalChannelVideoSelect}
+                onPlaylistSelect={handleGlobalChannelPlaylistSelect}
+                onSaveVideo={handleToggleSaveVideo}
+                onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
+                onCreatePlaylist={handleCreatePlaylist}
+              />
             </div>
           </div>
 

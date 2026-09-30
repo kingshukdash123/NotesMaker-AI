@@ -20,7 +20,7 @@ export default function LibraryVideoCard({
   onToggleWatched,
 }) {
   const { isDark } = useTheme();
-  const { processedVideoIds } = useApp();
+  const { processedVideoIds, openChannelExplorer } = useApp() || {};
 
   const norm = normalizeVideoMetadata(video) || {};
   const currentVideoId = norm.videoId || '';
@@ -90,12 +90,20 @@ export default function LibraryVideoCard({
           </h4>
 
           {/* 2. Channel Name with User Icon */}
-          <div className="flex items-center gap-1.5 pt-0.5 min-w-0">
-            <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              if (openChannelExplorer) {
+                openChannelExplorer(norm.channelId, norm.channel);
+              }
+            }}
+            className="flex items-center gap-1.5 pt-0.5 min-w-0 cursor-pointer group/channel inline-flex"
+            title={`Explore channel: ${norm.channel || ''}`}
+          >
+            <User className={`w-3.5 h-3.5 shrink-0 transition-colors ${isDark ? 'text-zinc-500 group-hover/channel:text-zinc-200' : 'text-zinc-400 group-hover/channel:text-zinc-700'}`} />
             {/* Channel Name */}
             <p
-              onClick={onOpen}
-              className={`text-xs truncate font-medium ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600'
+              className={`text-xs truncate font-medium transition-colors ${isDark ? 'text-zinc-400 group-hover/channel:text-zinc-200 group-hover/channel:underline' : 'text-zinc-600 group-hover/channel:text-zinc-900 group-hover/channel:underline'
                 }`}
               title={norm.channel || ''}
             >

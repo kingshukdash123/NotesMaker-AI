@@ -2,24 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { searchYouTube, fetchYouTubePlaylistItems } from '../services/server/api';
+import { searchYouTube } from '../services/server/api';
 import SearchBar from '../components/discover/SearchBar';
 import VideoGrid from '../components/discover/VideoGrid';
-import PlaylistBrowserDrawer from '../components/discover/PlaylistBrowserDrawer';
 import VideoContentPage from './VideoContentPage';
-import {
-  getUserPlaylists,
-  getUserSavedVideos,
-  saveVideoToLibrary,
-  removeVideoFromLibrary,
-  addVideoToPlaylist,
-  removeVideoFromPlaylist,
-  createPlaylist,
-  createPlaylistWithVideos
-} from '../services/firebase/libraryService';
-import { PlaylistModel, SavedVideoModel } from '../models';
 import { extractYouTubeVideoId, extractYouTubePlaylistId } from '../utils/router';
-import { formatVideoDuration } from '../utils/formatters';
 
 // Icons
 import { AlertCircle, Search } from 'lucide-react';
@@ -39,8 +26,13 @@ export default function DiscoverPage() {
     setSearchType,
     activePlaylistId,
     setActivePlaylistId,
-    openUpgradeModal,
-    openAuthModal,
+    setActivePlaylistSummary,
+    savedVideos,
+    userPlaylists,
+    handleToggleSaveVideo,
+    handleTogglePlaylistAssociation,
+    handleCreatePlaylist,
+    handleSavePlaylistToLibrary,
   } = useApp();
 
   const [inputQuery, setInputQuery] = useState(searchQuery || '');
@@ -48,27 +40,6 @@ export default function DiscoverPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
-
-  // Playlist Browser Drawer state (Option A)
-  const [isPlaylistDrawerOpen, setIsPlaylistDrawerOpen] = useState(Boolean(activePlaylistId));
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState(activePlaylistId || null);
-  const [selectedPlaylistSummary, setSelectedPlaylistSummary] = useState(null);
-
-  // Sync drawer with activePlaylistId from URL
-  useEffect(() => {
-    if (activePlaylistId) {
-      setSelectedPlaylistId(activePlaylistId);
-      setIsPlaylistDrawerOpen(true);
-    } else {
-      setIsPlaylistDrawerOpen(false);
-      setSelectedPlaylistId(null);
-      setSelectedPlaylistSummary(null);
-    }
-  }, [activePlaylistId]);
-
-  // Library info for card interactions (Saving, Playlists dropdown)
-  const [savedVideos, setSavedVideos] = useState([]);
-  const [playlists, setPlaylists] = useState([]);
 
   // Keep inputQuery synced with AppContext searchQuery on popstate/navigation
   useEffect(() => {
@@ -90,9 +61,8 @@ export default function DiscoverPage() {
     // 1. SMART PASTE INTERCEPTION: Playlist URL
     const detectedPlaylistId = extractYouTubePlaylistId(rawInput);
     if (detectedPlaylistId) {
-      setSelectedPlaylistId(detectedPlaylistId);
-      setSelectedPlaylistSummary({ title: 'Imported Playlist', channel: 'YouTube' });
-      setIsPlaylistDrawerOpen(true);
+      setActivePlaylistSummary({ title: 'Imported Playlist', channel: 'YouTube' });
+      setActivePlaylistId(detectedPlaylistId);
       return;
     }
 
@@ -121,7 +91,7 @@ export default function DiscoverPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchCategory, searchType, loadVideo, setSearchQuery]);
+  }, [searchCategory, searchType, loadVideo, setSearchQuery, setActivePlaylistId, setActivePlaylistSummary]);
 
   // Handle clearing the search query and resetting to clean empty state
   const handleClearSearch = useCallback(() => {
@@ -150,232 +120,19 @@ export default function DiscoverPage() {
     }
   }, [searchQuery, searchCategory, searchType, handleSearch]);
 
-  // Fetch library info for saving / playlists
-  useEffect(() => {
-    const fetchLibraryInfo = async () => {
-      if (!currentUser) return;
-      try {
-        const [videosData, playlistsData] = await Promise.all([
-          getUserSavedVideos(currentUser.uid),
-          getUserPlaylists(currentUser.uid)
-        ]);
-
-        setSavedVideos(videosData);
-        setPlaylists(playlistsData);
-      } catch (err) {
-        console.error('Error fetching library info in Discover:', err);
-      }
-    };
-    fetchLibraryInfo();
-  }, [currentUser]);
-
   // Handle Video card click
   const handleVideoSelect = (video) => {
     loadVideo(video.videoId, `https://www.youtube.com/watch?v=${video.videoId}`, video);
   };
 
-  // Handle Playlist card click -> Open Option A Drawer and sync URL
+  // Handle Playlist card click -> Open Global Playlist Drawer and sync URL
   const handlePlaylistSelect = (playlist) => {
     const pid = playlist.playlistId || playlist.id;
-    setSelectedPlaylistId(pid);
-    setSelectedPlaylistSummary(playlist);
+    setActivePlaylistSummary(playlist);
     setActivePlaylistId(pid);
-    setIsPlaylistDrawerOpen(true);
   };
 
-  // Close Drawer and clear URL playlist parameter
-  const handleClosePlaylistDrawer = () => {
-    setIsPlaylistDrawerOpen(false);
-    setActivePlaylistId('');
-    setSelectedPlaylistId(null);
-    setSelectedPlaylistSummary(null);
-  };
-
-  // Handle Lecture select inside Playlist Drawer
-  const handleDrawerVideoSelect = (video) => {
-    setIsPlaylistDrawerOpen(false);
-    setActivePlaylistId('');
-    setSelectedPlaylistId(null);
-    setSelectedPlaylistSummary(null);
-    loadVideo(video.videoId, `https://www.youtube.com/watch?v=${video.videoId}`, video);
-  };
-
-  // Batch import complete playlist into user's Library with all pages in strict sequence
-  const handleSavePlaylistToLibrary = async (playlistData, currentVideos = []) => {
-    if (!currentUser) {
-      openAuthModal?.('login', 'Sign in to save playlists to your library.');
-      return;
-    }
-    if (!playlistData) return;
-
-    const targetPlaylistId = playlistData.playlistId || playlistData.id || selectedPlaylistId;
-    if (!targetPlaylistId) return;
-
-    let orderedVideos = Array.isArray(currentVideos) && currentVideos.length > 0 ? [...currentVideos] : [];
-
-    // Fetch complete playlist across all pages in strict sequence
-    try {
-      const fullPlaylist = await fetchYouTubePlaylistItems(targetPlaylistId, '', true);
-      if (fullPlaylist?.videos && fullPlaylist.videos.length > 0) {
-        orderedVideos = fullPlaylist.videos;
-      }
-    } catch (err) {
-      console.warn('Could not fetch complete playlist via fetchAll, using currently loaded sequence:', err);
-    }
-
-    if (orderedVideos.length === 0) {
-      throw new Error('No videos found to save.');
-    }
-
-    const playlistTitle = playlistData.title || selectedPlaylistSummary?.title || 'Course Playlist';
-    const created = await createPlaylistWithVideos(currentUser.uid, playlistTitle, orderedVideos, targetPlaylistId);
-
-    const newModel = new PlaylistModel({
-      id: created.id,
-      name: created.name,
-      videos: created.videos,
-      sourcePlaylistId: targetPlaylistId,
-      userId: currentUser.uid,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    setPlaylists(prev => [
-      newModel,
-      ...prev.filter(pl => pl.id !== created.id && pl.sourcePlaylistId !== targetPlaylistId)
-    ]);
-  };
-
-  // Toggle Save/Bookmark state of a search result card
-  const handleToggleSaveVideo = async (video) => {
-    if (!currentUser) {
-      openAuthModal?.('login', 'Sign in to save videos to your library.');
-      return;
-    }
-    const targetVideoId = video?.videoId || video?.id;
-    if (!targetVideoId) return;
-
-    const isCurrentlySaved = savedVideos.some(v => (v.videoId || v.id) === targetVideoId);
-    try {
-      if (isCurrentlySaved) {
-        await removeVideoFromLibrary(currentUser.uid, targetVideoId);
-        setSavedVideos(prev => prev.filter(v => (v.videoId || v.id) !== targetVideoId));
-      } else {
-        const rawMeta = video.metadata || video;
-        const metadataToSave = {
-          title: rawMeta.title || video.title || 'YouTube Video',
-          channel: rawMeta.channel || video.channel || 'YouTube Creator',
-          thumbnail: rawMeta.thumbnail || video.thumbnail || `https://img.youtube.com/vi/${targetVideoId}/hqdefault.jpg`,
-          duration: Number(rawMeta.duration || video.duration || 0) || 0,
-          duration_formatted: rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || '',
-          publishedAt: rawMeta.publishedAt || video.publishedAt || '',
-          description: rawMeta.description || video.description || '',
-          view_count: rawMeta.view_count || rawMeta.viewCount || video.viewCount || '',
-          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive),
-        };
-        const videoUrlToSave = video.videoUrl || `https://www.youtube.com/watch?v=${targetVideoId}`;
-
-        await saveVideoToLibrary(
-          currentUser.uid,
-          targetVideoId,
-          videoUrlToSave,
-          metadataToSave
-        );
-
-        const newSavedModel = new SavedVideoModel({
-          id: `${currentUser.uid}_${targetVideoId}`,
-          userId: currentUser.uid,
-          videoId: targetVideoId,
-          videoUrl: videoUrlToSave,
-          metadata: metadataToSave,
-          savedAt: new Date(),
-        });
-
-        setSavedVideos(prev => [
-          newSavedModel,
-          ...prev.filter(v => (v.videoId || v.id) !== targetVideoId)
-        ]);
-      }
-    } catch (err) {
-      console.error('Failed to toggle save video in Discover:', err);
-    }
-  };
-
-
-
-  // Handle adding/removing video from a playlist in Discover
-  const handleTogglePlaylistAssociation = async (videoId, playlistId, alreadyAssociated, video) => {
-    if (!currentUser) return;
-
-    try {
-      const rawMeta = video?.metadata || video || {};
-      const durationSec = Number(rawMeta.duration || video?.duration || rawMeta.duration_seconds || video?.duration_seconds || 0) || 0;
-      let durationFmt = String(rawMeta.duration_formatted || rawMeta.durationFormatted || video?.durationFormatted || video?.duration_formatted || '').trim();
-      if (!durationFmt && durationSec > 0) {
-        durationFmt = formatVideoDuration(durationSec);
-      }
-
-      const videoEntry = {
-        videoId,
-        videoUrl: video?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
-        duration: durationSec,
-        durationFormatted: durationFmt,
-        metadata: {
-          title: rawMeta.title || video?.title || 'YouTube Video',
-          channel: rawMeta.channel || video?.channel || 'Unknown Creator',
-          thumbnail: rawMeta.thumbnail || video?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-          duration: durationSec,
-          duration_formatted: durationFmt,
-          durationFormatted: durationFmt,
-          publishedAt: rawMeta.publishedAt || video?.publishedAt || '',
-          description: rawMeta.description || video?.description || '',
-          view_count: rawMeta.view_count || rawMeta.viewCount || video?.viewCount || '',
-          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video?.isLive),
-        },
-        addedAt: new Date().toISOString(),
-      };
-
-      if (alreadyAssociated) {
-        await removeVideoFromPlaylist(currentUser.uid, videoId, playlistId);
-        setPlaylists(prev => prev.map(pl => {
-          if (pl.id === playlistId) {
-            const updatedVideos = (pl.videos || []).filter(v => (v.videoId || v.id) !== videoId);
-            return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
-          }
-          return pl;
-        }));
-      } else {
-        await addVideoToPlaylist(currentUser.uid, videoId, playlistId, videoEntry);
-        setPlaylists(prev => prev.map(pl => {
-          if (pl.id === playlistId) {
-            const existing = pl.videos || [];
-            const updatedVideos = existing.some(v => (v.videoId || v.id) === videoId) ? existing : [...existing, videoEntry];
-            return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
-          }
-          return pl;
-        }));
-      }
-    } catch (err) {
-      console.error('Error toggling playlist association:', err);
-    }
-  };
-
-  const handleCreatePlaylist = async (name) => {
-    if (!currentUser) return;
-
-    try {
-      const id = await createPlaylist(currentUser.uid, name);
-      setPlaylists(prev => [
-        { id, name, videoCount: 0, userId: currentUser.uid, createdAt: new Date() },
-        ...prev
-      ]);
-    } catch (err) {
-      console.error('Error creating playlist in Discover:', err);
-    }
-  };
-
-
-  // If a video is selected, render the unified watch page instead of the search list
+  // If a video is selected, render the unified watch page
   if (activeVideoId) {
     return <VideoContentPage />;
   }
@@ -435,7 +192,7 @@ export default function DiscoverPage() {
             onPlaylistClick={handlePlaylistSelect}
             hasSearched={hasSearched}
             savedVideos={savedVideos}
-            playlists={playlists}
+            playlists={userPlaylists}
             onSaveVideo={handleToggleSaveVideo}
             onSavePlaylistToLibrary={handleSavePlaylistToLibrary}
             onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
@@ -443,22 +200,6 @@ export default function DiscoverPage() {
           />
         </div>
       </div>
-
-      {/* Playlist Browser Drawer (Option A) */}
-      <PlaylistBrowserDrawer
-        key={selectedPlaylistId || 'none'}
-        isOpen={isPlaylistDrawerOpen}
-        playlistId={selectedPlaylistId}
-        playlistSummary={selectedPlaylistSummary}
-        userPlaylists={playlists}
-        savedVideos={savedVideos}
-        onClose={handleClosePlaylistDrawer}
-        onVideoSelect={handleDrawerVideoSelect}
-        onSaveToLibrary={handleSavePlaylistToLibrary}
-        onSaveVideo={handleToggleSaveVideo}
-        onTogglePlaylistAssociation={handleTogglePlaylistAssociation}
-        onCreatePlaylist={handleCreatePlaylist}
-      />
     </div>
   );
 }

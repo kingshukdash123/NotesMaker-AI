@@ -9,6 +9,7 @@ import {
 import YouTubeIcon from '../common/YouTubeIcon';
 import Skeleton from '../common/Skeleton';
 import { useTheme } from '../../context/ThemeContext';
+import { useApp } from '../../context/AppContext';
 import { normalizeVideoMetadata } from '../../models';
 import { formatViews, formatTimeAgo } from '../../utils/formatters';
 
@@ -90,6 +91,7 @@ export default function VideoInfo({
   className = '' 
 }) {
   const { isDark } = useTheme();
+  const { openChannelExplorer } = useApp() || {};
 
   // On phone/mobile screens (< 768px), collapse initially.
   // On large devices (>= 768px), expand by default initially.
@@ -143,6 +145,7 @@ export default function VideoInfo({
   }
   const title = norm.title || metadata?.title || 'YouTube Video';
   const channel = norm.channel || metadata?.channel || metadata?.channelTitle || metadata?.author || 'YouTube Creator';
+  const channelId = norm.channelId || metadata?.channel_id || metadata?.channelId || '';
   const viewsText = norm.viewsText || (norm.viewCount ? formatViews(norm.viewCount) : '');
   const timeAgoText = norm.timeAgoText || (norm.publishedAt ? formatTimeAgo(norm.publishedAt) : '');
   const description = (norm.description || metadata?.description || '').trim();
@@ -209,10 +212,19 @@ export default function VideoInfo({
           <div className="flex items-center justify-between gap-2 pt-0.5">
             <div className="min-w-0">
               {/* Channel Row */}
-              <div className="flex items-center gap-1.5 min-w-0">
-                <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-                <span className={`text-xs sm:text-sm font-semibold truncate ${
-                  isDark ? 'text-zinc-300' : 'text-zinc-700'
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (openChannelExplorer) {
+                    openChannelExplorer(channelId, channel);
+                  }
+                }}
+                className="flex items-center gap-1.5 min-w-0 cursor-pointer group/channel inline-flex"
+                title={`Explore channel: ${channel}`}
+              >
+                <User className={`w-3.5 h-3.5 shrink-0 transition-colors ${isDark ? 'text-zinc-500 group-hover/channel:text-zinc-200' : 'text-zinc-400 group-hover/channel:text-zinc-700'}`} />
+                <span className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
+                  isDark ? 'text-zinc-300 group-hover/channel:text-zinc-100 group-hover/channel:underline' : 'text-zinc-700 group-hover/channel:text-zinc-900 group-hover/channel:underline'
                 }`}>
                   {channel}
                 </span>

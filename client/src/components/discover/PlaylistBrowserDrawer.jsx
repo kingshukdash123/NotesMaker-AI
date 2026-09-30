@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Folder, Play, Check, Loader2, FolderPlus, User } from 'lucide-react';
+import { X, Folder, ArrowLeft, Loader2, FolderPlus, User } from 'lucide-react';
+import YouTubeIcon from '../common/YouTubeIcon';
 import { fetchYouTubePlaylistItems } from '../../services/server/api';
 import { useTheme } from '../../context/ThemeContext';
-import VideoActionButtons from '../common/VideoActionButtons';
+import { useApp } from '../../context/AppContext';
 import Skeleton from '../common/Skeleton';
+import DrawerVideoCard from './DrawerVideoCard';
 import { normalizeVideoMetadata } from '../../models';
 
 export default function PlaylistBrowserDrawer({
@@ -14,6 +15,7 @@ export default function PlaylistBrowserDrawer({
   userPlaylists = [],
   savedVideos = [],
   onClose,
+  onBack,
   onVideoSelect,
   onSaveToLibrary,
   onSaveVideo,
@@ -21,6 +23,7 @@ export default function PlaylistBrowserDrawer({
   onCreatePlaylist
 }) {
   const { isDark } = useTheme();
+  const { openChannelExplorer } = useApp() || {};
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [playlist, setPlaylist] = useState(null);
@@ -30,9 +33,34 @@ export default function PlaylistBrowserDrawer({
   const [error, setError] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // Manage smooth mount/unmount and opening/closing animation lifecycle matching Orbit sidebar
+  useEffect(() => {
+    let animFrame;
+    if (isOpen) {
+      setShouldRender(true);
+      animFrame = requestAnimationFrame(() => {
+        animFrame = requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+    return () => {
+      if (animFrame) cancelAnimationFrame(animFrame);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen || !playlistId) {
+    if (!isOpen) return;
+    if (!playlistId) {
       setPlaylist(null);
       setVideos([]);
       setTotalResults(0);
@@ -74,8 +102,6 @@ export default function PlaylistBrowserDrawer({
 
     return () => {
       isMounted = false;
-      setPlaylist(null);
-      setVideos([]);
     };
   }, [isOpen, playlistId]);
 
@@ -96,10 +122,11 @@ export default function PlaylistBrowserDrawer({
     }
   }, [playlistId, nextPageToken, isLoadingMore]);
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   const displayTitle = playlist?.title || playlistSummary?.title || 'Course Playlist';
   const displayChannel = playlist?.channel || playlistSummary?.channel || 'YouTube Creator';
+  const displayYoutubeUrl = playlistId ? `https://www.youtube.com/playlist?list=${playlistId}` : '';
 
   // Check if this playlist is already saved in the user's library
   const isAlreadyInLibrary = Boolean(
@@ -131,126 +158,184 @@ export default function PlaylistBrowserDrawer({
     }
   };
 
-  const drawerContent = (
-    <div className="fixed top-[53px] bottom-0 right-0 left-0 z-[95] overflow-hidden flex justify-end">
-      {/* Backdrop */}
+  return (
+    <>
+      {/* Content Area Backdrop with smooth fade (doesn't cover chat sidebar or header) */}
       <div
-        className="fixed top-[53px] inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
+        className={`absolute inset-0 bg-black/60 backdrop-blur-[1px] z-30 transition-opacity duration-300 ease-in-out ${
+          isAnimating ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
       />
 
-      {/* Drawer Panel */}
-      <div className={`relative w-full max-w-xl h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300 border-l ${
-        isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'
-      }`}>
-        {/* Drawer Header - Title & Actions (Add Playlist + Cross) on top row, Channel & Count on second row */}
-        <div className={`p-3.5 sm:p-5 border-b space-y-1 ${
-          isDark ? 'border-zinc-800/80 bg-zinc-900/60' : 'border-zinc-200 bg-white'
+      {/* Drawer Panel constrained to the content area */}
+      <div
+        className={`absolute top-0 bottom-0 right-0 w-full max-w-xl h-full z-40 flex flex-col shrink-0 overflow-hidden border-l transition-all duration-300 ease-in-out ${
+          isAnimating
+            ? 'translate-x-0 opacity-100 border-l animate-chat-sidebar'
+            : 'translate-x-full opacity-0 pointer-events-none border-l-0'
+        } ${
+          isDark
+            ? 'border-zinc-900/90 bg-zinc-950 text-zinc-100'
+            : 'border-zinc-200 bg-white text-zinc-900 shadow-xl'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Drawer Header - Title & Actions on top row, Channel & Count vertically aligned below title */}
+        <div className={`p-3.5 sm:p-5 border-b ${
+          isDark ? 'border-zinc-900/90 bg-zinc-950' : 'border-zinc-200 bg-white'
         }`}>
           {isLoading && !playlist?.title && !playlistSummary?.title ? (
-            <div className="space-y-1.5 py-0.5">
-              <div className="flex items-start justify-between gap-3">
-                <Skeleton className="h-5 sm:h-6 w-3/4 rounded-md" />
-                <div className="flex items-center gap-1 -mr-1 -mt-1">
-                  <Skeleton className="w-8 h-8 rounded-lg" />
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer ${
-                      isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
-                    }`}
-                    aria-label="Close drawer"
-                    title="Close drawer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+            <div className="flex items-start justify-between gap-2.5 min-w-0">
+              <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                <Skeleton className="w-7 h-7 rounded-lg shrink-0 -ml-1 mt-0.5" />
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <Skeleton className="h-5 sm:h-6 w-3/4 rounded-md" />
+                  <div className="flex items-center gap-1.5">
+                    <Skeleton className="w-3.5 h-3.5 rounded-full" />
+                    <Skeleton className="h-3.5 w-28 rounded" />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Skeleton className="w-3.5 h-3.5 rounded-full" />
-                <Skeleton className="h-3.5 w-28 rounded" />
+              <div className="flex items-center gap-1 shrink-0 -mr-1 -mt-1">
+                <Skeleton className="w-8 h-8 rounded-lg" />
+                <Skeleton className="w-8 h-8 rounded-lg" />
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer ${
+                    isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
+                  }`}
+                  aria-label="Close drawer"
+                  title="Close drawer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
             </div>
           ) : (
-            <>
-              {/* Row 1: Title (left) & Actions Cluster: Add Playlist Icon before Cross (right) */}
-              <div className="flex items-start justify-between gap-3 min-w-0">
-                <h2
-                  title={displayTitle}
-                  className={`text-sm sm:text-base md:text-lg font-bold line-clamp-2 leading-snug flex-1 min-w-0 ${
-                    isDark ? 'text-zinc-100' : 'text-zinc-900'
+            <div className="flex items-start justify-between gap-2.5 min-w-0">
+              {/* Left Column: Back Button + (Title & Channel Vertically Aligned Stack) */}
+              <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                {/* Back Button */}
+                <button
+                  type="button"
+                  onClick={onBack || onClose}
+                  className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer -ml-1 mt-0.5 ${
+                    isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
                   }`}
+                  aria-label="Back"
+                  title="Back"
                 >
-                  {displayTitle}
-                </h2>
+                  <ArrowLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                </button>
 
-                {/* Actions Cluster: Add Playlist / Save Icon before Cross */}
-                <div className="flex items-center gap-1 shrink-0 -mr-1 -mt-1">
-                  {onSaveToLibrary && (
-                    <button
-                      type="button"
-                      onClick={handleSave}
-                      disabled={isPlaylistSaved || isSaving || isLoading}
-                      className={`p-1.5 rounded-lg transition select-none flex items-center justify-center shrink-0 cursor-pointer disabled:cursor-default ${
-                        isPlaylistSaved
-                          ? isDark
-                            ? 'text-zinc-100 hover:text-white hover:bg-zinc-800/60'
-                            : 'text-zinc-900 hover:text-black hover:bg-zinc-100'
-                          : isSaving
-                            ? 'opacity-80 cursor-wait'
-                            : isDark
-                              ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
-                              : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
-                      }`}
-                      title={isSaving ? 'Adding...' : isPlaylistSaved ? 'Saved to Library' : 'Save Playlist to Library'}
-                      aria-label={isPlaylistSaved ? 'Saved to Library' : 'Save Playlist to Library'}
+                {/* Vertical Stack: Title and Channel Name share identical left starting position */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <h2
+                    title={displayTitle}
+                    className={`text-sm sm:text-base md:text-lg font-bold line-clamp-2 leading-snug ${
+                      isDark ? 'text-zinc-100' : 'text-zinc-900'
+                    }`}
+                  >
+                    {displayTitle}
+                  </h2>
+
+                  {/* Channel Name & Video Count (Vertically aligned with Title start) */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      onClick={() => {
+                        const chId = playlist?.channelId || playlistSummary?.channelId || '';
+                        if (openChannelExplorer) {
+                          openChannelExplorer(chId, displayChannel);
+                        }
+                      }}
+                      className="flex items-center gap-1.5 min-w-0 cursor-pointer group/channel inline-flex"
+                      title={`Explore channel: ${displayChannel}`}
                     >
-                      {isSaving ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-                      ) : (
-                        <FolderPlus className={`w-4 h-4 ${isPlaylistSaved ? 'fill-current' : ''}`} />
-                      )}
-                    </button>
-                  )}
+                      <User className={`w-3.5 h-3.5 shrink-0 transition-colors ${isDark ? 'text-zinc-500 group-hover/channel:text-zinc-200' : 'text-zinc-400 group-hover/channel:text-zinc-700'}`} />
+                      <p
+                        title={displayChannel}
+                        className={`text-xs font-medium truncate max-w-[180px] sm:max-w-[280px] transition-colors ${
+                          isDark ? 'text-zinc-400 group-hover/channel:text-zinc-200 group-hover/channel:underline' : 'text-zinc-500 group-hover/channel:text-zinc-900 group-hover/channel:underline'
+                        }`}
+                      >
+                        {displayChannel}
+                      </p>
+                    </div>
+                    {videos.length > 0 && (
+                      <>
+                        <span className={`text-xs select-none ${isDark ? 'text-zinc-700' : 'text-zinc-300'}`}>•</span>
+                        <span className={`text-xs font-medium shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                          {totalResults > videos.length ? `${videos.length} of ${totalResults}` : videos.length} videos
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-                  {/* Close Cross Button */}
+              {/* Actions Cluster: Add Playlist / Save Icon, YouTube Link Icon, then Close Cross */}
+              <div className="flex items-center gap-1 shrink-0 -mr-1 -mt-1">
+                {onSaveToLibrary && (
                   <button
                     type="button"
-                    onClick={onClose}
-                    className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer ${
-                      isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
+                    onClick={handleSave}
+                    disabled={isPlaylistSaved || isSaving || isLoading}
+                    className={`p-1.5 rounded-lg transition select-none flex items-center justify-center shrink-0 cursor-pointer disabled:cursor-default ${
+                      isPlaylistSaved
+                        ? isDark
+                          ? 'text-zinc-100 hover:text-white hover:bg-zinc-800/60'
+                          : 'text-zinc-900 hover:text-black hover:bg-zinc-100'
+                        : isSaving
+                          ? 'opacity-80 cursor-wait'
+                          : isDark
+                            ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60'
+                            : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
                     }`}
-                    aria-label="Close drawer"
-                    title="Close drawer"
+                    title={isSaving ? 'Adding...' : isPlaylistSaved ? 'Saved to Library' : 'Save Playlist to Library'}
+                    aria-label={isPlaylistSaved ? 'Saved to Library' : 'Save Playlist to Library'}
                   >
-                    <X className="w-5 h-5" />
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                    ) : (
+                      <FolderPlus className={`w-4 h-4 ${isPlaylistSaved ? 'fill-current' : ''}`} />
+                    )}
                   </button>
-                </div>
-              </div>
-
-              {/* Row 2: Channel Name & Video Count */}
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <User className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-                  <p
-                    title={displayChannel}
-                    className={`text-xs font-medium truncate max-w-[200px] sm:max-w-[320px] ${
-                      isDark ? 'text-zinc-400' : 'text-zinc-500'
-                    }`}
-                  >
-                    {displayChannel}
-                  </p>
-                </div>
-                {videos.length > 0 && (
-                  <>
-                    <span className={`text-xs select-none ${isDark ? 'text-zinc-700' : 'text-zinc-300'}`}>•</span>
-                    <span className={`text-xs font-medium shrink-0 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                      {totalResults > videos.length ? `${videos.length} of ${totalResults}` : videos.length} videos
-                    </span>
-                  </>
                 )}
+
+                {/* YouTube Link Icon */}
+                {displayYoutubeUrl && (
+                  <a
+                    href={displayYoutubeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`p-1.5 rounded-lg transition-all flex items-center justify-center shrink-0 opacity-80 hover:opacity-100 ${
+                      isDark
+                        ? 'hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200'
+                        : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
+                    }`}
+                    title="Open playlist on YouTube"
+                    aria-label="Open playlist on YouTube"
+                  >
+                    <YouTubeIcon className="w-4 h-4 transition-transform hover:scale-110" />
+                  </a>
+                )}
+
+                {/* Close Cross Button */}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer ${
+                    isDark ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100' : 'hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900'
+                  }`}
+                  aria-label="Close drawer"
+                  title="Close drawer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -325,72 +410,17 @@ export default function PlaylistBrowserDrawer({
               const isSaved = savedVideos.some(v => (v.videoId || v.id) === vidId);
 
               return (
-                <div
+                <DrawerVideoCard
                   key={vidId || index}
-                  onClick={() => onVideoSelect(norm)}
-                  className={`group p-1.5 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-2 sm:gap-3 cursor-pointer ${
-                    isDark
-                      ? 'hover:bg-zinc-900/80 text-zinc-100'
-                      : 'hover:bg-zinc-50 text-zinc-900'
-                  }`}
-                >
-                  {/* Index Number */}
-                  <div className={`w-4 sm:w-5 text-center text-[11px] sm:text-xs font-semibold shrink-0 ${
-                    isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-400 group-hover:text-zinc-900 font-medium'
-                  }`}>
-                    {index + 1}
-                  </div>
-
-                  {/* Clean YouTube Thumbnail with duration badge */}
-                  <div className={`relative w-24 min-[400px]:w-28 sm:w-32 aspect-video rounded-lg overflow-hidden shrink-0 ${
-                    isDark ? 'bg-zinc-900' : 'bg-zinc-200'
-                  }`}>
-                    <img
-                      src={norm.thumbnail}
-                      alt={norm.title || 'Playlist Lecture Video Thumbnail'}
-                      className="w-full h-full object-cover group-hover:scale-[1.02] transition duration-200"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    {/* Duration Badge */}
-                    {norm.durationFormatted && (
-                      <div className="absolute bottom-1 right-1 bg-black/80 backdrop-blur-2xs text-white text-[9px] font-semibold px-1 py-0.2 rounded shadow-xs">
-                        {norm.durationFormatted}
-                      </div>
-                    )}
-                    {/* Subtle hover play overlay */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                      <Play className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-current drop-shadow" />
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex-1 min-w-0 pr-1">
-                    <h4 className={`text-xs sm:text-sm font-semibold line-clamp-2 leading-snug transition ${
-                      isDark ? 'text-zinc-100 group-hover:text-white' : 'text-zinc-900'
-                    }`}>
-                      {norm.title}
-                    </h4>
-                  </div>
-
-                  {/* Action Buttons: Save / Bookmark & Add to Playlist */}
-                  {onSaveVideo && (
-                    <div onClick={(e) => e.stopPropagation()} className="shrink-0">
-                      <VideoActionButtons
-                        video={norm}
-                        playlists={userPlaylists}
-                        isSaved={isSaved}
-                        onSave={() => onSaveVideo(norm)}
-                        onAddToPlaylist={(videoId, playlistId, alreadyAssociated) =>
-                          onTogglePlaylistAssociation?.(videoId, playlistId, alreadyAssociated, norm)
-                        }
-                        onCreatePlaylist={onCreatePlaylist}
-                        popoverPlacement="left"
-                        popoverAlign="top"
-                      />
-                    </div>
-                  )}
-                </div>
+                  video={norm}
+                  index={index}
+                  onSelect={onVideoSelect}
+                  playlists={userPlaylists}
+                  isSaved={isSaved}
+                  onSave={onSaveVideo}
+                  onAddToPlaylist={onTogglePlaylistAssociation}
+                  onCreatePlaylist={onCreatePlaylist}
+                />
               );
             })
           )}
@@ -421,8 +451,6 @@ export default function PlaylistBrowserDrawer({
           )}
         </div>
       </div>
-    </div>
+    </>
   );
-
-  return createPortal(drawerContent, document.body);
 }
