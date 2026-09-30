@@ -32,12 +32,13 @@ def parse_iso8601_duration(duration_str: Optional[str]) -> int:
     return days * 86400 + hours * 3600 + minutes * 60 + seconds
 
 
-def format_duration_seconds(seconds: int) -> str:
+def format_duration_seconds(seconds: int, is_live: bool = False) -> str:
     """
     Format total seconds into MM:SS or HH:MM:SS string.
+    Returns empty string for active live streams, zero, or negative seconds.
     """
-    if seconds <= 0:
-        return "0:00"
+    if is_live or seconds <= 0:
+        return ""
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
     secs = seconds % 60
@@ -77,7 +78,7 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
         "channel": "YouTube Creator",
         "thumbnail": f"https://img.youtube.com/vi/{clean_id}/hqdefault.jpg",
         "duration": 0,
-        "duration_formatted": "0:00",
+        "duration_formatted": "",
         "available_languages": [],
         "is_live": False,
         "is_live_archive": False,
@@ -127,16 +128,6 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
                         if best_thumb:
                             metadata["thumbnail"] = best_thumb
 
-                        # Duration parsing (ISO 8601 -> seconds)
-                        iso_duration = content_details.get("duration", "")
-                        duration_sec = parse_iso8601_duration(iso_duration)
-                        metadata["duration"] = duration_sec
-                        metadata["duration_formatted"] = format_duration_seconds(duration_sec)
-
-                        # Embeddable status
-                        if "embeddable" in status:
-                            metadata["embeddable"] = status.get("embeddable")
-
                         # Live stream states
                         live_content = snippet.get("liveBroadcastContent", "none")
                         is_active_live = (live_content == "live") or (
@@ -147,6 +138,16 @@ def get_video_metadata(video_id: str) -> VideoMetadata:
                             bool(live_details.get("actualEndTime"))
                         )
                         metadata["is_upcoming"] = live_content == "upcoming"
+
+                        # Duration parsing (ISO 8601 -> seconds)
+                        iso_duration = content_details.get("duration", "")
+                        duration_sec = parse_iso8601_duration(iso_duration)
+                        metadata["duration"] = 0 if is_active_live else duration_sec
+                        metadata["duration_formatted"] = "" if (is_active_live or duration_sec <= 0) else format_duration_seconds(duration_sec, is_live=is_active_live)
+
+                        # Embeddable status
+                        if "embeddable" in status:
+                            metadata["embeddable"] = status.get("embeddable")
 
                         # Statistics
                         if statistics.get("viewCount") is not None:
@@ -256,8 +257,8 @@ def get_batch_video_details(video_ids: List[str]) -> Dict[str, Dict]:
                     )
 
                     results[v_id] = {
-                        "duration": duration_sec,
-                        "durationFormatted": format_duration_seconds(duration_sec),
+                        "duration": 0 if is_live else duration_sec,
+                        "durationFormatted": "" if (is_live or duration_sec <= 0) else format_duration_seconds(duration_sec, is_live=is_live),
                         "viewCount": stats.get("viewCount", "0"),
                         "likeCount": stats.get("likeCount", "0"),
                         "commentCount": stats.get("commentCount", "0"),

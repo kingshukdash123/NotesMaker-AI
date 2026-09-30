@@ -30,6 +30,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PlansProvider } from './context/PlansContext';
 import { fetchYoutubeMetadata } from './services/server/api';
+import { logVideoOpen } from './services/firebase/historyService';
 import { checkServerHealth, subscribeToApiDisconnect } from './services/server/serverHealth';
 import { logUserActivity } from './services/firebase/activityService';
 import { parseLocation, buildUrl } from './utils/router';
@@ -228,6 +229,9 @@ function MainApp() {
       .then((meta) => {
         if (isMounted && meta) {
           setActiveVideoMetadata(meta);
+          if (currentUser?.uid) {
+            logVideoOpen(currentUser.uid, activeVideoId, `https://www.youtube.com/watch?v=${activeVideoId}`, meta);
+          }
         }
       })
       .catch((err) => {
@@ -237,7 +241,7 @@ function MainApp() {
     return () => {
       isMounted = false;
     };
-  }, [activeVideoId, activeVideoMetadata, setActiveVideoMetadata]);
+  }, [activeVideoId, activeVideoMetadata, setActiveVideoMetadata, currentUser?.uid]);
 
   // Log user activity for streak calculation when they open the app
   useEffect(() => {

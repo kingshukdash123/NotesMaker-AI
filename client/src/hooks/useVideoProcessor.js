@@ -16,7 +16,9 @@ export function useVideoProcessor() {
     activeVideoId,
     activeVideoUrl,
     activeVideoMetadata,
+    activeVideoNoteResult,
     setActiveVideoNoteResult,
+    activeVideoNoteId,
     setActiveVideoNoteId,
     videoProcessStatus,
     setVideoProcessStatus,
@@ -52,12 +54,19 @@ export function useVideoProcessor() {
     if (loggedVideoIdRef.current === activeVideoId) return;
     loggedVideoIdRef.current = activeVideoId;
 
+    // If activeVideoNoteResult is already populated (e.g. passed from Library/NotesTab), ensure status is COMPLETED
+    if (activeVideoNoteResult) {
+      setVideoProcessStatus('COMPLETED');
+      logWatchHistory(activeVideoId, activeVideoUrl, activeVideoMetadata, true);
+      return;
+    }
+
     const checkExistingNotes = async () => {
       setVideoProcessStatus('CHECKING_CACHE');
       setVideoProcessError(null);
       try {
         const existingNote = await getNoteByVideoId(currentUser.uid, activeVideoId);
-        if (existingNote) {
+        if (existingNote && existingNote.result) {
           setActiveVideoNoteResult(existingNote.result);
           setActiveVideoNoteId(existingNote.id);
           setVideoProcessStatus('COMPLETED');
@@ -82,7 +91,7 @@ export function useVideoProcessor() {
     };
 
     checkExistingNotes();
-  }, [activeVideoId, currentUser, activeVideoUrl, activeVideoMetadata, logWatchHistory, setActiveVideoNoteId, setActiveVideoNoteResult, setVideoProcessError, setVideoProcessStatus]);
+  }, [activeVideoId, currentUser?.uid]);
 
   const processVideo = async (targetUrl = activeVideoUrl, metadata = activeVideoMetadata) => {
     if (!currentUser) return;

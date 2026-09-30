@@ -63,8 +63,20 @@ export function formatViews(views) {
  * @returns {string} Formatted duration string
  */
 export function formatVideoDuration(duration) {
-  if (!duration && duration !== 0) return '';
-  if (typeof duration === 'string' && duration.includes(':')) return duration;
+  if (!duration) return '';
+  if (typeof duration === 'string') {
+    const trimmed = duration.trim();
+    if (!trimmed || trimmed === '0:00' || trimmed === '00:00' || trimmed === '0:00:00' || trimmed === '0') {
+      return '';
+    }
+    if (trimmed.includes(':')) {
+      const parts = trimmed.split(':').map((p) => parseInt(p, 10));
+      if (parts.every((p) => isNaN(p) || p === 0)) {
+        return '';
+      }
+      return trimmed;
+    }
+  }
   const sec = typeof duration === 'string' ? parseInt(duration, 10) : duration;
   if (isNaN(sec) || sec <= 0) return '';
   const hours = Math.floor(sec / 3600);

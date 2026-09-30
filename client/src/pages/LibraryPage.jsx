@@ -134,16 +134,17 @@ export default function LibraryPage() {
         setSavedVideos(prev => prev.filter(v => (v.videoId || v.id) !== targetVideoId));
       } else {
         const rawMeta = video.metadata || video;
+        const isLive = Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive || video.is_live);
         const metadataToSave = {
           title: rawMeta.title || video.title || 'YouTube Video',
           channel: rawMeta.channel || video.channel || 'YouTube Creator',
           thumbnail: rawMeta.thumbnail || video.thumbnail || `https://img.youtube.com/vi/${targetVideoId}/hqdefault.jpg`,
-          duration: Number(rawMeta.duration || video.duration || 0) || 0,
-          duration_formatted: rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || '',
+          duration: isLive ? 0 : (Number(rawMeta.duration || video.duration || 0) || 0),
+          duration_formatted: isLive ? '' : (rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || ''),
           publishedAt: rawMeta.publishedAt || video.publishedAt || '',
           description: rawMeta.description || video.description || '',
           view_count: rawMeta.view_count || rawMeta.viewCount || video.viewCount || '',
-          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive),
+          is_live: isLive,
         };
         const videoUrlToSave = video.videoUrl || `https://www.youtube.com/watch?v=${targetVideoId}`;
 
@@ -180,10 +181,14 @@ export default function LibraryPage() {
 
     try {
       const rawMeta = videoData?.metadata || videoData || {};
-      const durationSec = Number(rawMeta.duration || videoData?.duration || rawMeta.duration_seconds || videoData?.duration_seconds || 0) || 0;
-      let durationFmt = String(rawMeta.duration_formatted || rawMeta.durationFormatted || videoData?.durationFormatted || videoData?.duration_formatted || '').trim();
-      if (!durationFmt && durationSec > 0) {
+      const isLive = Boolean(rawMeta.is_live || rawMeta.isLive || videoData?.isLive || videoData?.is_live);
+      const durationSec = isLive ? 0 : (Number(rawMeta.duration || videoData?.duration || rawMeta.duration_seconds || videoData?.duration_seconds || 0) || 0);
+      let durationFmt = isLive ? '' : String(rawMeta.duration_formatted || rawMeta.durationFormatted || videoData?.durationFormatted || videoData?.duration_formatted || '').trim();
+      if (!isLive && !durationFmt && durationSec > 0) {
         durationFmt = formatVideoDuration(durationSec);
+      }
+      if (isLive || durationFmt === '0:00' || durationFmt === '00:00' || durationFmt === '0:00:00') {
+        durationFmt = '';
       }
 
       const videoEntry = {
@@ -201,7 +206,7 @@ export default function LibraryPage() {
           publishedAt: rawMeta.publishedAt || videoData?.publishedAt || '',
           description: rawMeta.description || videoData?.description || '',
           view_count: rawMeta.view_count || rawMeta.viewCount || videoData?.viewCount || '',
-          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || videoData?.isLive),
+          is_live: isLive,
         },
         addedAt: new Date().toISOString(),
       };

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import YouTubeIcon from '../common/YouTubeIcon';
 import Skeleton from '../common/Skeleton';
+import LiveBadge from '../common/LiveBadge';
 import { useTheme } from '../../context/ThemeContext';
 import { useApp } from '../../context/AppContext';
 import { normalizeVideoMetadata } from '../../models';
@@ -230,16 +231,7 @@ export default function VideoInfo({
                 </span>
 
                 {isLive && (
-                  <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[9.5px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 tracking-wider ml-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-                    LIVE
-                  </span>
-                )}
-
-                {isLiveArchive && (
-                  <span className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-[9.5px] font-bold px-1.5 py-0.5 rounded tracking-wider ml-1">
-                    LIVE ARCHIVE
-                  </span>
+                  <LiveBadge size="xs" className="ml-1.5" />
                 )}
               </div>
 

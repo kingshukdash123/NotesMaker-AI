@@ -21,7 +21,8 @@ import { parseLocation } from '../utils/router';
 const AppContext = createContext(null);
 
 export function useApp() {
-  return useContext(AppContext);
+  const context = useContext(AppContext);
+  return context || {};
 }
 
 export function AppProvider({ children }) {
@@ -316,16 +317,17 @@ export function AppProvider({ children }) {
         setSavedVideos((prev) => prev.filter((v) => (v.videoId || v.id) !== targetVideoId));
       } else {
         const rawMeta = video.metadata || video;
+        const isLive = Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive || video.is_live);
         const metadataToSave = {
           title: rawMeta.title || video.title || 'YouTube Video',
           channel: rawMeta.channel || video.channel || 'YouTube Creator',
           thumbnail: rawMeta.thumbnail || video.thumbnail || `https://img.youtube.com/vi/${targetVideoId}/hqdefault.jpg`,
-          duration: Number(rawMeta.duration || video.duration || 0) || 0,
-          duration_formatted: rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || '',
+          duration: isLive ? 0 : (Number(rawMeta.duration || video.duration || 0) || 0),
+          duration_formatted: isLive ? '' : (rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || ''),
           publishedAt: rawMeta.publishedAt || video.publishedAt || '',
           description: rawMeta.description || video.description || '',
           view_count: rawMeta.view_count || rawMeta.viewCount || video.viewCount || '',
-          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive),
+          is_live: isLive,
         };
         const videoUrlToSave = video.videoUrl || `https://www.youtube.com/watch?v=${targetVideoId}`;
 
@@ -363,10 +365,14 @@ export function AppProvider({ children }) {
 
     try {
       const rawMeta = video?.metadata || video || {};
-      const durationSec = Number(rawMeta.duration || video?.duration || rawMeta.duration_seconds || video?.duration_seconds || 0) || 0;
-      let durationFmt = String(rawMeta.duration_formatted || rawMeta.durationFormatted || video?.durationFormatted || video?.duration_formatted || '').trim();
-      if (!durationFmt && durationSec > 0) {
+      const isLive = Boolean(rawMeta.is_live || rawMeta.isLive || video?.isLive || video?.is_live);
+      const durationSec = isLive ? 0 : (Number(rawMeta.duration || video?.duration || rawMeta.duration_seconds || video?.duration_seconds || 0) || 0);
+      let durationFmt = isLive ? '' : String(rawMeta.duration_formatted || rawMeta.durationFormatted || video?.durationFormatted || video?.duration_formatted || '').trim();
+      if (!isLive && !durationFmt && durationSec > 0) {
         durationFmt = formatVideoDuration(durationSec);
+      }
+      if (isLive || durationFmt === '0:00' || durationFmt === '00:00' || durationFmt === '0:00:00') {
+        durationFmt = '';
       }
 
       const videoEntry = {
@@ -384,7 +390,7 @@ export function AppProvider({ children }) {
           publishedAt: rawMeta.publishedAt || video?.publishedAt || '',
           description: rawMeta.description || video?.description || '',
           view_count: rawMeta.view_count || rawMeta.viewCount || video?.viewCount || '',
-          is_live: Boolean(rawMeta.is_live || rawMeta.isLive || video?.isLive),
+          is_live: isLive,
         },
         addedAt: new Date().toISOString(),
       };

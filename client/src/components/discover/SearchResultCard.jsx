@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { User, Clock, Eye } from 'lucide-react';
 import YouTubeIcon from '../common/YouTubeIcon';
 import VideoActionButtons from '../common/VideoActionButtons';
+import LiveBadge from '../common/LiveBadge';
 import { normalizeVideoMetadata } from '../../models';
 import { getChannelInitial } from '../../utils/formatters';
 
@@ -23,7 +24,7 @@ export default function SearchResultCard({
   const channelLetter = getChannelInitial(norm.channel);
   const timeAgoText = norm.timeAgoText;
   const viewsText = norm.viewsText;
-  const durationText = norm.durationFormatted;
+  const durationText = (!norm.isLive && norm.durationFormatted && norm.durationFormatted !== '0:00' && norm.durationFormatted !== '00:00' && norm.durationFormatted !== '0:00:00') ? norm.durationFormatted : '';
   const descriptionText = norm.description;
 
   return (
@@ -52,15 +53,10 @@ export default function SearchResultCard({
           </div>
         )}
 
-        {/* Live Broadcast / Duration Badge (Bottom Right) */}
+        {/* Bottom-Right: Live Badge / Duration Timestamp / Watch */}
         {norm.isLive ? (
-          <div className="absolute bottom-1.5 right-1.5 z-20 bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-md tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-            <span>LIVE</span>
-          </div>
-        ) : norm.isLiveArchive ? (
-          <div className="absolute bottom-1.5 right-1.5 z-20 bg-purple-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow-md tracking-wider">
-            <span>LIVE ARCHIVE</span>
+          <div className="absolute bottom-1.5 right-1.5 z-20">
+            <LiveBadge size="sm" />
           </div>
         ) : durationText ? (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-black/90 backdrop-blur-2xs text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm tracking-wide">

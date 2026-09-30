@@ -2,6 +2,7 @@ import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Cpu, Square, CheckSquare, Loader2, User } from 'lucide-react';
 import VideoActionButtons from '../common/VideoActionButtons';
+import LiveBadge from '../common/LiveBadge';
 import { normalizeVideoMetadata } from '../../models';
 import { getChannelInitial } from '../../utils/formatters';
 
@@ -28,7 +29,7 @@ export default function LibraryVideoCard({
   // Check if notes already exist/processed for this video ID
   const isProcessed = Boolean(processedVideoIds && processedVideoIds.has(currentVideoId));
   const channelLetter = getChannelInitial(norm.channel);
-  const durationText = norm.durationFormatted;
+  const durationText = (!norm.isLive && norm.durationFormatted && norm.durationFormatted !== '0:00' && norm.durationFormatted !== '00:00' && norm.durationFormatted !== '0:00:00') ? norm.durationFormatted : '';
 
   return (
     <div className={`group relative flex flex-col h-full cursor-pointer transition-all duration-200 rounded-xl select-none hover:z-20 focus-within:z-30 ${isDark
@@ -57,15 +58,10 @@ export default function LibraryVideoCard({
           </div>
         )}
 
-        {/* Live Broadcast / Duration Badge (Bottom Right) */}
+        {/* Bottom-Right: Live Badge / Duration Timestamp */}
         {norm.isLive ? (
-          <div className="absolute bottom-1.5 right-1.5 z-20 bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-md tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-            <span>LIVE</span>
-          </div>
-        ) : norm.isLiveArchive ? (
-          <div className="absolute bottom-1.5 right-1.5 z-20 bg-purple-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow-md tracking-wider">
-            <span>LIVE ARCHIVE</span>
+          <div className="absolute bottom-1.5 right-1.5 z-20">
+            <LiveBadge />
           </div>
         ) : durationText ? (
           <div className="absolute bottom-1.5 right-1.5 z-20 bg-black/85 backdrop-blur-xs text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-md tracking-wide">

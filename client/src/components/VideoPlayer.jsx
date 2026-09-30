@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { PlayCircle, Loader2 } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import Tabs from './Tabs';
 import VideoInfo from './video/VideoInfo';
@@ -22,14 +22,8 @@ export default function VideoPlayer({
   setIsVideoCollapsed
 }) {
   const { isDark } = useTheme();
-  const [isLoaded, setIsLoaded] = useState(false);
   const iframeRef = useRef(null);
   const containerRef = useRef(null);
-
-  // Reset loading state whenever videoId changes
-  useEffect(() => {
-    setIsLoaded(false);
-  }, [videoId]);
 
   const isVideoCollapsedRef = useRef(isVideoCollapsed);
   const setIsVideoCollapsedRef = useRef(setIsVideoCollapsed);
@@ -119,11 +113,6 @@ export default function VideoPlayer({
       } ${
         isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
-        {!isLoaded && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/85 pointer-events-none">
-            <Loader2 className="w-8 h-8 text-zinc-400 animate-spin" />
-          </div>
-        )}
         <iframe
           ref={iframeRef}
           src={embedUrl}
@@ -131,7 +120,6 @@ export default function VideoPlayer({
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
-          onLoad={() => setIsLoaded(true)}
           className="w-full h-full"
         />
       </div>

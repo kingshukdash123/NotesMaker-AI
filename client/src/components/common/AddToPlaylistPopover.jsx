@@ -16,6 +16,7 @@ import {
   removeVideoFromPlaylist,
   createPlaylist
 } from '../../services/firebase/libraryService';
+import { normalizeVideoMetadata } from '../../models';
 
 export default function AddToPlaylistPopover({
   video = null,
@@ -108,12 +109,13 @@ export default function AddToPlaylistPopover({
           await removeVideoFromPlaylist(effectiveUser.uid, currentVideoId, pl.id);
           setInternalAssignedIds((prev) => prev.filter((id) => id !== pl.id));
         } else {
+          const norm = normalizeVideoMetadata(video || { metadata: currentMetadata, videoId: currentVideoId, videoUrl: currentVideoUrl }) || {};
           await addVideoToPlaylist(effectiveUser.uid, currentVideoId, pl.id, {
             videoId: currentVideoId,
-            videoUrl: currentVideoUrl,
-            duration: Number(currentMetadata.duration || video?.duration || 0) || 0,
-            durationFormatted: currentMetadata.duration_formatted || currentMetadata.durationFormatted || video?.durationFormatted || '',
-            metadata: currentMetadata
+            videoUrl: norm.videoUrl || currentVideoUrl,
+            duration: norm.duration || 0,
+            durationFormatted: norm.durationFormatted || '',
+            metadata: norm.metadata || currentMetadata
           });
           setInternalAssignedIds((prev) => [...prev, pl.id]);
         }
@@ -149,12 +151,13 @@ export default function AddToPlaylistPopover({
         setNewPlaylistName('');
       } else if (effectiveUser && currentVideoId) {
         const newPlaylistId = await createPlaylist(effectiveUser.uid, name);
+        const norm = normalizeVideoMetadata(video || { metadata: currentMetadata, videoId: currentVideoId, videoUrl: currentVideoUrl }) || {};
         await addVideoToPlaylist(effectiveUser.uid, currentVideoId, newPlaylistId, {
           videoId: currentVideoId,
-          videoUrl: currentVideoUrl,
-          duration: Number(currentMetadata.duration || video?.duration || 0) || 0,
-          durationFormatted: currentMetadata.duration_formatted || currentMetadata.durationFormatted || video?.durationFormatted || '',
-          metadata: currentMetadata
+          videoUrl: norm.videoUrl || currentVideoUrl,
+          duration: norm.duration || 0,
+          durationFormatted: norm.durationFormatted || '',
+          metadata: norm.metadata || currentMetadata
         });
         setInternalAssignedIds((prev) => [...prev, newPlaylistId]);
         setNewPlaylistName('');

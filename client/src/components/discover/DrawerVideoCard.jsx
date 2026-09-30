@@ -1,5 +1,6 @@
 import { Play, Clock } from 'lucide-react';
 import VideoActionButtons from '../common/VideoActionButtons';
+import LiveBadge from '../common/LiveBadge';
 import { normalizeVideoMetadata } from '../../models';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -19,6 +20,7 @@ export default function DrawerVideoCard({
 }) {
   const { isDark } = useTheme();
   const norm = normalizeVideoMetadata(video) || {};
+  const durationText = (!norm.isLive && norm.durationFormatted && norm.durationFormatted !== '0:00' && norm.durationFormatted !== '00:00' && norm.durationFormatted !== '0:00:00') ? norm.durationFormatted : '';
 
   return (
     <div
@@ -60,12 +62,16 @@ export default function DrawerVideoCard({
           </div>
         )}
 
-        {/* Duration Badge */}
-        {norm.durationFormatted && (
-          <div className="absolute bottom-1 right-1 bg-black/80 backdrop-blur-2xs text-white text-[9px] font-semibold px-1 py-0.2 rounded shadow-xs">
-            {norm.durationFormatted}
+        {/* Live Badge / Duration */}
+        {norm.isLive ? (
+          <div className="absolute bottom-1 right-1 z-20">
+            <LiveBadge size="xs" />
           </div>
-        )}
+        ) : durationText ? (
+          <div className="absolute bottom-1 right-1 bg-black/80 backdrop-blur-2xs text-white text-[9px] font-semibold px-1 py-0.2 rounded shadow-xs">
+            {durationText}
+          </div>
+        ) : null}
 
         {/* Subtle hover play overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">

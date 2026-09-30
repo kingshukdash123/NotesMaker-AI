@@ -101,9 +101,39 @@ export class VideoModel {
       item.duration_formatted ||
       (typeof rawDuration === 'string' && rawDuration.includes(':') ? rawDuration : '');
 
-    const durationFormatted = String(
-      rawFormatted || (durationSec > 0 ? formatVideoDuration(durationSec) : '')
-    ).trim();
+    const isLive = Boolean(
+      rawMeta.is_live ||
+      rawMeta.isLive ||
+      item.isLive ||
+      item.is_live ||
+      item.mediaType === 'live' ||
+      rawMeta.mediaType === 'live' ||
+      rawMeta.liveBroadcastContent === 'live' ||
+      item.liveBroadcastContent === 'live'
+    );
+
+    const isLiveArchive = Boolean(
+      rawMeta.is_live_archive ||
+      rawMeta.isLiveArchive ||
+      item.isLiveArchive ||
+      item.mediaType === 'live_archive' ||
+      rawMeta.mediaType === 'live_archive'
+    );
+
+    const mediaType = isLive
+      ? 'live'
+      : isLiveArchive
+      ? 'live_archive'
+      : item.mediaType || rawMeta.mediaType || 'video';
+
+    let durationFormatted = isLive
+      ? ''
+      : String(rawFormatted || (durationSec > 0 ? formatVideoDuration(durationSec) : '')).trim();
+
+    // Sanitize: Live streams or videos with zero/empty duration should never display '0:00'
+    if (isLive || durationFormatted === '0:00' || durationFormatted === '00:00' || durationFormatted === '0:00:00' || durationFormatted === '0' || durationSec <= 0) {
+      durationFormatted = '';
+    }
 
     const rawViews =
       rawMeta.view_count ??
@@ -138,29 +168,6 @@ export class VideoModel {
       '';
     const description = String(rawDesc || '').replace(/\r\n/g, '\n').trim();
 
-    const isLive = Boolean(
-      rawMeta.is_live ||
-      rawMeta.isLive ||
-      item.isLive ||
-      item.is_live ||
-      item.mediaType === 'live' ||
-      rawMeta.mediaType === 'live'
-    );
-
-    const isLiveArchive = Boolean(
-      rawMeta.is_live_archive ||
-      rawMeta.isLiveArchive ||
-      item.isLiveArchive ||
-      item.mediaType === 'live_archive' ||
-      rawMeta.mediaType === 'live_archive'
-    );
-
-    const mediaType = isLive
-      ? 'live'
-      : isLiveArchive
-      ? 'live_archive'
-      : item.mediaType || rawMeta.mediaType || 'video';
-
     const videoUrl =
       item.videoUrl ||
       item.url ||
@@ -175,7 +182,7 @@ export class VideoModel {
     this.channel = channel;
     this.channelId = channelId;
     this.thumbnail = thumbnail;
-    this.duration = durationSec;
+    this.duration = isLive ? 0 : durationSec;
     this.durationFormatted = durationFormatted;
     this.viewCount = viewCount;
     this.viewsText = viewsText;
@@ -189,6 +196,7 @@ export class VideoModel {
     this.position = typeof item.position === 'number' ? item.position : 0;
     this.watched = Boolean(item.watched);
     this.watchedAt = item.watchedAt || null;
+    this.result = item.result || rawMeta.result || null;
   }
 
   // Virtual getters for backwards-compatibility without payload/memory duplication
@@ -208,13 +216,19 @@ export class VideoModel {
       thumbnail: this.thumbnail,
       duration: this.duration,
       durationFormatted: this.durationFormatted,
+      duration_formatted: this.durationFormatted,
       viewCount: this.viewCount,
+      view_count: this.viewCount,
       publishedAt: this.publishedAt,
+      published_at: this.publishedAt,
       description: this.description,
       isLive: this.isLive,
+      is_live: this.isLive,
       isLiveArchive: this.isLiveArchive,
+      is_live_archive: this.isLiveArchive,
       mediaType: this.mediaType,
       videoId: this.videoId,
+      video_id: this.videoId,
     };
   }
 

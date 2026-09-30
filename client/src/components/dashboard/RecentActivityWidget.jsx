@@ -242,7 +242,7 @@ export default function RecentActivityWidget({
                   return (
                     <div
                       key={note.id || videoId}
-                      onClick={() => onOpenVideo && onOpenVideo(norm)}
+                      onClick={() => onOpenVideo && onOpenVideo({ ...norm, id: note.id, result: note.result, metadata: norm.metadata || note.metadata })}
                       className={`group min-h-[48px] p-2 sm:p-2.5 rounded-xl transition-all duration-150 flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none ${
                         isDark 
                           ? 'bg-zinc-950/30 hover:bg-zinc-900/60' 
