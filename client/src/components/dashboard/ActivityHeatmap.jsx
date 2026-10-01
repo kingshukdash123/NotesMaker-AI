@@ -12,13 +12,8 @@ export default function ActivityHeatmap({
   const [selectedDay, setSelectedDay] = useState(null);
   const scrollContainerRef = useRef(null);
 
-  // Generate date array for the last 12 weeks (84 days) ending on today's week.
-  const today = new Date();
-  const currentDayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
-  
-  const totalDaysToShow = 12 * 7;
-  const startDate = new Date();
-  startDate.setDate(today.getDate() - (totalDaysToShow - 1 - (6 - currentDayOfWeek)));
+  // Generate date array from today's date of previous year to current day (365 days / 1 year)
+  const today = useMemo(() => new Date(), []);
 
   const formatDateStr = (d) => {
     const year = d.getFullYear();
@@ -27,15 +22,22 @@ export default function ActivityHeatmap({
     return `${year}-${month}-${day}`;
   };
 
-  const todayStr = formatDateStr(today);
+  const todayStr = useMemo(() => formatDateStr(today), [today]);
+
+  const startDate = useMemo(() => {
+    const d = new Date(today);
+    d.setFullYear(d.getFullYear() - 1);
+    return d;
+  }, [today]);
 
   // Build grid data
   const { weeks } = useMemo(() => {
-    const grid = [];
-    for (let i = 0; i < totalDaysToShow; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-      const dateStr = formatDateStr(currentDate);
+    const days = [];
+    const curr = new Date(startDate);
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    while (curr <= end) {
+      const dateStr = formatDateStr(curr);
       const metric = dayMetrics[dateStr] || {
         score: heatmapData[dateStr] || 0,
         level: 0,
@@ -45,23 +47,46 @@ export default function ActivityHeatmap({
         tasksTotal: 0,
       };
 
-      grid.push({
+      days.push({
         date: dateStr,
-        dayOfWeek: currentDate.getDay(),
-        formattedDate: currentDate.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+        dayOfWeek: curr.getDay(),
+        formattedDate: curr.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
         isToday: dateStr === todayStr,
-        isFuture: currentDate > today,
         metric
       });
+
+      curr.setDate(curr.getDate() + 1);
     }
 
     const weekCols = [];
-    for (let w = 0; w < 12; w++) {
-      weekCols.push(grid.slice(w * 7, (w + 1) * 7));
+    let currentWeek = [];
+
+    // Pad leading empty slots before the first day based on day-of-week (Sunday = 0)
+    if (days.length > 0) {
+      const startDow = days[0].dayOfWeek;
+      for (let p = 0; p < startDow; p++) {
+        currentWeek.push(null);
+      }
+    }
+
+    days.forEach((dayObj) => {
+      currentWeek.push(dayObj);
+      if (currentWeek.length === 7) {
+        weekCols.push(currentWeek);
+        currentWeek = [];
+      }
+    });
+
+    // Pad trailing slots in the final partial week
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(null);
+      }
+      weekCols.push(currentWeek);
     }
 
     return { weeks: weekCols };
-  }, [heatmapData, dayMetrics, todayStr]);
+  }, [startDate, today, todayStr, heatmapData, dayMetrics]);
 
   // Auto-scroll to current week on mobile touch screens
   useEffect(() => {
@@ -80,43 +105,41 @@ export default function ActivityHeatmap({
 
   const getLevelColorClass = (level, isToday, isSelected) => {
     const ring = isSelected 
-      ? isDark ? 'ring-2 ring-orange-500 ring-offset-1 ring-offset-black' : 'ring-2 ring-orange-500 ring-offset-1 ring-offset-white' 
-      : isToday 
-        ? isDark ? 'ring-1 ring-orange-400/80' : 'ring-1 ring-orange-400/80 ring-offset-1 ring-offset-white' 
-        : '';
+      ? isDark ? 'ring-2 ring-[#39d353] ring-offset-1 ring-offset-black' : 'ring-2 ring-[#26a641] ring-offset-1 ring-offset-white' 
+      : '';
     
     if (level === 0) {
       return `${ring} ${
         isDark 
-          ? 'bg-zinc-900/60 border-zinc-900 hover:border-zinc-800' 
-          : 'bg-zinc-200 border border-zinc-300 hover:bg-zinc-300'
+          ? 'bg-[#2d333b] hover:bg-[#373e47]' 
+          : 'bg-[#ebedf0] hover:bg-[#dfe1e5]'
       }`;
     }
     if (level === 1) {
       return `${ring} ${
         isDark 
-          ? 'bg-orange-500/25 border-orange-500/20 hover:bg-orange-500/40' 
-          : 'bg-orange-300 border-orange-400/50 hover:bg-orange-400'
+          ? 'bg-[#0e4429] hover:bg-[#125835]' 
+          : 'bg-[#9be9a8] hover:bg-[#82dc90]'
       }`;
     }
     if (level === 2) {
       return `${ring} ${
         isDark 
-          ? 'bg-orange-500/50 border-orange-500/35 hover:bg-orange-500/65' 
-          : 'bg-orange-400 border-orange-500/80 hover:bg-orange-500'
+          ? 'bg-[#006d32] hover:bg-[#00863d]' 
+          : 'bg-[#40c463] hover:bg-[#34b655]'
       }`;
     }
     if (level === 3) {
       return `${ring} ${
         isDark 
-          ? 'bg-orange-500/80 border-orange-400 hover:bg-orange-500 shadow-xs shadow-orange-500/20' 
-          : 'bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-xs'
+          ? 'bg-[#26a641] hover:bg-[#2ebd49]' 
+          : 'bg-[#30a14e] hover:bg-[#278e43]'
       }`;
     }
     return `${ring} ${
       isDark 
-        ? 'bg-orange-500 border-orange-300 shadow-sm shadow-orange-500/40' 
-        : 'bg-orange-600 border-orange-700 shadow-sm text-white'
+        ? 'bg-[#39d353] hover:bg-[#50df68]' 
+        : 'bg-[#216e39] hover:bg-[#195a2d]'
     }`;
   };
 
@@ -147,8 +170,8 @@ export default function ActivityHeatmap({
             <p>• <strong>Planner Targets</strong>: <code>+1 to +3 pts</code> by priority (High = 3, Med = 2, Low = 1).</p>
             <p>• <strong>100% Target Attainment</strong>: Finishing all daily targets awards up to <code>+3 bonus pts</code>.</p>
             <p>• <strong>Lectures Watched</strong>: <code>+2 pts</code> each.</p>
-            <p>• <strong>Daily Login</strong>: <code>+1 pt</code>.</p>
-            <div className="pt-1 font-semibold text-orange-500">
+            <p>• <strong>Daily Study Bonus</strong>: <code>+1 pt</code> on active days.</p>
+            <div className="pt-1 font-semibold text-emerald-500">
               Tap or hover on any day square to inspect the full breakdown!
             </div>
           </InfoPopover>
@@ -157,7 +180,7 @@ export default function ActivityHeatmap({
         <span className={`text-[10px] font-mono ${
           isDark ? 'text-zinc-600' : 'text-zinc-400'
         }`}>
-          Last 12 Weeks (84 Days)
+          Last 1 Year (365 Days)
         </span>
       </div>
 
@@ -181,7 +204,10 @@ export default function ActivityHeatmap({
         <div className="flex gap-[3.5px] shrink-0">
           {weeks.map((week, weekIdx) => (
             <div key={weekIdx} className="flex flex-col gap-[3.5px]">
-              {week.map((day) => {
+              {week.map((day, dayIdx) => {
+                if (!day) {
+                  return <div key={`empty-${weekIdx}-${dayIdx}`} className="w-3.5 h-3.5" />;
+                }
                 const level = day.metric.level || getLevelFromScore(day.metric.score);
                 const isSelected = selectedDay && selectedDay.date === day.date;
 
@@ -190,11 +216,8 @@ export default function ActivityHeatmap({
                     key={day.date}
                     type="button"
                     onClick={() => setSelectedDay(day)}
-                    disabled={day.isFuture}
-                    className={`w-3.5 h-3.5 rounded-[3px] border transition-all duration-150 cursor-pointer focus:outline-none ${
-                      day.isFuture 
-                        ? 'opacity-20 cursor-not-allowed bg-zinc-900/20 border-transparent' 
-                        : getLevelColorClass(level, day.isToday, isSelected)
+                    className={`w-3.5 h-3.5 rounded-[3px] transition-all duration-150 cursor-pointer focus:outline-none ${
+                      getLevelColorClass(level, day.isToday, isSelected)
                     }`}
                     title={`${day.formattedDate} • ${day.metric.score || 0} pts`}
                     aria-label={`${day.formattedDate} • ${day.metric.score || 0} pts`}
@@ -216,13 +239,13 @@ export default function ActivityHeatmap({
               <span className="font-bold">{selectedDay.formattedDate}</span>
               {selectedDay.isToday && (
                 <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
-                  isDark ? 'bg-white text-zinc-950' : 'bg-orange-500 text-white'
+                  isDark ? 'bg-white text-zinc-950' : 'bg-zinc-900 text-white'
                 }`}>
                   Today
                 </span>
               )}
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold ${
-                isDark ? 'bg-orange-950/40 text-orange-400' : 'bg-zinc-100 border border-zinc-200 text-zinc-800'
+                isDark ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-100 border border-zinc-200 text-zinc-800'
               }`}>
                 {selectedDay.metric.score || 0} pts
               </span>
@@ -237,7 +260,7 @@ export default function ActivityHeatmap({
               )}
               {selectedDay.metric.notesCount > 0 && (
                 <span className="flex items-center gap-1">
-                  <FileText className="w-3 h-3 text-orange-500 shrink-0" />
+                  <FileText className="w-3 h-3 text-zinc-400 shrink-0" />
                   <span>Notes: <strong>{selectedDay.metric.notesCount}</strong> generated</span>
                 </span>
               )}
@@ -267,15 +290,15 @@ export default function ActivityHeatmap({
 
       {/* Heatmap Legend */}
       <div className={`flex items-center justify-between text-[9px] font-mono pt-2 border-t flex-wrap gap-2 ${
-        isDark ? 'text-zinc-500 border-zinc-900/80' : 'text-zinc-500 border-zinc-200/80'
+        isDark ? 'text-zinc-500 border-zinc-800/30' : 'text-zinc-500 border-zinc-200'
       }`}>
         <span>Less active</span>
         <div className="flex items-center gap-1">
-          <div className={`w-2.5 h-2.5 rounded-[2px] border ${isDark ? 'bg-zinc-900/60 border-zinc-900' : 'bg-zinc-200 border-zinc-300'}`} title="Level 0: 0 pts" />
-          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-orange-500/25' : 'bg-orange-300'}`} title="Level 1: 1-2 pts" />
-          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-orange-500/50' : 'bg-orange-400'}`} title="Level 2: 3-5 pts" />
-          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-orange-500/80' : 'bg-orange-500'}`} title="Level 3: 6-8 pts" />
-          <div className="w-2.5 h-2.5 rounded-[2px] bg-orange-500 shadow-xs" title="Level 4: 9+ pts" />
+          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-[#2d333b]' : 'bg-[#ebedf0]'}`} title="Level 0: 0 pts" />
+          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-[#0e4429]' : 'bg-[#9be9a8]'}`} title="Level 1: 1-2 pts" />
+          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-[#006d32]' : 'bg-[#40c463]'}`} title="Level 2: 3-5 pts" />
+          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-[#26a641]' : 'bg-[#30a14e]'}`} title="Level 3: 6-8 pts" />
+          <div className={`w-2.5 h-2.5 rounded-[2px] ${isDark ? 'bg-[#39d353]' : 'bg-[#216e39]'}`} title="Level 4: 9+ pts" />
         </div>
         <span>More active</span>
       </div>

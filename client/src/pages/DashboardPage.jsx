@@ -79,10 +79,10 @@ export default function DashboardPage() {
     return `${year}-${month}-${day}`;
   }, []);
 
-  // 6-month range for planner tasks
-  const sixMonthsAgoStr = useMemo(() => {
+  // 1-year (365 days) range for planner tasks
+  const oneYearAgoStr = useMemo(() => {
     const d = new Date();
-    d.setMonth(d.getMonth() - 6);
+    d.setFullYear(d.getFullYear() - 1);
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -103,7 +103,7 @@ export default function DashboardPage() {
           getUserActivity(currentUser.uid),
           getUserWatchHistory(currentUser.uid),
           getTasksByDate(currentUser.uid, todayStr),
-          getTasksByMonth(currentUser.uid, sixMonthsAgoStr, todayStr)
+          getTasksByMonth(currentUser.uid, oneYearAgoStr, todayStr)
         ]);
         setNotesHistory(notesData || []);
         setActivityHistory(activityData || []);
@@ -118,7 +118,7 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
-  }, [currentUser, todayStr, sixMonthsAgoStr]);
+  }, [currentUser, todayStr, oneYearAgoStr]);
 
   // Compute Streak and Dual-Factor Heatmap Depth Data
   const {
@@ -213,7 +213,9 @@ export default function DashboardPage() {
                 <span className="text-xl sm:text-2xl md:text-xl lg:text-3xl font-black text-orange-500 leading-none">
                   :{timeSeconds}
                 </span>
-                <span className="text-[10px] sm:text-xs md:text-[11px] lg:text-sm font-bold uppercase tracking-wider ml-1 sm:ml-1.5 leading-none text-orange-500">
+                <span className={`text-[10px] sm:text-xs md:text-[11px] lg:text-sm font-bold uppercase tracking-wider ml-1 sm:ml-1.5 leading-none ${
+                  isDark ? 'text-zinc-500' : 'text-zinc-500'
+                }`}>
                   {timePeriod}
                 </span>
               </div>
@@ -222,7 +224,7 @@ export default function DashboardPage() {
               <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-xs lg:text-sm font-medium mt-2.5 sm:mt-3 ${
                 isDark ? 'text-zinc-400' : 'text-zinc-600'
               }`}>
-                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 shrink-0" />
+                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
                 <span>{fullDateString}</span>
               </div>
             </div>

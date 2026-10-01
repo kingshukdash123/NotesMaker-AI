@@ -25,7 +25,7 @@ export default function MotivationalQuote({ className = '' }) {
       isDark ? 'text-zinc-200' : 'text-zinc-900'
     } ${className}`}>
       <div className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shrink-0">
-        <Quote className="w-3.5 h-3.5 sm:w-4 sm:h-4 rotate-180 text-orange-500" />
+        <Quote className="w-3.5 h-3.5 sm:w-4 sm:h-4 rotate-180 text-zinc-400 dark:text-zinc-500" />
       </div>
       <div className="space-y-1 min-w-0 flex flex-col items-center sm:items-start">
         <p className={`text-xs sm:text-sm font-medium italic leading-relaxed ${

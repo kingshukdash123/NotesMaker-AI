@@ -85,37 +85,42 @@ export default function StreakCard({
     return list;
   }, [weeklyActivity]);
 
-  // 2. LeetCode-Style Monthly Activity Heatmap Grid (Last 100 Days Records)
+  // 2. LeetCode-Style Monthly Activity Heatmap Grid (Last 1 Year / 365 Days Records)
   const { monthsData, totalTrackedDays, currentMonthName } = useMemo(() => {
     const now = new Date();
     const todayFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const currMonthName = now.toLocaleDateString([], { month: 'short' });
 
-    // Generate the last 6 months (including present month)
-    // Past months include all days from the 1st to month end; present month runs from 1st to today.
+    // Generate date clusters starting from today's date of the previous year to current day
     const monthGroups = [];
-    for (let mOffset = 5; mOffset >= 0; mOffset--) {
+    for (let mOffset = 12; mOffset >= 0; mOffset--) {
       const targetMonthDate = new Date(now.getFullYear(), now.getMonth() - mOffset, 1);
       const targetYear = targetMonthDate.getFullYear();
       const targetMonth = targetMonthDate.getMonth();
       const monthName = targetMonthDate.toLocaleDateString([], { month: 'short' });
       const monthKey = `${targetYear}-${targetMonth}`;
 
+      const isOldestMonth = mOffset === 12;
       const isCurrentMonth = mOffset === 0;
       const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-      const endDay = isCurrentMonth ? now.getDate() : lastDayOfMonth;
+
+      const startDay = isOldestMonth ? Math.min(now.getDate(), lastDayOfMonth) : 1;
+      const endDay = isCurrentMonth ? Math.min(now.getDate(), lastDayOfMonth) : lastDayOfMonth;
 
       const dates = [];
-      for (let day = 1; day <= endDay; day++) {
+      for (let day = startDay; day <= endDay; day++) {
         dates.push(new Date(targetYear, targetMonth, day));
       }
 
-      monthGroups.push({
-        key: monthKey,
-        name: monthName,
-        year: targetYear,
-        dates
-      });
+      if (dates.length > 0) {
+        monthGroups.push({
+          key: monthKey,
+          name: monthName,
+          year: targetYear,
+          isCurrentMonth,
+          dates
+        });
+      }
     }
 
     const months = [];
@@ -176,6 +181,7 @@ export default function StreakCard({
       months.push({
         name: group.name,
         year: group.year,
+        isCurrent: group.isCurrentMonth,
         weeks
       });
     });
@@ -320,46 +326,42 @@ export default function StreakCard({
   const getLevelColorClass = (level, isToday, isSelected) => {
     const ring = isSelected 
       ? isDark 
-        ? 'ring-2 ring-orange-500 ring-offset-1 ring-offset-zinc-950' 
-        : 'ring-2 ring-orange-500 ring-offset-1 ring-offset-white' 
-      : isToday 
-        ? isDark 
-          ? 'ring-1 ring-orange-400 ring-offset-1 ring-offset-zinc-950' 
-          : 'ring-1 ring-orange-400 ring-offset-1 ring-offset-white' 
-        : '';
+        ? 'ring-2 ring-[#39d353] ring-offset-1 ring-offset-zinc-950' 
+        : 'ring-2 ring-[#26a641] ring-offset-1 ring-offset-white' 
+      : '';
     
     if (level === 0) {
       return `${ring} ${
         isDark 
-          ? 'bg-zinc-800 border-transparent hover:bg-zinc-700' 
-          : 'bg-zinc-200 border border-zinc-300 hover:bg-zinc-300'
+          ? 'bg-[#2d333b] hover:bg-[#373e47]' 
+          : 'bg-[#ebedf0] hover:bg-[#dfe1e5]'
       }`;
     }
     if (level === 1) {
       return `${ring} ${
         isDark 
-          ? 'bg-orange-500/30 border-orange-500/30 hover:bg-orange-500/45' 
-          : 'bg-orange-300 border-orange-400/50 hover:bg-orange-400'
+          ? 'bg-[#0e4429] hover:bg-[#125835]' 
+          : 'bg-[#9be9a8] hover:bg-[#82dc90]'
       }`;
     }
     if (level === 2) {
       return `${ring} ${
         isDark 
-          ? 'bg-orange-500/60 border-orange-500/50 hover:bg-orange-500/75' 
-          : 'bg-orange-400 border-orange-500/80 hover:bg-orange-500'
+          ? 'bg-[#006d32] hover:bg-[#00863d]' 
+          : 'bg-[#40c463] hover:bg-[#34b655]'
       }`;
     }
     if (level === 3) {
       return `${ring} ${
         isDark 
-          ? 'bg-orange-500/85 border-orange-400 hover:bg-orange-500 shadow-xs shadow-orange-500/20' 
-          : 'bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-xs'
+          ? 'bg-[#26a641] hover:bg-[#2ebd49]' 
+          : 'bg-[#30a14e] hover:bg-[#278e43]'
       }`;
     }
     return `${ring} ${
       isDark 
-        ? 'bg-orange-500 border-orange-300 shadow-sm shadow-orange-500/40' 
-        : 'bg-orange-600 border-orange-700 shadow-sm text-white'
+        ? 'bg-[#39d353] hover:bg-[#50df68]' 
+        : 'bg-[#216e39] hover:bg-[#195a2d]'
     }`;
   };
 
@@ -625,13 +627,13 @@ export default function StreakCard({
     }`}>
       {/* ── COMMON HEADER ── */}
       <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
-        isDark ? 'border-b border-orange-500/15' : ''
+        isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
       }`}>
         <div className="flex items-center gap-2 sm:gap-2.5">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
-              ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-500/10'
+              ? 'text-zinc-300 bg-zinc-800/80' 
+              : 'text-zinc-700 bg-zinc-100'
           }`}>
             <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
@@ -684,7 +686,7 @@ export default function StreakCard({
                   {currentStreak}
                 </span>
                 <span className={`text-xs sm:text-sm font-bold pt-1 ${
-                  isDark ? 'text-orange-400' : 'text-orange-600'
+                  isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`}>
                   {currentStreak === 1 ? 'day streak' : 'days streak'}
                 </span>
@@ -692,10 +694,10 @@ export default function StreakCard({
 
               {/* Best Chip */}
               <div className={`w-fit px-2.5 py-1 sm:py-0.5 rounded-md flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-semibold ${
-                isDark ? 'bg-orange-950/25 text-orange-300' : 'bg-zinc-200/80 text-zinc-800'
+                isDark ? 'bg-zinc-800/80 text-zinc-300' : 'bg-zinc-200/80 text-zinc-800'
               }`}>
                 <Award className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                <span>Best: <strong className={isDark ? 'text-orange-400' : 'text-orange-600'}>{longestStreak}d</strong></span>
+                <span>Best: <strong className={isDark ? 'text-zinc-100' : 'text-zinc-900'}>{longestStreak}d</strong></span>
               </div>
             </div>
           </div>
@@ -717,14 +719,14 @@ export default function StreakCard({
                   <p>• <strong>Planner Targets</strong>: <code>+1 to +3 pts</code> by priority.</p>
                   <p>• <strong>100% Target Attainment</strong>: Up to <code>+3 bonus pts</code>.</p>
                   <p>• <strong>Lectures Watched</strong>: <code>+2 pts</code> each.</p>
-                  <p>• <strong>Daily Login</strong>: <code>+1 pt</code>.</p>
+                  <p>• <strong>Daily Study Bonus</strong>: <code>+1 pt</code> on active days.</p>
                 </InfoPopover>
               </div>
             </div>
 
             {/* LeetCode Month-Grouped Grid */}
             <div className="w-full flex-1 flex flex-col justify-center items-center py-1">
-              <div ref={heatmapScrollRef} className="w-full overflow-x-auto custom-scrollbar flex justify-start min-[480px]:justify-center py-1">
+              <div ref={heatmapScrollRef} className="w-full overflow-x-auto custom-scrollbar flex justify-start py-1">
                 <div className="flex items-start gap-2 sm:gap-2.5 min-w-max px-0.5">
                 {monthsData.map((month, mIdx) => (
                   <div key={mIdx} className="flex flex-col items-center">
@@ -744,7 +746,7 @@ export default function StreakCard({
                                 key={day.date}
                                 type="button"
                                 onClick={() => setSelectedDay(day)}
-                                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2.5px] sm:rounded-[3px] border transition-all duration-150 cursor-pointer focus:outline-none hover:scale-125 active:scale-95 ${
+                                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2.5px] sm:rounded-[3px] transition-all duration-150 cursor-pointer focus:outline-none hover:scale-125 active:scale-95 ${
                                   getLevelColorClass(level, day.isToday, isSelected)
                                 }`}
                                 title={`${day.formattedDate} • ${day.metric.score || 0} pts`}
@@ -758,8 +760,8 @@ export default function StreakCard({
 
                     {/* Month Label below the columns */}
                     <span className={`text-[10px] sm:text-[11px] font-mono mt-1 font-semibold select-none ${
-                      month.name === currentMonthName 
-                        ? 'text-orange-500 font-bold' 
+                      month.isCurrent 
+                        ? 'text-emerald-500 font-bold' 
                         : isDark ? 'text-zinc-500' : 'text-zinc-400'
                     }`}>
                       {month.name}
@@ -1004,15 +1006,15 @@ export default function StreakCard({
             }`}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between gap-3 pb-2.5 mb-3.5 border-b border-zinc-100">
+            <div className="flex items-center justify-between gap-3 pb-2.5 mb-3.5 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-orange-500 shrink-0" />
+                <Calendar className="w-4 h-4 text-zinc-400 shrink-0" />
                 <h4 className={`text-sm sm:text-base font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                   {selectedDay.formattedDate || selectedDay.shortDate}
                 </h4>
                 {selectedDay.isToday && (
                   <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
-                    isDark ? 'bg-white text-zinc-950' : 'bg-orange-500 text-white'
+                    isDark ? 'bg-white text-zinc-950' : 'bg-zinc-900 text-white'
                   }`}>
                     Today
                   </span>
@@ -1031,14 +1033,14 @@ export default function StreakCard({
 
             {/* Activity Score Badge */}
             <div className={`flex items-center justify-between gap-2 mb-3.5 p-2.5 rounded-xl ${
-              isDark ? 'bg-orange-950/25' : 'bg-white border border-zinc-200 shadow-xs'
+              isDark ? 'bg-zinc-900/60' : 'bg-white border border-zinc-200 shadow-xs'
             }`}>
               <span className={`text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
                 Activity Score
               </span>
               <span className={`text-[11px] font-mono px-2.5 py-1 rounded-lg font-bold ${
                 isDark 
-                  ? 'bg-orange-950/60 text-orange-300 shadow-xs' 
+                  ? 'bg-zinc-800 text-zinc-200 shadow-xs' 
                   : 'bg-zinc-100 text-zinc-900 border border-zinc-200'
               }`}>
                 {selectedDay.metric?.score || selectedDay.score || 0} pts
@@ -1071,7 +1073,7 @@ export default function StreakCard({
                   isDark ? 'bg-zinc-900/40' : 'bg-white border border-zinc-200 shadow-xs'
                 }`}>
                   <span className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-orange-500 shrink-0" />
+                    <FileText className="w-4 h-4 text-zinc-400 shrink-0" />
                     <span>AI Notes Generated</span>
                   </span>
                   <span className="font-mono font-bold">

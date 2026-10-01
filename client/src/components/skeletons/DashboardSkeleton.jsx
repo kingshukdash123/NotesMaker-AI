@@ -20,7 +20,7 @@ export default function DashboardSkeleton() {
             {/* Motivational Quote Card Skeleton */}
             <div className="hidden sm:flex p-2 sm:p-2.5 mt-auto items-start gap-2.5 sm:gap-3 bg-transparent">
               <div className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shrink-0 mt-0.5 bg-transparent">
-                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm bg-orange-500/30" />
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm" />
               </div>
               <div className="space-y-1.5 flex-1 min-w-0">
                 <Skeleton className="h-3.5 w-11/12 rounded" />
@@ -41,7 +41,7 @@ export default function DashboardSkeleton() {
 
               {/* Full Calendar Date Skeleton */}
               <div className="flex items-center gap-1.5 sm:gap-2 mt-2.5 sm:mt-3">
-                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-orange-500/30 shrink-0" />
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full shrink-0" />
                 <Skeleton className="h-3.5 sm:h-4 w-36 sm:w-44 rounded" />
               </div>
             </div>
@@ -54,13 +54,13 @@ export default function DashboardSkeleton() {
         }`}>
           {/* Section Header */}
           <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 sm:pb-3 ${
-            isDark ? 'border-b border-orange-500/15' : ''
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
           }`}>
             <div className="flex items-center gap-2 sm:gap-2.5">
               <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
-                isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
+                isDark ? 'bg-zinc-800/80' : 'bg-zinc-100'
               }`}>
-                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded" />
               </div>
               <div className="space-y-1">
                 <Skeleton className="h-4 sm:h-5 w-44 sm:w-56 rounded" />
@@ -102,13 +102,13 @@ export default function DashboardSkeleton() {
         }`}>
           {/* Common Header */}
           <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
-            isDark ? 'border-b border-orange-500/15' : ''
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
           }`}>
             <div className="flex items-center gap-2 sm:gap-2.5">
               <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
-                isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
+                isDark ? 'bg-zinc-800/80' : 'bg-zinc-100'
               }`}>
-                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded" />
               </div>
               <div className="space-y-1">
                 <Skeleton className="h-4 sm:h-5 w-44 sm:w-56 rounded" />
@@ -141,9 +141,9 @@ export default function DashboardSkeleton() {
               }`}>
                 <Skeleton className="h-3 w-36 rounded" />
                 <div className="w-full flex-1 flex flex-col justify-center items-center py-1">
-                  <div className="w-full overflow-x-auto custom-scrollbar flex justify-start min-[480px]:justify-center py-1">
+                  <div className="w-full overflow-x-auto custom-scrollbar flex justify-start py-1">
                     <div className="flex items-start gap-2 sm:gap-2.5 min-w-max px-0.5">
-                      {Array.from({ length: 6 }).map((_, mIdx) => (
+                      {Array.from({ length: 12 }).map((_, mIdx) => (
                         <div key={mIdx} className="flex flex-col items-center">
                           <div className="flex items-center gap-[2.5px] sm:gap-[3px]">
                             {Array.from({ length: 3 }).map((_, w) => (
@@ -195,13 +195,13 @@ export default function DashboardSkeleton() {
         }`}>
           {/* Section Header */}
           <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
-            isDark ? 'border-b border-orange-500/15' : ''
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
           }`}>
             <div className="flex items-center gap-2 sm:gap-2.5">
               <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
-                isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
+                isDark ? 'bg-zinc-800/80' : 'bg-zinc-100'
               }`}>
-                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded" />
               </div>
               <div className="space-y-1">
                 <Skeleton className="h-4 sm:h-5 w-44 sm:w-52 rounded" />
@@ -217,7 +217,9 @@ export default function DashboardSkeleton() {
             <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 rounded-xl ${
               isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
             }`}>
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-zinc-200/80 dark:border-orange-500/10">
+              <div className={`flex flex-wrap items-center justify-between gap-2 pb-2.5 ${
+                isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+              }`}>
                 <Skeleton className="h-3.5 w-32 rounded" />
                 <div className="flex items-center gap-2">
                   <Skeleton className="h-2.5 w-8 rounded" />
@@ -232,10 +234,10 @@ export default function DashboardSkeleton() {
                   {Array.from({ length: 7 }).map((_, dIdx) => (
                     <div key={dIdx} className="flex flex-col items-center h-full justify-end">
                       <Skeleton className="h-2.5 w-5 rounded mb-1 sm:mb-1.5" />
-                      <div className={`w-full max-w-[22px] sm:max-w-[26px] h-20 sm:h-24 md:h-28 rounded-lg p-0.5 border ${
+                      <div className={`w-full max-w-[22px] sm:max-w-[26px] h-20 sm:h-24 md:h-28 rounded-lg p-0.5 ${
                         dIdx === 6 
-                          ? isDark ? 'border-orange-500/50 bg-zinc-900/60' : 'border-orange-500 bg-orange-500/10'
-                          : isDark ? 'border-orange-500/10 bg-zinc-900/30' : 'border-zinc-200 bg-zinc-100'
+                          ? isDark ? 'bg-zinc-800/50' : 'bg-zinc-200/80'
+                          : isDark ? 'border border-zinc-800/60 bg-zinc-900/30' : 'border border-zinc-200 bg-zinc-100'
                       }`}>
                         <Skeleton className="w-full h-full rounded-md" />
                       </div>
@@ -250,7 +252,9 @@ export default function DashboardSkeleton() {
             <div className={`lg:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 rounded-xl ${
               isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
             }`}>
-              <div className="flex items-center justify-between pb-2.5 border-b border-zinc-200/80 dark:border-orange-500/10">
+              <div className={`flex items-center justify-between pb-2.5 ${
+                isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+              }`}>
                 <Skeleton className="h-3.5 w-28 rounded" />
                 <Skeleton className="h-3 w-16 rounded" />
               </div>
@@ -274,7 +278,9 @@ export default function DashboardSkeleton() {
               </div>
 
               {/* Footer Button Link */}
-              <div className="pt-2 border-t border-zinc-200/80 dark:border-orange-500/10">
+              <div className={`pt-2 ${
+                isDark ? 'border-t border-zinc-800/30' : 'border-t border-zinc-200'
+              }`}>
                 <Skeleton className="h-8 w-full rounded-xl" />
               </div>
             </div>
@@ -288,13 +294,13 @@ export default function DashboardSkeleton() {
         }`}>
           {/* Section Header */}
           <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
-            isDark ? 'border-b border-orange-500/15' : ''
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
           }`}>
             <div className="flex items-center gap-2 sm:gap-2.5">
               <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
-                isDark ? 'bg-orange-950/25' : 'bg-zinc-100'
+                isDark ? 'bg-zinc-800/80' : 'bg-zinc-100'
               }`}>
-                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-orange-500/30" />
+                <Skeleton className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded" />
               </div>
               <div className="space-y-1">
                 <Skeleton className="h-4 sm:h-5 w-32 sm:w-36 rounded" />
@@ -310,7 +316,9 @@ export default function DashboardSkeleton() {
             <div className={`flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
               isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
             }`}>
-              <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/80 dark:border-orange-500/10">
+              <div className={`flex items-center justify-between pb-2.5 sm:pb-3 ${
+                isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+              }`}>
                 <Skeleton className="h-3.5 w-28 rounded" />
                 <Skeleton className="h-3 w-14 rounded" />
               </div>
@@ -330,7 +338,9 @@ export default function DashboardSkeleton() {
                   </div>
                 ))}
               </div>
-              <div className="pt-2 border-t border-zinc-200/80 dark:border-orange-500/10">
+              <div className={`pt-2 ${
+                isDark ? 'border-t border-zinc-800/30' : 'border-t border-zinc-200'
+              }`}>
                 <Skeleton className="h-8 w-full rounded-xl" />
               </div>
             </div>
@@ -339,7 +349,9 @@ export default function DashboardSkeleton() {
             <div className={`flex flex-col justify-between p-3.5 sm:p-4 md:p-5 rounded-xl ${
               isDark ? 'bg-zinc-900/30' : 'bg-zinc-100/70'
             }`}>
-              <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/80 dark:border-orange-500/10">
+              <div className={`flex items-center justify-between pb-2.5 sm:pb-3 ${
+                isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+              }`}>
                 <Skeleton className="h-3.5 w-28 rounded" />
                 <Skeleton className="h-3 w-20 rounded" />
               </div>
@@ -359,7 +371,9 @@ export default function DashboardSkeleton() {
                   </div>
                 ))}
               </div>
-              <div className="pt-2 border-t border-zinc-200/80 dark:border-orange-500/10">
+              <div className={`pt-2 ${
+                isDark ? 'border-t border-zinc-800/30' : 'border-t border-zinc-200'
+              }`}>
                 <Skeleton className="h-8 w-full rounded-xl" />
               </div>
             </div>

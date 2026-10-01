@@ -276,13 +276,13 @@ export default function StatsGrid({
     }`}>
       {/* ── COMMON HEADER ── */}
       <div className={`flex items-center justify-between gap-2 sm:gap-2.5 pb-2.5 sm:pb-3 ${
-        isDark ? 'border-b border-orange-500/15' : ''
+        isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
       }`}>
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
-              ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-500/10'
+              ? 'text-zinc-300 bg-zinc-800/80' 
+              : 'text-zinc-700 bg-zinc-100'
           }`}>
             <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
@@ -355,8 +355,8 @@ export default function StatsGrid({
                 </span>
                 <div className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
                   isDark 
-                    ? 'text-orange-500 bg-orange-950/25 shadow-xs' 
-                    : 'text-orange-600 bg-orange-500/10'
+                    ? 'text-zinc-300 bg-zinc-800/60 shadow-xs' 
+                    : 'text-zinc-700 bg-zinc-200/70'
                 }`}>
                   <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                 </div>

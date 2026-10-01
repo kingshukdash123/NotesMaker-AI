@@ -52,13 +52,13 @@ export default function RecentActivityWidget({
     }`}>
       {/* ── SECTION HEADER ── */}
       <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
-        isDark ? 'border-b border-orange-500/15' : ''
+        isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
       }`}>
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
-              ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-500/10'
+              ? 'text-zinc-300 bg-zinc-800/80' 
+              : 'text-zinc-700 bg-zinc-100'
           }`}>
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
@@ -84,9 +84,11 @@ export default function RecentActivityWidget({
             : 'bg-zinc-100/70'
         }`}>
           {/* Column Header */}
-          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/60 dark:border-orange-500/10">
+          <div className={`flex items-center justify-between pb-2.5 sm:pb-3 ${
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+          }`}>
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-orange-500" />
+              <History className="w-4 h-4 text-zinc-400" />
               <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
@@ -102,7 +104,7 @@ export default function RecentActivityWidget({
           <div className="flex-1 py-3">
             {recentHistory.length === 0 ? (
               <div className={`text-center py-6 px-4 rounded-xl border border-dashed flex flex-col items-center gap-2 ${
-                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
+                isDark ? 'border-zinc-800 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
               }`}>
                 <Clock className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
                 <div className="space-y-0.5">
@@ -177,7 +179,9 @@ export default function RecentActivityWidget({
           </div>
 
           {/* Footer Action */}
-          <div className="pt-2 border-t border-zinc-200/60 dark:border-orange-500/10">
+          <div className={`pt-2 ${
+            isDark ? 'border-t border-zinc-800/30' : 'border-t border-zinc-200'
+          }`}>
             <CustomButton
               variant="secondary"
               size="sm"
@@ -199,9 +203,11 @@ export default function RecentActivityWidget({
             : 'bg-zinc-100/70'
         }`}>
           {/* Column Header */}
-          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-zinc-200/60 dark:border-orange-500/10">
+          <div className={`flex items-center justify-between pb-2.5 sm:pb-3 ${
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+          }`}>
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-orange-500" />
+              <FileText className="w-4 h-4 text-zinc-400" />
               <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
@@ -217,7 +223,7 @@ export default function RecentActivityWidget({
           <div className="flex-1 py-3">
             {recentNotes.length === 0 ? (
               <div className={`text-center py-6 px-4 rounded-xl border border-dashed flex flex-col items-center gap-2 ${
-                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
+                isDark ? 'border-zinc-800 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
               }`}>
                 <BookOpen className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
                 <div className="space-y-0.5">
@@ -289,7 +295,9 @@ export default function RecentActivityWidget({
           </div>
 
           {/* Footer Action */}
-          <div className="pt-2 border-t border-zinc-200/60 dark:border-orange-500/10">
+          <div className={`pt-2 ${
+            isDark ? 'border-t border-zinc-800/30' : 'border-t border-zinc-200'
+          }`}>
             <CustomButton
               variant="secondary"
               size="sm"

@@ -194,13 +194,13 @@ export default function TodayPlanWidget({
       
       {/* ── COMMON HEADER ── */}
       <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 sm:pb-3 ${
-        isDark ? 'border-b border-orange-500/15' : ''
+        isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
       }`}>
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
             isDark 
-              ? 'text-orange-500 bg-orange-950/25' 
-              : 'text-orange-600 bg-orange-500/10'
+              ? 'text-zinc-300 bg-zinc-800/80' 
+              : 'text-zinc-700 bg-zinc-100'
           }`}>
             <CalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
@@ -235,9 +235,11 @@ export default function TodayPlanWidget({
             : 'bg-zinc-100/70'
         }`}>
           {/* Subheader with Priority Legend & Info */}
-          <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-zinc-200/60 dark:border-orange-500/10">
+          <div className={`flex items-center justify-between gap-2 pb-2.5 ${
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+          }`}>
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <BarChart2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 shrink-0" />
+              <BarChart2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 shrink-0" />
               <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
@@ -299,7 +301,7 @@ export default function TodayPlanWidget({
                           isPerfect 
                             ? 'text-emerald-500 font-extrabold' 
                             : completed > 0 
-                              ? isDark ? 'text-orange-400' : 'text-orange-600'
+                              ? isDark ? 'text-zinc-300' : 'text-zinc-700'
                               : isDark ? 'text-zinc-500' : 'text-zinc-400'
                         }`}>
                           {completed}/{total}
@@ -312,10 +314,10 @@ export default function TodayPlanWidget({
                     </div>
 
                     {/* Stacked Vertical Bar */}
-                    <div className={`w-full max-w-[22px] sm:max-w-[26px] h-20 sm:h-24 md:h-28 rounded-lg overflow-hidden flex flex-col-reverse justify-start p-0.5 border transition-all duration-150 ${
+                    <div className={`w-full max-w-[22px] sm:max-w-[26px] h-20 sm:h-24 md:h-28 rounded-lg overflow-hidden flex flex-col-reverse justify-start p-0.5 transition-all duration-150 ${
                       day.isToday 
-                        ? isDark ? 'border-orange-500/50 bg-zinc-900/60' : 'border-orange-400 bg-orange-50/70'
-                        : isDark ? 'border-orange-500/10 bg-zinc-900/30 group-hover:border-orange-500/30' : 'border-zinc-200/80 bg-white group-hover:border-zinc-300'
+                        ? isDark ? 'bg-zinc-800/50 shadow-xs' : 'bg-zinc-200/80'
+                        : isDark ? 'border border-zinc-800/60 bg-zinc-900/30 group-hover:border-zinc-700' : 'border border-zinc-200/80 bg-white group-hover:border-zinc-300'
                     }`}>
                       {hasTasks ? (
                         <div className="w-full h-full flex flex-col-reverse rounded-md overflow-hidden transition-all duration-300 gap-0.5">
@@ -382,7 +384,7 @@ export default function TodayPlanWidget({
                     <div className="mt-1 sm:mt-1.5 text-center flex flex-col items-center">
                       <span className={`text-[10px] sm:text-[11px] md:text-xs font-mono block ${
                         day.isToday 
-                          ? 'text-orange-500 font-bold' 
+                          ? 'text-zinc-100 font-bold' 
                           : isDark ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-500 group-hover:text-zinc-900'
                       }`}>
                         {day.isToday ? 'Today' : day.dayName}
@@ -410,9 +412,11 @@ export default function TodayPlanWidget({
             : 'bg-zinc-100/70'
         }`}>
           {/* Subheader */}
-          <div className="flex items-center justify-between pb-2.5 border-b border-zinc-200/60 dark:border-orange-500/10">
+          <div className={`flex items-center justify-between pb-2.5 ${
+            isDark ? 'border-b border-zinc-800/30' : 'border-b border-zinc-200'
+          }`}>
             <div className="flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-orange-500" />
+              <ClipboardList className="w-4 h-4 text-zinc-400" />
               <span className={`text-[11px] sm:text-sm font-bold uppercase tracking-wider ${
                 isDark ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
@@ -439,7 +443,7 @@ export default function TodayPlanWidget({
                       r="15.9155"
                       fill="none"
                       className={`transition-all duration-300 ease-out ${
-                        isAllCompleted ? "stroke-emerald-500" : "stroke-orange-500"
+                        isAllCompleted ? "stroke-emerald-500" : "stroke-zinc-500 dark:stroke-zinc-400"
                       }`}
                       strokeDasharray={`${percentComplete} 100`}
                       strokeWidth="3.5"
@@ -454,7 +458,7 @@ export default function TodayPlanWidget({
                 <span className={`text-[11px] sm:text-xs font-mono font-bold ${
                   isAllCompleted 
                     ? isDark ? 'text-emerald-400' : 'text-emerald-600'
-                    : isDark ? 'text-orange-400' : 'text-orange-600'
+                    : isDark ? 'text-zinc-300' : 'text-zinc-700'
                 }`}>
                   {percentComplete}%
                 </span>
@@ -466,7 +470,7 @@ export default function TodayPlanWidget({
           <div className="flex-1 flex flex-col justify-start py-2.5 space-y-2 overflow-y-auto max-h-[190px] custom-scrollbar">
             {totalTasks === 0 ? (
               <div className={`text-center py-6 px-4 rounded-xl border border-dashed flex flex-col items-center gap-2 my-auto ${
-                isDark ? 'border-orange-500/20 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
+                isDark ? 'border-zinc-800 bg-zinc-950/20' : 'border-zinc-200 bg-white/60'
               }`}>
                 <ClipboardList className={`w-7 h-7 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
                 <div className="space-y-0.5">
@@ -511,17 +515,17 @@ export default function TodayPlanWidget({
                         type="button"
                         disabled={isTaskToggling}
                         onClick={(e) => handleTaskToggle(task.id, task.completed, e)}
-                        className={`p-1.5 -m-1.5 text-orange-500 shrink-0 focus:outline-none transition-transform ${
+                        className={`p-1.5 -m-1.5 text-zinc-400 shrink-0 focus:outline-none transition-transform ${
                           isTaskToggling ? 'cursor-wait' : 'cursor-pointer active:scale-90'
                         }`}
                         aria-label={task.completed ? "Mark as incomplete" : "Mark as completed"}
                       >
                         {isTaskToggling ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
                         ) : task.completed ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
                         ) : (
-                          <Circle className="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors" />
+                          <Circle className="w-4 h-4 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
                         )}
                       </button>
 
@@ -540,7 +544,9 @@ export default function TodayPlanWidget({
           </div>
 
           {/* Section 2 Footer Link */}
-          <div className="pt-2 border-t border-zinc-200/60 dark:border-orange-500/10">
+          <div className={`pt-2 ${
+            isDark ? 'border-t border-zinc-800/30' : 'border-t border-zinc-200'
+          }`}>
             <CustomButton
               variant="secondary"
               size="sm"

@@ -9,13 +9,32 @@ function toLocalDateStr(dateVal) {
   if (typeof dateVal === 'string') {
     // If already in YYYY-MM-DD format (10 chars), return directly
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) return dateVal;
-    date = new Date(dateVal);
+    
+    // Check if string matches DD/MM/YYYY or DD-MM-YYYY format
+    const dmyMatch = dateVal.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (dmyMatch) {
+      const d = Number(dmyMatch[1]);
+      const m = Number(dmyMatch[2]);
+      const y = Number(dmyMatch[3]);
+      if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+        date = new Date(y, m - 1, d);
+      } else {
+        date = new Date(dateVal);
+      }
+    } else {
+      date = new Date(dateVal);
+    }
   } else if (dateVal instanceof Date) {
     date = dateVal;
   } else if (dateVal && typeof dateVal.toDate === 'function') {
     date = dateVal.toDate();
   } else if (typeof dateVal === 'number') {
-    date = new Date(dateVal);
+    // If timestamp is in seconds (10 digits), convert to milliseconds
+    if (dateVal < 1e11) {
+      date = new Date(dateVal * 1000);
+    } else {
+      date = new Date(dateVal);
+    }
   } else {
     return null;
   }
@@ -78,9 +97,9 @@ export function useStreak(options = {}) {
       return dayMetrics[dateStr];
     };
 
-    // 1. Process Notes (+4 pts each)
+    // 1. Process Notes (+4 pts each) - only based on user note creation timestamp
     (notesHistory || []).forEach(note => {
-      const dateStr = toLocalDateStr(note.createdAtDate || note.createdAt || note.date);
+      const dateStr = toLocalDateStr(note.createdAtDate || note.createdAt);
       if (dateStr) {
         const metric = getOrInitMetric(dateStr);
         metric.notesCount += 1;
@@ -88,9 +107,9 @@ export function useStreak(options = {}) {
       }
     });
 
-    // 2. Process Watch History (+2 pts each)
+    // 2. Process Watch History (+2 pts each) - only based on user watch timestamp
     (watchHistory || []).forEach(item => {
-      const dateStr = toLocalDateStr(item.openedAt || item.createdAt || item.date);
+      const dateStr = toLocalDateStr(item.openedAt || item.createdAt);
       if (dateStr) {
         const metric = getOrInitMetric(dateStr);
         metric.videosCount += 1;
@@ -98,19 +117,7 @@ export function useStreak(options = {}) {
       }
     });
 
-    // 3. Process Daily Logins (+1 pt each)
-    (activityHistory || []).forEach(act => {
-      const dateStr = toLocalDateStr(act.date || act.createdAt);
-      if (dateStr) {
-        const metric = getOrInitMetric(dateStr);
-        if (!metric.hasLogin) {
-          metric.hasLogin = true;
-          metric.score += 1;
-        }
-      }
-    });
-
-    // 4. Process Planner Tasks (Dual-factor: Priority weights + Completion rate % bonus)
+    // 3. Process Planner Tasks (Dual-factor: Priority weights + Completion rate % bonus)
     // Group tasks by date first
     const tasksByDate = {};
     (plannerTasks || []).forEach(task => {
@@ -146,6 +153,22 @@ export function useStreak(options = {}) {
         const completionRate = completedCount / metric.tasksTotal;
         const attainmentBonus = Math.round(completionRate * 3);
         metric.score += attainmentBonus;
+      }
+    });
+
+    // 4. Process Daily Logins (+1 bonus pt on active study days)
+    (activityHistory || []).forEach(act => {
+      const dateStr = toLocalDateStr(act.date || act.createdAt);
+      if (dateStr) {
+        const metric = getOrInitMetric(dateStr);
+        if (!metric.hasLogin) {
+          metric.hasLogin = true;
+          // Only add +1 login bonus if the user performed at least one study activity on that day
+          const hasStudyActivity = metric.notesCount > 0 || metric.videosCount > 0 || metric.tasksCompleted > 0;
+          if (hasStudyActivity) {
+            metric.score += 1;
+          }
+        }
       }
     });
 
