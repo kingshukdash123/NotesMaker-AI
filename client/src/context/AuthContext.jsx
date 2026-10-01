@@ -15,6 +15,8 @@ import {
   updateUserProfile,
   skipOnboarding
 } from '../services/firebase/userService';
+import { useTheme } from './ThemeContext';
+import AppLoadingScreen from '../components/common/AppLoadingScreen';
 
 const AuthContext = createContext(null);
 
@@ -23,6 +25,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
+  const { isDark } = useTheme();
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -268,7 +271,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? <AppLoadingScreen isDark={isDark} /> : children}
     </AuthContext.Provider>
   );
 }

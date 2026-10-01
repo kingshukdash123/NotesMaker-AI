@@ -95,7 +95,42 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="app-preloader">
+        <style>
+          #app-preloader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000000;
+            z-index: 99999;
+          }
+          .preloader-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-top-color: #f4f4f5;
+            border-radius: 50%;
+            animation: preloaderSpin 0.75s linear infinite;
+          }
+          @media (prefers-color-scheme: light) {
+            #app-preloader {
+              background-color: #ffffff;
+            }
+            .preloader-spinner {
+              border-color: rgba(0, 0, 0, 0.1);
+              border-top-color: #09090b;
+            }
+          }
+          @keyframes preloaderSpin {
+            to { transform: rotate(360deg); }
+          }
+        </style>
+        <div class="preloader-spinner"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

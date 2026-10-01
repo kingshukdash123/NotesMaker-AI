@@ -1381,3 +1381,17 @@ html[data-theme="light"] ::selection,
   animation: chatFullscreenIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes loadingShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: loadingShimmer 1.4s ease-in-out infinite;
+}
+
+
