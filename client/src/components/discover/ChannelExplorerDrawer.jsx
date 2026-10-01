@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   X, 
@@ -31,6 +31,7 @@ export default function ChannelExplorerDrawer({
   onCreatePlaylist
 }) {
   const { isDark } = useTheme();
+  const drawerRef = useRef(null);
 
   // Active Tab: 'videos' | 'playlists'
   const [activeTab, setActiveTab] = useState('videos');
@@ -218,7 +219,7 @@ export default function ChannelExplorerDrawer({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose?.();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -244,6 +245,7 @@ export default function ChannelExplorerDrawer({
 
       {/* Drawer Panel constrained to the content area */}
       <div
+        ref={drawerRef}
         className={`absolute top-0 bottom-0 right-0 w-full max-w-xl h-full z-40 flex flex-col shrink-0 overflow-hidden border-l transition-all duration-300 ease-in-out ${
           isAnimating
             ? 'translate-x-0 opacity-100 border-l animate-chat-sidebar'
@@ -427,6 +429,10 @@ export default function ChannelExplorerDrawer({
                   const norm = normalizeVideoMetadata(rawVideo) || {};
                   const vidId = norm.videoId || norm.id;
                   const isSaved = savedVideos.some((v) => (v.videoId || v.id) === vidId);
+                  const assignedPlaylistIds = userPlaylists
+                    .filter((p) => (p.videos || []).some((v) => (v.videoId || v.id) === vidId))
+                    .map((p) => p.id);
+                  norm.playlistIds = assignedPlaylistIds;
 
                   return (
                     <DrawerVideoCard

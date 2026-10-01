@@ -3,6 +3,10 @@ import { useAuth } from './AuthContext';
 import { subscribeUserNotes, extractYoutubeVideoId } from '../services/firebase/notesService';
 import { subscribeUserMonthlyUsage } from '../services/firebase/usageService';
 import { 
+  subscribeUserPlaylists,
+  subscribeUserSavedVideos,
+  deletePlaylist,
+  renamePlaylist,
   getUserPlaylists, 
   getUserSavedVideos, 
   saveVideoToLibrary, 
@@ -13,7 +17,7 @@ import {
   createPlaylistWithVideos 
 } from '../services/firebase/libraryService';
 import { fetchYouTubePlaylistItems } from '../services/server/api';
-import { PlaylistModel, SavedVideoModel } from '../models';
+import { PlaylistModel, SavedVideoModel, normalizeVideoMetadata } from '../models';
 import { formatVideoDuration } from '../utils/formatters';
 import { UsageModel } from '../models/usageModel';
 import { parseLocation } from '../utils/router';
@@ -34,6 +38,12 @@ export function AppProvider({ children }) {
   const [previousSection, setPreviousSection] = useState(null);
 
   const setActiveSection = (nextSectionOrFn) => {
+    // Automatically close channel explorer & playlist drawers on section/page change
+    setChannelDrawerState({ isOpen: false, channelId: null, channelTitle: '' });
+    setActivePlaylistId('');
+    setActivePlaylistSummary(null);
+    setPlaylistReturnChannel(null);
+
     setActiveSectionState((prev) => {
       const next = typeof nextSectionOrFn === 'function' ? nextSectionOrFn(prev) : nextSectionOrFn;
       if (prev && prev !== next) {
@@ -272,26 +282,35 @@ export function AppProvider({ children }) {
       cyclePeriod
     );
 
-    // Fetch library info (saved videos & user playlists)
+    // Subscribe to real-time library info (saved videos & user playlists)
     setIsLibraryLoading(true);
-    Promise.all([
-      getUserSavedVideos(currentUser.uid),
-      getUserPlaylists(currentUser.uid)
-    ])
-      .then(([videosData, playlistsData]) => {
+    const unsubscribeSavedVideos = subscribeUserSavedVideos(
+      currentUser.uid,
+      (videosData) => {
         setSavedVideos(videosData || []);
-        setUserPlaylists(playlistsData || []);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch initial library data in AppContext:', err);
-      })
-      .finally(() => {
         setIsLibraryLoading(false);
-      });
+      },
+      (err) => {
+        console.error('Failed to subscribe to user saved videos:', err);
+        setIsLibraryLoading(false);
+      }
+    );
+
+    const unsubscribePlaylists = subscribeUserPlaylists(
+      currentUser.uid,
+      (playlistsData) => {
+        setUserPlaylists(playlistsData || []);
+      },
+      (err) => {
+        console.error('Failed to subscribe to user playlists:', err);
+      }
+    );
 
     return () => {
       unsubscribeNotes();
       unsubscribeUsage();
+      unsubscribeSavedVideos();
+      unsubscribePlaylists();
     };
   }, [
     currentUser,
@@ -307,36 +326,29 @@ export function AppProvider({ children }) {
       openAuthModal('login', 'Sign in to save videos to your library.');
       return;
     }
-    const targetVideoId = video?.videoId || video?.id;
+    const norm = normalizeVideoMetadata(video) || {};
+    const targetVideoId = norm.videoId || video?.videoId || video?.id;
     if (!targetVideoId) return;
 
     const isCurrentlySaved = savedVideos.some((v) => (v.videoId || v.id) === targetVideoId);
     try {
       if (isCurrentlySaved) {
-        await removeVideoFromLibrary(currentUser.uid, targetVideoId);
         setSavedVideos((prev) => prev.filter((v) => (v.videoId || v.id) !== targetVideoId));
+        await removeVideoFromLibrary(currentUser.uid, targetVideoId);
       } else {
-        const rawMeta = video.metadata || video;
-        const isLive = Boolean(rawMeta.is_live || rawMeta.isLive || video.isLive || video.is_live);
+        const isLive = Boolean(norm.isLive || video.isLive || video.is_live);
         const metadataToSave = {
-          title: rawMeta.title || video.title || 'YouTube Video',
-          channel: rawMeta.channel || video.channel || 'YouTube Creator',
-          thumbnail: rawMeta.thumbnail || video.thumbnail || `https://img.youtube.com/vi/${targetVideoId}/hqdefault.jpg`,
-          duration: isLive ? 0 : (Number(rawMeta.duration || video.duration || 0) || 0),
-          duration_formatted: isLive ? '' : (rawMeta.duration_formatted || rawMeta.durationFormatted || video.durationFormatted || ''),
-          publishedAt: rawMeta.publishedAt || video.publishedAt || '',
-          description: rawMeta.description || video.description || '',
-          view_count: rawMeta.view_count || rawMeta.viewCount || video.viewCount || '',
+          title: norm.title || video.title || 'YouTube Video',
+          channel: norm.channel || video.channel || 'YouTube Creator',
+          thumbnail: norm.thumbnail || video.thumbnail || `https://img.youtube.com/vi/${targetVideoId}/hqdefault.jpg`,
+          duration: isLive ? 0 : (Number(norm.duration || video.duration || 0) || 0),
+          duration_formatted: isLive ? '' : (norm.durationFormatted || video.durationFormatted || ''),
+          publishedAt: norm.publishedAt || video.publishedAt || '',
+          description: norm.description || video.description || '',
+          view_count: norm.viewCount || video.viewCount || '',
           is_live: isLive,
         };
-        const videoUrlToSave = video.videoUrl || `https://www.youtube.com/watch?v=${targetVideoId}`;
-
-        await saveVideoToLibrary(
-          currentUser.uid,
-          targetVideoId,
-          videoUrlToSave,
-          metadataToSave
-        );
+        const videoUrlToSave = norm.videoUrl || video.videoUrl || `https://www.youtube.com/watch?v=${targetVideoId}`;
 
         const newSavedModel = new SavedVideoModel({
           id: `${currentUser.uid}_${targetVideoId}`,
@@ -351,11 +363,29 @@ export function AppProvider({ children }) {
           newSavedModel,
           ...prev.filter((v) => (v.videoId || v.id) !== targetVideoId),
         ]);
+
+        await saveVideoToLibrary(
+          currentUser.uid,
+          targetVideoId,
+          videoUrlToSave,
+          metadataToSave
+        );
       }
     } catch (err) {
       console.error('Failed to toggle save video in AppContext:', err);
     }
   }, [currentUser, savedVideos, openAuthModal]);
+
+  const handleRemoveVideo = useCallback(async (videoId) => {
+    if (!currentUser || !videoId) return;
+    const cleanVideoId = String(videoId).trim();
+    try {
+      setSavedVideos((prev) => prev.filter((v) => (v.videoId || v.id) !== cleanVideoId));
+      await removeVideoFromLibrary(currentUser.uid, cleanVideoId);
+    } catch (err) {
+      console.error('Error removing video from library in AppContext:', err);
+    }
+  }, [currentUser]);
 
   const handleTogglePlaylistAssociation = useCallback(async (videoId, playlistId, alreadyAssociated, video) => {
     if (!currentUser) {
@@ -363,11 +393,14 @@ export function AppProvider({ children }) {
       return;
     }
 
+    const cleanVideoId = String(videoId || '').trim();
+    if (!cleanVideoId || !playlistId) return;
+
     try {
-      const rawMeta = video?.metadata || video || {};
-      const isLive = Boolean(rawMeta.is_live || rawMeta.isLive || video?.isLive || video?.is_live);
-      const durationSec = isLive ? 0 : (Number(rawMeta.duration || video?.duration || rawMeta.duration_seconds || video?.duration_seconds || 0) || 0);
-      let durationFmt = isLive ? '' : String(rawMeta.duration_formatted || rawMeta.durationFormatted || video?.durationFormatted || video?.duration_formatted || '').trim();
+      const norm = normalizeVideoMetadata(video || { videoId: cleanVideoId }) || {};
+      const isLive = Boolean(norm.isLive);
+      const durationSec = isLive ? 0 : (Number(norm.duration || 0) || 0);
+      let durationFmt = isLive ? '' : String(norm.durationFormatted || '').trim();
       if (!isLive && !durationFmt && durationSec > 0) {
         durationFmt = formatVideoDuration(durationSec);
       }
@@ -376,48 +409,48 @@ export function AppProvider({ children }) {
       }
 
       const videoEntry = {
-        videoId,
-        videoUrl: video?.videoUrl || `https://www.youtube.com/watch?v=${videoId}`,
+        videoId: cleanVideoId,
+        videoUrl: norm.videoUrl || `https://www.youtube.com/watch?v=${cleanVideoId}`,
         duration: durationSec,
         durationFormatted: durationFmt,
-        metadata: {
-          title: rawMeta.title || video?.title || 'YouTube Video',
-          channel: rawMeta.channel || video?.channel || 'Unknown Creator',
-          thumbnail: rawMeta.thumbnail || video?.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        metadata: norm.metadata || {
+          title: norm.title || 'YouTube Video',
+          channel: norm.channel || 'Unknown Creator',
+          thumbnail: norm.thumbnail || `https://img.youtube.com/vi/${cleanVideoId}/hqdefault.jpg`,
           duration: durationSec,
           duration_formatted: durationFmt,
           durationFormatted: durationFmt,
-          publishedAt: rawMeta.publishedAt || video?.publishedAt || '',
-          description: rawMeta.description || video?.description || '',
-          view_count: rawMeta.view_count || rawMeta.viewCount || video?.viewCount || '',
+          publishedAt: norm.publishedAt || '',
+          description: norm.description || '',
+          view_count: norm.viewCount || '',
           is_live: isLive,
         },
         addedAt: new Date().toISOString(),
       };
 
       if (alreadyAssociated) {
-        await removeVideoFromPlaylist(currentUser.uid, videoId, playlistId);
         setUserPlaylists((prev) =>
           prev.map((pl) => {
             if (pl.id === playlistId) {
-              const updatedVideos = (pl.videos || []).filter((v) => (v.videoId || v.id) !== videoId);
+              const updatedVideos = (pl.videos || []).filter((v) => (v.videoId || v.id) !== cleanVideoId);
               return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
             }
             return pl;
           })
         );
+        await removeVideoFromPlaylist(currentUser.uid, cleanVideoId, playlistId);
       } else {
-        await addVideoToPlaylist(currentUser.uid, videoId, playlistId, videoEntry);
         setUserPlaylists((prev) =>
           prev.map((pl) => {
             if (pl.id === playlistId) {
               const existing = pl.videos || [];
-              const updatedVideos = existing.some((v) => (v.videoId || v.id) === videoId) ? existing : [...existing, videoEntry];
+              const updatedVideos = existing.some((v) => (v.videoId || v.id) === cleanVideoId) ? existing : [...existing, videoEntry];
               return { ...pl, videos: updatedVideos, videoCount: updatedVideos.length };
             }
             return pl;
           })
         );
+        await addVideoToPlaylist(currentUser.uid, cleanVideoId, playlistId, videoEntry);
       }
     } catch (err) {
       console.error('Error toggling playlist association in AppContext:', err);
@@ -441,6 +474,27 @@ export function AppProvider({ children }) {
       console.error('Error creating playlist in AppContext:', err);
     }
   }, [currentUser, openAuthModal]);
+
+  const handleDeletePlaylist = useCallback(async (playlistId) => {
+    if (!currentUser || !playlistId) return;
+    try {
+      setUserPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
+      await deletePlaylist(currentUser.uid, playlistId);
+    } catch (err) {
+      console.error('Error deleting playlist in AppContext:', err);
+    }
+  }, [currentUser]);
+
+  const handleRenamePlaylist = useCallback(async (playlistId, newName) => {
+    if (!currentUser || !playlistId || !newName?.trim()) return;
+    try {
+      const cleanName = newName.trim();
+      setUserPlaylists((prev) => prev.map((p) => (p.id === playlistId ? { ...p, name: cleanName } : p)));
+      await renamePlaylist(currentUser.uid, playlistId, cleanName);
+    } catch (err) {
+      console.error('Error renaming playlist in AppContext:', err);
+    }
+  }, [currentUser]);
 
   const handleSavePlaylistToLibrary = useCallback(async (playlistData, currentVideos = []) => {
     if (!currentUser) {
@@ -562,8 +616,11 @@ export function AppProvider({ children }) {
     setUserPlaylists,
     isLibraryLoading,
     handleToggleSaveVideo,
+    handleRemoveVideo,
     handleTogglePlaylistAssociation,
     handleCreatePlaylist,
+    handleDeletePlaylist,
+    handleRenamePlaylist,
     handleSavePlaylistToLibrary,
     activeVideoId,
     setActiveVideoId,

@@ -22,6 +22,9 @@ export default function Tabs({
   isSaved,
   onToggleSave,
   isCheckingSaved,
+  playlists = [],
+  onAddToPlaylist,
+  onCreatePlaylist,
   hasNotes = false,
   isVideoCollapsed = false,
   onToggleCollapseVideo,
@@ -179,6 +182,9 @@ export default function Tabs({
             videoUrl={videoUrl}
             metadata={metadata}
             currentUser={currentUser}
+            playlists={playlists}
+            onAddToPlaylist={onAddToPlaylist}
+            onCreatePlaylist={onCreatePlaylist}
             placement="top"
             align={isVertical ? 'left' : 'right'}
             popoverClassName={isVertical ? 'md:bottom-auto md:top-0 md:left-full md:ml-2 md:right-auto' : ''}

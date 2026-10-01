@@ -14,6 +14,9 @@ export default function VideoPlayer({
   isSaved, 
   onToggleSave, 
   isCheckingSaved, 
+  playlists = [],
+  onAddToPlaylist,
+  onCreatePlaylist,
   hasNotes = false, 
   onBack, 
   isFullscreen = false,
@@ -138,6 +141,9 @@ export default function VideoPlayer({
           isSaved={isSaved}
           onToggleSave={onToggleSave}
           isCheckingSaved={isCheckingSaved}
+          playlists={playlists}
+          onAddToPlaylist={onAddToPlaylist}
+          onCreatePlaylist={onCreatePlaylist}
           hasNotes={hasNotes}
           isVideoCollapsed={isVideoCollapsed}
           isVertical={isVideoCollapsed}

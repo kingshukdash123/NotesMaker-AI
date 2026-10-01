@@ -248,7 +248,7 @@ export default function AddToPlaylistPopover({
             ) : effectivePlaylists.length > 0 ? (
               effectivePlaylists.map((pl) => {
                 const isInPlaylist =
-                  pl.videos?.some((v) => v.videoId === currentVideoId) ||
+                  (pl.videos || []).some((v) => (v.videoId || v.id) === currentVideoId) ||
                   video?.playlistIds?.includes(pl.id) ||
                   internalAssignedIds.includes(pl.id);
                 const isLoadingThis = loadingPlaylistIds.has(pl.id);

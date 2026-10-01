@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useVideoProcessor } from '../hooks/useVideoProcessor';
-import { isVideoSaved, saveVideoToLibrary, removeVideoFromLibrary } from '../services/firebase/libraryService';
 import { useTheme } from '../context/ThemeContext';
 
 // Components
@@ -11,7 +10,6 @@ import VideoPlayer from '../components/VideoPlayer';
 import NotesViewer from '../components/NotesViewer';
 import SummaryOverview from '../components/SummaryOverview';
 import VideoQa from '../components/VideoQa';
-
 
 export default function VideoContentPage() {
   const { isDark } = useTheme();
@@ -28,13 +26,15 @@ export default function VideoContentPage() {
     setIsVideoFullscreen,
     isVideoCollapsed,
     setIsVideoCollapsed,
-    openAuthModal,
+    savedVideos,
+    userPlaylists,
+    handleToggleSaveVideo,
+    handleTogglePlaylistAssociation,
+    handleCreatePlaylist,
+    isLibraryLoading,
   } = useApp();
 
   const { processStatus, processError, processVideo } = useVideoProcessor();
-  const [isSaved, setIsSaved] = useState(false);
-  const [isCheckingSaved, setIsCheckingSaved] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   // Reset fullscreen state when leaving the video page
   useEffect(() => {
@@ -47,53 +47,12 @@ export default function VideoContentPage() {
     setIsVideoFullscreen(prev => !prev);
   };
 
-  // Check if video is saved in library
-  useEffect(() => {
-    if (!currentUser || !activeVideoId) {
-      setIsSaved(false);
-      return;
-    }
+  const isSaved = Boolean(
+    activeVideoId && savedVideos.some(v => (v.videoId || v.id) === activeVideoId)
+  );
 
-    const checkSavedStatus = async () => {
-      setIsCheckingSaved(true);
-      try {
-        const saved = await isVideoSaved(currentUser.uid, activeVideoId);
-        setIsSaved(saved);
-      } catch (err) {
-        console.error('Error checking saved status:', err);
-      } finally {
-        setIsCheckingSaved(false);
-      }
-    };
-
-    checkSavedStatus();
-  }, [activeVideoId, currentUser]);
-
-  const handleToggleSave = async () => {
-    if (!currentUser) {
-      openAuthModal?.('login', 'Sign in to save videos to your library.');
-      return;
-    }
-    if (!activeVideoId || isSaving) return;
-    setIsSaving(true);
-    try {
-      if (isSaved) {
-        await removeVideoFromLibrary(currentUser.uid, activeVideoId);
-        setIsSaved(false);
-      } else {
-        await saveVideoToLibrary(
-          currentUser.uid, 
-          activeVideoId, 
-          activeVideoUrl || `https://www.youtube.com/watch?v=${activeVideoId}`, 
-          activeVideoMetadata
-        );
-        setIsSaved(true);
-      }
-    } catch (err) {
-      console.error('Error toggling save in VideoContentPage:', err);
-    } finally {
-      setIsSaving(false);
-    }
+  const handleToggleSave = () => {
+    handleToggleSaveVideo(activeVideoMetadata || { videoId: activeVideoId, videoUrl: activeVideoUrl });
   };
 
   const hasNotes = processStatus === 'COMPLETED';
@@ -127,7 +86,10 @@ export default function VideoContentPage() {
             currentUser={currentUser}
             isSaved={isSaved}
             onToggleSave={handleToggleSave}
-            isCheckingSaved={isCheckingSaved || isSaving}
+            isCheckingSaved={isLibraryLoading}
+            playlists={userPlaylists}
+            onAddToPlaylist={handleTogglePlaylistAssociation}
+            onCreatePlaylist={handleCreatePlaylist}
             hasNotes={hasNotes}
             onBack={resetActiveVideo}
             isFullscreen={isVideoFullscreen}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Folder, ArrowLeft, Loader2, FolderPlus, User } from 'lucide-react';
 import YouTubeIcon from '../common/YouTubeIcon';
 import { fetchYouTubePlaylistItems } from '../../services/server/api';
@@ -24,6 +24,7 @@ export default function PlaylistBrowserDrawer({
 }) {
   const { isDark } = useTheme();
   const { openChannelExplorer } = useApp() || {};
+  const drawerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [playlist, setPlaylist] = useState(null);
@@ -35,6 +36,17 @@ export default function PlaylistBrowserDrawer({
   const [isSaving, setIsSaving] = useState(false);
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Close drawer on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   // Manage smooth mount/unmount and opening/closing animation lifecycle matching Orbit sidebar
   useEffect(() => {
@@ -170,6 +182,7 @@ export default function PlaylistBrowserDrawer({
 
       {/* Drawer Panel constrained to the content area */}
       <div
+        ref={drawerRef}
         className={`absolute top-0 bottom-0 right-0 w-full max-w-xl h-full z-40 flex flex-col shrink-0 overflow-hidden border-l transition-all duration-300 ease-in-out ${
           isAnimating
             ? 'translate-x-0 opacity-100 border-l animate-chat-sidebar'
@@ -408,6 +421,10 @@ export default function PlaylistBrowserDrawer({
               const norm = normalizeVideoMetadata(vid) || {};
               const vidId = norm.videoId;
               const isSaved = savedVideos.some(v => (v.videoId || v.id) === vidId);
+              const assignedPlaylistIds = userPlaylists
+                .filter(p => (p.videos || []).some(v => (v.videoId || v.id) === vidId))
+                .map(p => p.id);
+              norm.playlistIds = assignedPlaylistIds;
 
               return (
                 <DrawerVideoCard

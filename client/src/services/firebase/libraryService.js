@@ -11,6 +11,7 @@ import {
   setDoc,
   updateDoc,
   serverTimestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import { PlaylistModel, SavedVideoModel, normalizeVideoMetadata } from '../../models';
@@ -104,6 +105,49 @@ export async function getUserPlaylists(userId) {
     console.error('Error fetching user playlists:', err);
     return [];
   }
+}
+
+/**
+ * Subscribes in real-time to all playlists created by a user.
+ * @param {string} userId - Auth user ID
+ * @param {Function} callback - Callback receiving updated Array<PlaylistModel>
+ * @param {Function} [onError] - Optional error callback
+ * @returns {Function} Unsubscribe function
+ */
+export function subscribeUserPlaylists(userId, callback, onError) {
+  if (!userId) {
+    callback([]);
+    return () => {};
+  }
+
+  const playlistRef = collection(db, 'playlists');
+  const q = query(playlistRef, where('userId', '==', userId));
+
+  return onSnapshot(
+    q,
+    (querySnapshot) => {
+      const playlists = [];
+      querySnapshot.forEach((docSnap) => {
+        const playlist = PlaylistModel.fromFirestore(docSnap);
+        if (playlist) {
+          playlists.push(playlist);
+        }
+      });
+
+      playlists.sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      callback(playlists);
+    },
+    (err) => {
+      console.error('Error in subscribeUserPlaylists snapshot listener:', err);
+      if (onError) onError(err);
+      else callback([]);
+    }
+  );
 }
 
 /**
@@ -389,4 +433,47 @@ export async function getUserSavedVideos(userId) {
     console.error('Error fetching user saved videos:', err);
     return [];
   }
+}
+
+/**
+ * Subscribes in real-time to all saved videos in the user's library.
+ * @param {string} userId - Auth user ID
+ * @param {Function} callback - Callback receiving updated Array<SavedVideoModel>
+ * @param {Function} [onError] - Optional error callback
+ * @returns {Function} Unsubscribe function
+ */
+export function subscribeUserSavedVideos(userId, callback, onError) {
+  if (!userId) {
+    callback([]);
+    return () => {};
+  }
+
+  const savedRef = collection(db, 'saved_videos');
+  const q = query(savedRef, where('userId', '==', userId));
+
+  return onSnapshot(
+    q,
+    (querySnapshot) => {
+      const savedVideos = [];
+      querySnapshot.forEach((docSnap) => {
+        const video = SavedVideoModel.fromFirestore(docSnap);
+        if (video) {
+          savedVideos.push(video);
+        }
+      });
+
+      savedVideos.sort((a, b) => {
+        const timeA = a.savedAt ? new Date(a.savedAt).getTime() : 0;
+        const timeB = b.savedAt ? new Date(b.savedAt).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      callback(savedVideos);
+    },
+    (err) => {
+      console.error('Error in subscribeUserSavedVideos snapshot listener:', err);
+      if (onError) onError(err);
+      else callback([]);
+    }
+  );
 }

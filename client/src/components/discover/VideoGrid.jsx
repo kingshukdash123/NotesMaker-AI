@@ -72,11 +72,10 @@ export default function VideoGrid({
         const normalized = normalizeVideoMetadata(item) || {};
         const rawVidId = normalized.videoId;
         const isSaved = savedVideos.some(v => (v.videoId || v.id) === rawVidId);
-        const matchSaved = savedVideos.find(v => (v.videoId || v.id) === rawVidId);
-        
-        if (matchSaved?.playlistIds) {
-          normalized.playlistIds = matchSaved.playlistIds;
-        }
+        const assignedPlaylistIds = playlists
+          .filter(p => (p.videos || []).some(v => (v.videoId || v.id) === rawVidId))
+          .map(p => p.id);
+        normalized.playlistIds = assignedPlaylistIds;
 
         return (
           <SearchResultCard
