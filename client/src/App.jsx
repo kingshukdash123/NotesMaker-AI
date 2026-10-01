@@ -449,7 +449,7 @@ function MainApp() {
             <>
               <div className="flex-1 w-full flex flex-col pb-12 pt-20 sm:pt-24 transition-all duration-300 relative z-10">
                 <main className="flex-1 min-w-0 w-full flex flex-col">
-                  <HomeSection onOpenAuthModal={handleOpenAuthModal} />
+                  <HomeSection onOpenAuthModal={openAuthModal} />
                 </main>
               </div>
 
