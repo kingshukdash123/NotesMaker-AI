@@ -20,10 +20,20 @@
     <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 
-    <!-- Browser Appearance Theme Listener (Listens to OS/Browser Dark/Light mode) -->
+    <!-- High-Priority Preloads for Brand Assets (Prevents layout pop-in & first-paint image flash) -->
+    <link rel="preload" as="image" href="/logos/logo-full-white.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/logos/logo-full-black.png" fetchpriority="high" />
+
+    <!-- Synchronous Theme Bootstrap & Appearance Listener (Prevents theme flash before first paint) -->
     <script>
       (function() {
         try {
+          var saved = localStorage.getItem('pathshala_theme');
+          var theme = (saved === 'light' || saved === 'dark') ? saved : 'dark';
+          document.documentElement.setAttribute('data-theme', theme);
+          document.documentElement.classList.add(theme);
+          document.documentElement.style.colorScheme = theme;
+
           var mq = window.matchMedia('(prefers-color-scheme: dark)');
           function updateSystemFavicon(e) {
             var isDark = (e && typeof e.matches === 'boolean') ? e.matches : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -38,7 +48,10 @@
           } else if (mq.addListener) {
             mq.addListener(updateSystemFavicon);
           }
-        } catch (e) {}
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.classList.add('dark');
+        }
       })();
     </script>
 
@@ -126,33 +139,90 @@
             position: fixed;
             inset: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: #000000;
+            gap: 20px;
+            background-color: #09090b;
             z-index: 99999;
+            user-select: none;
           }
-          .preloader-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-top-color: #f4f4f5;
-            border-radius: 50%;
-            animation: preloaderSpin 0.75s linear infinite;
+          .preloader-logo {
+            height: 32px;
+            width: 171px;
+            max-width: 80vw;
+            aspect-ratio: 800 / 150;
+            object-fit: contain;
+            display: block;
           }
-          @media (prefers-color-scheme: light) {
-            #app-preloader {
-              background-color: #ffffff;
-            }
-            .preloader-spinner {
-              border-color: rgba(0, 0, 0, 0.1);
-              border-top-color: #09090b;
-            }
+          .preloader-track {
+            width: 128px;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
           }
-          @keyframes preloaderSpin {
-            to { transform: rotate(360deg); }
+          .preloader-bar {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 45%;
+            background-color: #f4f4f5;
+            border-radius: 9999px;
+            animation: preloaderSlide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            will-change: transform;
+          }
+          .preloader-dark { display: block; }
+          .preloader-light { display: none; }
+
+          html[data-theme="light"] #app-preloader,
+          html.light #app-preloader {
+            background-color: #ffffff;
+          }
+          html[data-theme="light"] .preloader-track,
+          html.light .preloader-track {
+            background-color: rgba(0, 0, 0, 0.08);
+          }
+          html[data-theme="light"] .preloader-bar,
+          html.light .preloader-bar {
+            background-color: #09090b;
+          }
+          html[data-theme="light"] .preloader-dark,
+          html.light .preloader-dark {
+            display: none;
+          }
+          html[data-theme="light"] .preloader-light,
+          html.light .preloader-light {
+            display: block;
+          }
+
+          @keyframes preloaderSlide {
+            0% { left: -45%; }
+            100% { left: 100%; }
           }
         </style>
-        <div class="preloader-spinner"></div>
+        <img
+          src="/logos/logo-full-white.png"
+          alt="Pathshala AI"
+          width="171"
+          height="32"
+          fetchpriority="high"
+          decoding="async"
+          class="preloader-logo preloader-dark"
+        />
+        <img
+          src="/logos/logo-full-black.png"
+          alt="Pathshala AI"
+          width="171"
+          height="32"
+          fetchpriority="high"
+          decoding="async"
+          class="preloader-logo preloader-light"
+        />
+        <div class="preloader-track" aria-hidden="true">
+          <div class="preloader-bar"></div>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>

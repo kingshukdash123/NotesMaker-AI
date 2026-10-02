@@ -26,8 +26,8 @@ export default function BrandLogo({
 
   if (variant === 'full') {
     src = isDark ? '/logos/logo-full-white.png' : '/logos/logo-full-black.png';
-    defaultWidth = 140;
-    defaultHeight = 28;
+    defaultWidth = 171;
+    defaultHeight = 32;
   } else {
     // variant === 'icon'
     src = isDark ? '/logos/logo-icon-white.png' : '/logos/logo-icon-black.png';
