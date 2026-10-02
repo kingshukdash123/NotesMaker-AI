@@ -11,12 +11,36 @@
     <link rel="preconnect" href="https://i.ytimg.com" />
     <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
 
-    <!-- Favicon & PWA Icons -->
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <!-- Favicon & PWA Icons (Strictly Adaptive to Browser & OS Appearance Theme) -->
+    <link rel="icon" type="image/png" href="/favicon-dark.png" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/png" href="/favicon-light.png" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/png" href="/favicon-dark.png" id="system-favicon" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <!-- Browser Appearance Theme Listener (Listens to OS/Browser Dark/Light mode) -->
+    <script>
+      (function() {
+        try {
+          var mq = window.matchMedia('(prefers-color-scheme: dark)');
+          function updateSystemFavicon(e) {
+            var isDark = (e && typeof e.matches === 'boolean') ? e.matches : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            var fav = document.getElementById('system-favicon');
+            if (fav) {
+              fav.href = isDark ? '/favicon-dark.png' : '/favicon-light.png';
+            }
+          }
+          updateSystemFavicon(mq);
+          if (mq.addEventListener) {
+            mq.addEventListener('change', updateSystemFavicon);
+          } else if (mq.addListener) {
+            mq.addListener(updateSystemFavicon);
+          }
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- Primary Metadata -->
     <title>Pathshala AI — Distraction-Free Study & Productivity Platform</title>

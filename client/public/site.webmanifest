@@ -27,8 +27,8 @@
       "purpose": "maskable"
     },
     {
-      "src": "/favicon.png",
-      "sizes": "400x400",
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     }

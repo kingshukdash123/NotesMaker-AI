@@ -81,7 +81,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
         }`}
       >
         <h1 className="text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white select-none whitespace-nowrap">
-          Welcome To Pathshala <span className="text-orange-500">A<i>I</i></span>
+          Welcome To Pathshala <span className="text-orange-500">AI</span>
         </h1>
         <p className="text-sm sm:text-lg md:text-xl font-medium text-zinc-300 max-w-2xl mx-auto leading-relaxed select-none">
           Your all-in-one platform for distraction-free study and maximum productivity

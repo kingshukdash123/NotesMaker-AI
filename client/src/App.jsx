@@ -468,7 +468,7 @@ function MainApp() {
                   }`}
                 title="Go to Home"
               >
-                &copy; {new Date().getFullYear()} Pathshala A<i>I</i> &mdash; All Rights Reserved
+                &copy; {new Date().getFullYear()} Pathshala AI &mdash; All Rights Reserved
               </a>
               {/* Legal & Compliance Links */}
               <nav className="flex flex-wrap items-center justify-center gap-x-3.5 sm:gap-x-4 gap-y-1" aria-label="Legal & Policies">
