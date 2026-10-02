@@ -4,12 +4,12 @@ import { useTheme } from '../../context/ThemeContext';
 import CustomSelect from '../common/CustomSelect';
 
 const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'Low', icon: <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> },
+  { value: 'low', label: 'Low', icon: <ArrowDown className="w-3.5 h-3.5 text-sky-500 shrink-0" /> },
   { value: 'medium', label: 'Medium', icon: <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" /> },
   { value: 'high', label: 'High', icon: <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" /> }
 ];
 
-export default function AddTaskForm({ onAddTask, placeholder = "e.g. Complete Thermodynamics chapter outline..." }) {
+export default function AddTaskForm({ onAddTask, placeholder = "Add a task..." }) {
   const { isDark } = useTheme();
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState('medium');
@@ -27,28 +27,28 @@ export default function AddTaskForm({ onAddTask, placeholder = "e.g. Complete Th
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 sm:gap-2.5 w-full">
+    <form onSubmit={handleSubmit} className="flex items-center gap-1.5 sm:gap-2.5 w-full p-0.5">
       {/* Task input box */}
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={placeholder}
-        className={`flex-1 min-w-0 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none border-0 transition focus:ring-1 focus:ring-orange-500/50 ${
+        className={`flex-1 min-w-0 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none border border-transparent transition ${
           isDark 
-            ? 'bg-zinc-900/60 text-zinc-100 placeholder-zinc-500 focus:bg-zinc-900' 
-            : 'bg-zinc-100/80 text-zinc-900 placeholder-zinc-400 focus:bg-zinc-100/90'
+            ? 'bg-zinc-900/60 text-zinc-100 placeholder-zinc-500 focus:bg-zinc-900 focus:border-zinc-700 focus:ring-1 focus:ring-inset focus:ring-zinc-700/50' 
+            : 'bg-zinc-100/80 text-zinc-900 placeholder-zinc-400 focus:bg-zinc-100/90 focus:border-zinc-300 focus:ring-1 focus:ring-inset focus:ring-zinc-300/60'
         }`}
         required
         maxLength={100}
       />
 
-      {/* Priority Custom Dropup (Opens upward so it is never clipped by screen bottom) */}
+      {/* Priority Custom Dropdown (With priority text) */}
       <CustomSelect
         value={priority}
         onChange={setPriority}
         options={PRIORITY_OPTIONS}
-        placement="top"
+        placement="bottom"
         align="right"
         size="md"
         className="shrink-0"
@@ -62,7 +62,7 @@ export default function AddTaskForm({ onAddTask, placeholder = "e.g. Complete Th
       <button
         type="submit"
         disabled={!title.trim()}
-        className="btn-primary shrink-0 p-2 sm:px-3.5 sm:py-2.5 text-xs font-bold flex items-center justify-center gap-1.5"
+        className="btn-primary shrink-0 p-2 sm:px-3.5 sm:py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 !rounded-xl"
         title="Add Task"
         aria-label="Add Task"
       >

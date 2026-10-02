@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useLayoutEffect } from 'react';
 import { 
   CalendarDays,
   ClipboardList, 
@@ -139,64 +139,92 @@ export default function TodayPlanWidget({
   const percentComplete = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   const isAllCompleted = totalTasks > 0 && completedTasks === totalTasks;
 
-  // Show non-completed (pending) tasks first, completed tasks last.
-  // Secondary sort by priority: High -> Med -> Low
+  // Pending tasks come first (newly undone tasks at top), completed tasks come last (newly done tasks at bottom)
   const sortedTasks = useMemo(() => {
-    const priorityWeight = { high: 3, medium: 2, med: 2, low: 1 };
-    return [...(tasks || [])].sort((a, b) => {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1;
-      }
-      const pA = priorityWeight[(a.priority || 'medium').toLowerCase()] || 2;
-      const pB = priorityWeight[(b.priority || 'medium').toLowerCase()] || 2;
-      return pB - pA;
-    });
+    const pending = (tasks || []).filter(t => !t.completed);
+    const completed = (tasks || []).filter(t => t.completed);
+    return [...pending, ...completed];
   }, [tasks]);
+
+  // ── FLIP Smooth Layout Animation for Reordering ──
+  const itemRefs = useRef(new Map());
+  const prevPositions = useRef(new Map());
+
+  useLayoutEffect(() => {
+    itemRefs.current.forEach((el, id) => {
+      if (!el) return;
+      const prevPos = prevPositions.current.get(id);
+      const newPos = el.getBoundingClientRect();
+
+      if (prevPos) {
+        const deltaY = prevPos.top - newPos.top;
+        if (Math.abs(deltaY) > 0.5) {
+          el.style.transform = `translateY(${deltaY}px)`;
+          el.style.transition = 'none';
+
+          void el.offsetHeight;
+
+          requestAnimationFrame(() => {
+            el.style.transition = 'transform 380ms cubic-bezier(0.25, 1, 0.5, 1)';
+            el.style.transform = '';
+          });
+        }
+      }
+    });
+
+    const nextPositions = new Map();
+    itemRefs.current.forEach((el, id) => {
+      if (el) {
+        nextPositions.set(id, el.getBoundingClientRect());
+      }
+    });
+    prevPositions.current = nextPositions;
+  }, [sortedTasks]);
 
   const getPriorityBadge = (priority = 'medium') => {
     const p = (priority || 'medium').toLowerCase();
     if (p === 'high') {
       return (
-        <span 
+        <div 
           title="High Priority" 
           aria-label="High Priority"
-          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+          className={`w-6 h-6 rounded-full relative select-none shrink-0 ${
             isDark 
               ? 'bg-rose-950/40 text-rose-400' 
               : 'bg-rose-100 text-rose-700'
           }`}
         >
-          <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-        </span>
+          <Flame size={14} className="text-rose-500 absolute inset-0 m-auto" />
+        </div>
       );
     }
     if (p === 'low') {
       return (
-        <span 
+        <div 
           title="Low Priority" 
           aria-label="Low Priority"
-          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+          className={`w-6 h-6 rounded-full relative select-none shrink-0 ${
             isDark 
-              ? 'bg-emerald-950/40 text-emerald-400' 
-              : 'bg-emerald-100 text-emerald-700'
+              ? 'bg-sky-950/40 text-sky-400' 
+              : 'bg-sky-100 text-sky-700'
           }`}
         >
-          <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-        </span>
+          <ArrowDown size={14} className="text-sky-500 absolute inset-0 m-auto" />
+        </div>
       );
     }
     return (
-      <span 
+      <div 
         title="Medium Priority" 
         aria-label="Medium Priority"
-        className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+        className={`w-6 h-6 rounded-full relative select-none shrink-0 ${
           isDark 
             ? 'bg-amber-950/40 text-amber-400' 
             : 'bg-amber-100 text-amber-800'
         }`}
       >
-        <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-      </span>
+        <Clock size={14} className="text-amber-500 absolute inset-0 m-auto" />
+      </div>
     );
   };
 
@@ -512,46 +540,57 @@ export default function TodayPlanWidget({
                 return (
                   <div
                     key={task.id}
-                    onClick={() => !isTaskToggling && handleTaskToggle(task.id, task.completed)}
-                    className={`group min-h-[44px] px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-150 flex items-center justify-between gap-2.5 select-none ${
-                      isTaskToggling ? 'cursor-wait opacity-80' : 'cursor-pointer'
-                    } ${
-                      task.completed
-                        ? isDark 
-                          ? 'bg-zinc-950/40 text-zinc-500' 
-                          : 'bg-zinc-200/50 text-zinc-400'
-                        : isDark
-                          ? 'bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-200'
-                          : 'bg-white/80 hover:bg-white text-zinc-900'
-                    }`}
+                    ref={(el) => {
+                      if (el) {
+                        itemRefs.current.set(task.id, el);
+                      } else {
+                        itemRefs.current.delete(task.id);
+                      }
+                    }}
+                    className="will-change-transform"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <button
-                        type="button"
-                        disabled={isTaskToggling}
-                        onClick={(e) => handleTaskToggle(task.id, task.completed, e)}
-                        className={`p-1.5 -m-1.5 text-zinc-400 shrink-0 focus:outline-none transition-transform ${
-                          isTaskToggling ? 'cursor-wait' : 'cursor-pointer active:scale-90'
-                        }`}
-                        aria-label={task.completed ? "Mark as incomplete" : "Mark as completed"}
-                      >
-                        {isTaskToggling ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
-                        ) : task.completed ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
-                        ) : (
-                          <Circle className="w-4 h-4 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
-                        )}
-                      </button>
+                    <div
+                      onClick={() => !isTaskToggling && handleTaskToggle(task.id, task.completed)}
+                      className={`group min-h-[44px] px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition duration-150 flex items-center justify-between gap-2.5 select-none ${
+                        isTaskToggling ? 'cursor-wait opacity-80' : 'cursor-pointer'
+                      } ${
+                        task.completed
+                          ? isDark 
+                            ? 'bg-zinc-950/40 text-zinc-500' 
+                            : 'bg-zinc-200/50 text-zinc-400'
+                          : isDark
+                            ? 'bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-200'
+                            : 'bg-white/80 hover:bg-white text-zinc-900'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <button
+                          type="button"
+                          disabled={isTaskToggling}
+                          onClick={(e) => handleTaskToggle(task.id, task.completed, e)}
+                          className={`p-1.5 -m-1.5 text-zinc-400 shrink-0 focus:outline-none transition-transform ${
+                            isTaskToggling ? 'cursor-wait' : 'cursor-pointer active:scale-90'
+                          }`}
+                          aria-label={task.completed ? "Mark as incomplete" : "Mark as completed"}
+                        >
+                          {isTaskToggling ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                          ) : task.completed ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
+                          ) : (
+                            <Circle className="w-4 h-4 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
+                          )}
+                        </button>
 
-                      <span className={`text-xs sm:text-sm font-medium truncate ${
-                        task.completed ? 'line-through opacity-70' : ''
-                      }`}>
-                        {task.title}
-                      </span>
+                        <span className={`text-xs sm:text-sm font-medium truncate ${
+                          task.completed ? 'line-through opacity-70' : ''
+                        }`}>
+                          {task.title}
+                        </span>
+                      </div>
+
+                      {getPriorityBadge(task.priority)}
                     </div>
-
-                    {getPriorityBadge(task.priority)}
                   </div>
                 );
               })

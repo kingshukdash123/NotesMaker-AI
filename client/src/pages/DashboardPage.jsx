@@ -138,8 +138,24 @@ export default function DashboardPage() {
   const handleToggleTask = useCallback(async (taskId, currentStatus) => {
     try {
       await toggleTaskStatus(taskId, currentStatus);
-      setTodayTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !currentStatus } : t));
-      setMonthTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !currentStatus } : t));
+      
+      const updateOrder = (prev) => {
+        const target = prev.find(t => t.id === taskId);
+        if (!target) return prev;
+        const updatedTarget = { ...target, completed: !currentStatus };
+        const rest = prev.filter(t => t.id !== taskId);
+
+        if (!currentStatus) {
+          // Setting to DONE: move to the last position
+          return [...rest, updatedTarget];
+        } else {
+          // Setting to NOT DONE: move to the first position
+          return [updatedTarget, ...rest];
+        }
+      };
+
+      setTodayTasks(updateOrder);
+      setMonthTasks(updateOrder);
     } catch (err) {
       console.error('Failed to toggle task status:', err);
     }

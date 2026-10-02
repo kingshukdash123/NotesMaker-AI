@@ -1,12 +1,14 @@
-import { useMemo } from 'react';
+import { useState, useMemo, useRef, useLayoutEffect } from 'react';
 import TaskItem from './TaskItem';
 import AddTaskForm from './AddTaskForm';
-import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Check } from 'lucide-react';
+import { TaskListSkeleton } from '../skeletons/PlannerSkeleton';
+import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Check, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function DailyPlanner({
   tasks = [],
   selectedDate, // Date object or formatted string
+  isLoading = false,
   onAddTask,
   onToggleTask,
   onDeleteTask,
@@ -16,6 +18,7 @@ export default function DailyPlanner({
   onSetToday
 }) {
   const { isDark } = useTheme();
+  const [activeMenuTaskId, setActiveMenuTaskId] = useState(null);
   // Format current date heading beautifully: e.g. "Saturday, Aug 29"
   const dateObj = new Date(selectedDate);
   const formattedDateHeading = dateObj.toLocaleDateString([], { 
@@ -34,32 +37,68 @@ export default function DailyPlanner({
   const selectedStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
   const isToday = selectedStr === todayStr;
 
-  // Show non-completed (pending) tasks first, completed tasks last.
-  // Secondary sort by priority: High -> Med -> Low
+  // Pending tasks come first (newly undone tasks at top), completed tasks come last (newly done tasks at bottom)
   const sortedTasks = useMemo(() => {
-    const priorityWeight = { high: 3, medium: 2, med: 2, low: 1 };
-    return [...(tasks || [])].sort((a, b) => {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1;
-      }
-      const pA = priorityWeight[(a.priority || 'medium').toLowerCase()] || 2;
-      const pB = priorityWeight[(b.priority || 'medium').toLowerCase()] || 2;
-      return pB - pA;
-    });
+    const pending = (tasks || []).filter(t => !t.completed);
+    const completed = (tasks || []).filter(t => t.completed);
+    return [...pending, ...completed];
   }, [tasks]);
+
+  // ── FLIP (First, Last, Invert, Play) Smooth Layout Animation for Reordering ──
+  const itemRefs = useRef(new Map());
+  const prevPositions = useRef(new Map());
+
+  useLayoutEffect(() => {
+    itemRefs.current.forEach((el, id) => {
+      if (!el) return;
+      const prevPos = prevPositions.current.get(id);
+      const newPos = el.getBoundingClientRect();
+
+      if (prevPos) {
+        const deltaY = prevPos.top - newPos.top;
+        if (Math.abs(deltaY) > 0.5) {
+          // Invert: snap element to previous location
+          el.style.transform = `translateY(${deltaY}px)`;
+          el.style.transition = 'none';
+
+          // Force reflow
+          void el.offsetHeight;
+
+          // Play: animate smoothly to new destination
+          requestAnimationFrame(() => {
+            el.style.transition = 'transform 380ms cubic-bezier(0.25, 1, 0.5, 1)';
+            el.style.transform = '';
+          });
+        }
+      }
+    });
+
+    // Save positions for next render
+    const nextPositions = new Map();
+    itemRefs.current.forEach((el, id) => {
+      if (el) {
+        nextPositions.set(id, el.getBoundingClientRect());
+      }
+    });
+    prevPositions.current = nextPositions;
+  }, [sortedTasks]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full w-full overflow-hidden">
       
-      {/* 1. Date Navigation Header (Fixed at Top) */}
-      <div className={`shrink-0 flex items-center justify-between gap-2 sm:gap-4 border-b pb-2 sm:pb-2.5 mb-2 sm:mb-2.5 ${
+      {/* 1. Date Navigation Header (Card Header) */}
+      <div className={`shrink-0 flex items-center justify-between gap-2 sm:gap-4 border-b pb-3 px-2 sm:px-3 ${
         isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           <h3 className={`text-xs sm:text-sm font-bold truncate ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
             {formattedDateHeading}
           </h3>
-          {totalTasks > 0 && (
+          {isLoading ? (
+            <div className="flex items-center gap-1.5 sm:gap-2 ml-2 sm:ml-3 shrink-0">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400 shrink-0" />
+            </div>
+          ) : totalTasks > 0 ? (
             <div className="flex items-center gap-1.5 sm:gap-2 ml-2 sm:ml-3 shrink-0">
               {/* Compact Circular Progress Ring Starting at Top (12 o'clock) */}
               <div className="relative w-5 h-5 sm:w-5.5 sm:h-5.5 flex items-center justify-center shrink-0">
@@ -98,14 +137,16 @@ export default function DailyPlanner({
                 {percentComplete}%
               </span>
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
             onClick={onPrevDay}
-            className="btn-icon"
+            className={`p-1.5 rounded-lg transition cursor-pointer select-none ${
+              isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-800'
+            }`}
             title="Previous Day"
             aria-label="Previous Day"
           >
@@ -123,7 +164,9 @@ export default function DailyPlanner({
           <button
             type="button"
             onClick={onNextDay}
-            className="btn-icon"
+            className={`p-1.5 rounded-lg transition cursor-pointer select-none ${
+              isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-800'
+            }`}
             title="Next Day"
             aria-label="Next Day"
           >
@@ -132,9 +175,16 @@ export default function DailyPlanner({
         </div>
       </div>
 
-      {/* 2. Unified Task List (Scrollable Middle Area - Absorbs all overflow) */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-1 space-y-2">
-        {tasks.length === 0 ? (
+      {/* 2. Task Input Form (With balanced gaps before and after) */}
+      <div className="shrink-0 mt-4 sm:mt-5 mb-4 sm:mb-5 px-0.5">
+        <AddTaskForm onAddTask={onAddTask} />
+      </div>
+
+      {/* 3. Unified Task List (Scrollable Area) */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-1 space-y-1.5 sm:space-y-2">
+        {isLoading ? (
+          <TaskListSkeleton count={4} />
+        ) : tasks.length === 0 ? (
           /* Empty State */
           <div className={`text-center py-8 sm:py-12 border rounded-2xl flex flex-col items-center justify-center gap-2.5 ${
             isDark ? 'border-zinc-900 bg-zinc-950/20 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-600 shadow-xs'
@@ -143,26 +193,38 @@ export default function DailyPlanner({
             <div className="space-y-1">
               <p className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Nothing planned for this day</p>
               <p className={`text-[10px] max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                Add study goals, lecture revisions, or homework targets below to keep track of your schedule.
+                Add study goals, lecture revisions, or homework targets above to keep track of your schedule.
               </p>
             </div>
           </div>
         ) : (
-          sortedTasks.map((task) => (
-            <TaskItem
+          sortedTasks.map((task) => {
+          const isMenuOpen = activeMenuTaskId === task.id;
+          return (
+            <div
               key={task.id}
-              task={task}
-              onToggle={onToggleTask}
-              onDelete={onDeleteTask}
-              onUpdate={onUpdateTask}
-            />
-          ))
+              ref={(el) => {
+                if (el) {
+                  itemRefs.current.set(task.id, el);
+                } else {
+                  itemRefs.current.delete(task.id);
+                }
+              }}
+              className="relative will-change-transform"
+              style={{ zIndex: isMenuOpen ? 50 : 1 }}
+            >
+              <TaskItem
+                task={task}
+                isMenuOpen={isMenuOpen}
+                onToggleMenu={(isOpen) => setActiveMenuTaskId(isOpen ? task.id : null)}
+                onToggle={onToggleTask}
+                onDelete={onDeleteTask}
+                onUpdate={onUpdateTask}
+              />
+            </div>
+          );
+        })
         )}
-      </div>
-
-      {/* 3. Task Input Form (Fixed at Bottom - Always visible) */}
-      <div className={`shrink-0 pt-2 sm:pt-2.5 mt-2 sm:mt-2.5 border-t ${isDark ? 'border-zinc-900/60' : 'border-zinc-200'}`}>
-        <AddTaskForm onAddTask={onAddTask} />
       </div>
     </div>
   );

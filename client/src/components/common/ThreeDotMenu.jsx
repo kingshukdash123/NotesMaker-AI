@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { MoreVertical } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -7,6 +7,7 @@ export default function ThreeDotMenu({
   isOpen: controlledIsOpen,
   onToggle: controlledOnToggle,
   align = 'right',
+  placement = 'auto', // 'top' | 'bottom' | 'auto'
   title = 'Options',
   ariaLabel = 'Options',
   buttonClassName = '',
@@ -16,13 +17,55 @@ export default function ThreeDotMenu({
 }) {
   const { isDark } = useTheme();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const [effectivePlacement, setEffectivePlacement] = useState(placement === 'top' ? 'top' : 'bottom');
   const containerRef = useRef(null);
 
   const isControlled = typeof controlledIsOpen === 'boolean';
   const open = isControlled ? controlledIsOpen : internalIsOpen;
 
+  // Smart placement calculation (opens top or bottom depending on available space)
+  const calculatePosition = useCallback(() => {
+    if (!containerRef.current) return;
+    if (placement === 'top') {
+      setEffectivePlacement('top');
+      return;
+    }
+    if (placement === 'bottom') {
+      setEffectivePlacement('bottom');
+      return;
+    }
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+    const scrollParent = containerRef.current.closest('.overflow-y-auto, .overflow-auto');
+    let spaceBelow = viewportHeight - rect.bottom;
+    let spaceAbove = rect.top;
+
+    if (scrollParent) {
+      const parentRect = scrollParent.getBoundingClientRect();
+      spaceBelow = parentRect.bottom - rect.bottom;
+      spaceAbove = rect.top - parentRect.top;
+    }
+
+    // A 2-3 item menu is about 80-90px tall
+    if (spaceBelow < 95 && spaceAbove > spaceBelow) {
+      setEffectivePlacement('top');
+    } else {
+      setEffectivePlacement('bottom');
+    }
+  }, [placement]);
+
   const handleToggle = (e) => {
     e?.stopPropagation?.();
+    const nextState = isControlled ? !controlledIsOpen : !internalIsOpen;
+    if (nextState) {
+      calculatePosition();
+      // Broadcast to close all other open dropdown menus across the UI
+      window.dispatchEvent(new CustomEvent('close-other-menus', { 
+        detail: { target: containerRef.current } 
+      }));
+    }
     if (isControlled) {
       controlledOnToggle?.(!controlledIsOpen);
     } else {
@@ -38,9 +81,17 @@ export default function ThreeDotMenu({
     }
   };
 
-  // Close dropdown menu on click/touch outside
+  // Close dropdown menu on click/touch outside or when another menu opens
   useEffect(() => {
     if (!open) return;
+
+    calculatePosition();
+
+    const handleGlobalClose = (e) => {
+      if (e.detail?.target !== containerRef.current) {
+        handleClose();
+      }
+    };
 
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -50,16 +101,24 @@ export default function ThreeDotMenu({
 
     window.addEventListener('click', handleClickOutside);
     window.addEventListener('touchstart', handleClickOutside);
+    window.addEventListener('close-other-menus', handleGlobalClose);
+
     return () => {
       window.removeEventListener('click', handleClickOutside);
       window.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('close-other-menus', handleGlobalClose);
     };
-  }, [open]);
+  }, [open, calculatePosition]);
 
   const alignmentClass = align === 'left' ? 'left-0' : 'right-0';
+  const placementClass = effectivePlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5';
 
   return (
-    <div ref={containerRef} className="relative inline-block shrink-0">
+    <div 
+      ref={containerRef} 
+      className="relative inline-block shrink-0"
+      style={{ zIndex: open ? 60 : 'auto' }}
+    >
       <button
         type="button"
         onClick={handleToggle}
@@ -82,7 +141,8 @@ export default function ThreeDotMenu({
       {open && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`absolute ${alignmentClass} top-full mt-1 w-32 rounded-xl shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 border ${
+          style={{ zIndex: 100 }}
+          className={`absolute ${alignmentClass} ${placementClass} w-32 rounded-xl shadow-2xl p-1 z-[100] animate-in fade-in zoom-in-95 duration-100 border ${
             isDark
               ? 'bg-zinc-900 border-zinc-800 text-zinc-200 shadow-2xl'
               : 'bg-white border-zinc-200 text-zinc-900 shadow-xl'

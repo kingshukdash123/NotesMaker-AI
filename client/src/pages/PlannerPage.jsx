@@ -100,14 +100,16 @@ export default function PlannerPage() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden lg:overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="w-full p-2.5 sm:p-4 md:p-6 lg:p-8 flex-1 flex flex-col min-h-0 gap-2 sm:gap-3.5 lg:gap-6 animate-in fade-in duration-300 overflow-hidden lg:overflow-visible">
+      <div className="w-full p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 gap-4 sm:gap-5 lg:gap-6 pb-2 sm:pb-4 animate-in fade-in duration-300 overflow-hidden lg:overflow-visible">
         
         {/* Page Header (Pinned) */}
-        <div className="shrink-0">
-          <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2 sm:gap-2.5`}>
-            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 shrink-0" />
-            <span>Study Planner</span>
-          </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+          <div className="space-y-1">
+            <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2 sm:gap-2.5`}>
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 shrink-0" />
+              <span>Study Planner</span>
+            </h1>
+          </div>
         </div>
 
         {/* ── Mobile & Tablet View: Sub-navigation Tab Bar (< lg) ── */}
@@ -124,18 +126,18 @@ export default function PlannerPage() {
                 onClick={() => setPlannerTab(tab.id)}
                 title={tab.label}
                 aria-label={tab.label}
-                className={`flex-1 sm:flex-initial flex flex-row items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold relative transition shrink-0 cursor-pointer ${
+                className={`flex-1 sm:flex-initial flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-1.5 text-[10.5px] sm:text-xs relative transition shrink-0 cursor-pointer ${
                   isActive 
                     ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
-                    : isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
+                    : isDark ? 'text-zinc-400 hover:text-zinc-200 font-medium' : 'text-zinc-500 hover:text-zinc-900 font-medium'
                 }`}
               >
-                <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 transition-colors ${
+                <Icon className={`w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 shrink-0 transition-colors ${
                   isActive 
                     ? 'text-orange-500' 
                     : isDark ? 'text-zinc-400' : 'text-zinc-500'
                 }`} />
-                <span className="font-medium sm:font-semibold leading-tight text-center whitespace-nowrap">{tab.label}</span>
+                <span className="leading-tight text-center whitespace-nowrap">{tab.label}</span>
                 {isActive && (
                   <div className="absolute bottom-0 inset-x-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
                 )}
@@ -147,21 +149,18 @@ export default function PlannerPage() {
         {/* ── Mobile & Tablet Content Area (< lg) ── */}
         <div className="lg:hidden min-h-0 w-full flex-1 flex flex-col overflow-hidden">
           {plannerTab === 'daily' && (
-            isLoading ? (
-              <DailyPlannerSkeleton />
-            ) : (
-              <DailyPlanner
-                tasks={tasks}
-                selectedDate={selectedDate}
-                onAddTask={handleAddTask}
-                onToggleTask={toggleTask}
-                onDeleteTask={removeTask}
-                onUpdateTask={updateTask}
-                onPrevDay={handlePrevDay}
-                onNextDay={handleNextDay}
-                onSetToday={handleSetToday}
-              />
-            )
+            <DailyPlanner
+              tasks={tasks}
+              selectedDate={selectedDate}
+              isLoading={isLoading}
+              onAddTask={handleAddTask}
+              onToggleTask={toggleTask}
+              onDeleteTask={removeTask}
+              onUpdateTask={updateTask}
+              onPrevDay={handlePrevDay}
+              onNextDay={handleNextDay}
+              onSetToday={handleSetToday}
+            />
           )}
 
           {plannerTab === 'monthly' && (
@@ -182,63 +181,24 @@ export default function PlannerPage() {
           <div className={`lg:col-span-6 xl:col-span-5 border rounded-2xl p-5 sm:p-6 flex flex-col min-h-[580px] ${
             isDark ? 'bg-zinc-950/40 border-zinc-900/80' : 'bg-white border-zinc-200/80 shadow-xs'
           }`}>
-            {/* Desktop Column Header */}
-            <div className={`flex items-center justify-between pb-3.5 mb-3.5 border-b shrink-0 ${
-              isDark ? 'border-zinc-900' : 'border-zinc-200'
-            }`}>
-              <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  isDark ? 'bg-zinc-850 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
-                }`}>
-                  <ClipboardList className="w-4 h-4" />
-                </div>
-                <h2 className={`text-sm sm:text-base font-bold tracking-tight ${
-                  isDark ? 'text-zinc-100' : 'text-zinc-900'
-                }`}>
-                  Daily Targets
-                </h2>
-              </div>
-            </div>
-
-            {isLoading ? (
-              <DailyPlannerSkeleton />
-            ) : (
-              <DailyPlanner
-                tasks={tasks}
-                selectedDate={selectedDate}
-                onAddTask={handleAddTask}
-                onToggleTask={toggleTask}
-                onDeleteTask={removeTask}
-                onUpdateTask={updateTask}
-                onPrevDay={handlePrevDay}
-                onNextDay={handleNextDay}
-                onSetToday={handleSetToday}
-              />
-            )}
+            <DailyPlanner
+              tasks={tasks}
+              selectedDate={selectedDate}
+              isLoading={isLoading}
+              onAddTask={handleAddTask}
+              onToggleTask={toggleTask}
+              onDeleteTask={removeTask}
+              onUpdateTask={updateTask}
+              onPrevDay={handlePrevDay}
+              onNextDay={handleNextDay}
+              onSetToday={handleSetToday}
+            />
           </div>
 
           {/* Right Column: Monthly Calendar View */}
           <div className={`lg:col-span-6 xl:col-span-7 border rounded-2xl p-5 sm:p-6 flex flex-col min-h-[580px] overflow-y-auto custom-scrollbar ${
             isDark ? 'bg-zinc-950/40 border-zinc-900/80' : 'bg-white border-zinc-200/80 shadow-xs'
           }`}>
-            {/* Desktop Column Header */}
-            <div className={`flex items-center justify-between pb-3.5 mb-3.5 border-b shrink-0 ${
-              isDark ? 'border-zinc-900' : 'border-zinc-200'
-            }`}>
-              <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  isDark ? 'bg-zinc-850 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
-                }`}>
-                  <CalendarDays className="w-4 h-4" />
-                </div>
-                <h2 className={`text-sm sm:text-base font-bold tracking-tight ${
-                  isDark ? 'text-zinc-100' : 'text-zinc-900'
-                }`}>
-                  Monthly Calendar
-                </h2>
-              </div>
-            </div>
-
             <MonthlyCalendar
               monthTasks={monthTasks}
               currentDate={selectedDate}

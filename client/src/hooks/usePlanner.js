@@ -52,9 +52,9 @@ export function usePlanner() {
         createdAt: new Date()
       };
       
-      // Optimistic update
-      setTasks(prev => [...prev, newTask]);
-      setMonthTasks(prev => [...prev, newTask]);
+      // New tasks go to the top (first)
+      setTasks(prev => [newTask, ...prev]);
+      setMonthTasks(prev => [newTask, ...prev]);
       return taskId;
     } catch (err) {
       console.error('Failed to add task:', err);
@@ -63,16 +63,28 @@ export function usePlanner() {
 
   const toggleTask = useCallback(async (taskId, currentCompleted) => {
     try {
-      // Optimistic update
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !currentCompleted } : t));
-      setMonthTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !currentCompleted } : t));
-      
+      // Complete server operation first so loader displays in-place before reordering
       await toggleTaskStatus(taskId, currentCompleted);
+      
+      const updateOrder = (prev) => {
+        const target = prev.find(t => t.id === taskId);
+        if (!target) return prev;
+        const updatedTarget = { ...target, completed: !currentCompleted };
+        const rest = prev.filter(t => t.id !== taskId);
+
+        if (!currentCompleted) {
+          // Setting to DONE: move to the last position
+          return [...rest, updatedTarget];
+        } else {
+          // Setting to NOT DONE: move to the first position
+          return [updatedTarget, ...rest];
+        }
+      };
+
+      setTasks(updateOrder);
+      setMonthTasks(updateOrder);
     } catch (err) {
       console.error('Failed to toggle task:', err);
-      // Revert on error
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: currentCompleted } : t));
-      setMonthTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: currentCompleted } : t));
     }
   }, []);
 

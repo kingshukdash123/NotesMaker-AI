@@ -7,10 +7,17 @@ import CustomSelect from '../common/CustomSelect';
 const PRIORITY_OPTIONS = [
   { value: 'high', label: 'High', icon: <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" /> },
   { value: 'medium', label: 'Medium', icon: <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" /> },
-  { value: 'low', label: 'Low', icon: <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> }
+  { value: 'low', label: 'Low', icon: <ArrowDown className="w-3.5 h-3.5 text-sky-500 shrink-0" /> }
 ];
 
-export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
+export default function TaskItem({ 
+  task, 
+  onToggle, 
+  onDelete, 
+  onUpdate,
+  isMenuOpen,
+  onToggleMenu
+}) {
   const { isDark } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
@@ -44,46 +51,46 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
     const p = (priority || 'medium').toLowerCase();
     if (p === 'high') {
       return (
-        <span 
+        <div 
           title="High Priority" 
           aria-label="High Priority"
-          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+          className={`w-6 h-6 rounded-full relative select-none shrink-0 ${
             isDark 
               ? 'bg-rose-950/40 text-rose-400' 
               : 'bg-rose-100 text-rose-700'
           }`}
         >
-          <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-        </span>
+          <Flame size={14} className="text-rose-500 absolute inset-0 m-auto" />
+        </div>
       );
     }
     if (p === 'low') {
       return (
-        <span 
+        <div 
           title="Low Priority" 
           aria-label="Low Priority"
-          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+          className={`w-6 h-6 rounded-full relative select-none shrink-0 ${
             isDark 
-              ? 'bg-emerald-950/40 text-emerald-400' 
-              : 'bg-emerald-100 text-emerald-700'
+              ? 'bg-sky-950/40 text-sky-400' 
+              : 'bg-sky-100 text-sky-700'
           }`}
         >
-          <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-        </span>
+          <ArrowDown size={14} className="text-sky-500 absolute inset-0 m-auto" />
+        </div>
       );
     }
     return (
-      <span 
+      <div 
         title="Medium Priority" 
         aria-label="Medium Priority"
-        className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+        className={`w-6 h-6 rounded-full relative select-none shrink-0 ${
           isDark 
             ? 'bg-amber-950/40 text-amber-400' 
             : 'bg-amber-100 text-amber-800'
         }`}
       >
-        <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-      </span>
+        <Clock size={14} className="text-amber-500 absolute inset-0 m-auto" />
+      </div>
     );
   };
 
@@ -102,15 +109,18 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
   ];
 
   return (
-    <div className={`group relative min-h-[44px] flex items-center justify-between gap-3 px-3 py-2 sm:py-2.5 rounded-xl transition duration-150 select-none ${
-      task.completed
-        ? isDark 
-          ? 'bg-zinc-950/40 text-zinc-500' 
-          : 'bg-zinc-200/50 text-zinc-400'
-        : isDark
-          ? 'bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-200'
-          : 'bg-white hover:bg-zinc-50 text-zinc-900 shadow-2xs'
-    }`}>
+    <div 
+      className={`group relative min-h-[38px] sm:min-h-[42px] flex items-center justify-between gap-2.5 px-3 py-1.5 sm:py-2 rounded-xl transition duration-150 select-none ${
+        task.completed
+          ? isDark 
+            ? 'bg-zinc-900/20 text-zinc-500' 
+            : 'bg-zinc-100/60 text-zinc-400'
+          : isDark
+            ? 'bg-zinc-900/40 hover:bg-zinc-900/70 text-zinc-200'
+            : 'bg-white hover:bg-zinc-50 text-zinc-900 shadow-2xs'
+      }`}
+      style={{ zIndex: isMenuOpen ? 50 : 1 }}
+    >
       {isEditing ? (
         /* Edit Mode */
         <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -118,10 +128,10 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
             type="text"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
-            className={`flex-1 rounded-lg px-2.5 py-1 text-xs outline-none border-0 transition focus:ring-1 focus:ring-orange-500/50 ${
+            className={`flex-1 rounded-lg px-2.5 py-1 text-xs outline-none border border-transparent transition ${
               isDark 
-                ? 'bg-zinc-900 text-zinc-100 placeholder-zinc-500 focus:bg-zinc-850' 
-                : 'bg-zinc-100 text-zinc-900 placeholder-zinc-400 focus:bg-white'
+                ? 'bg-zinc-900 text-zinc-100 placeholder-zinc-500 focus:bg-zinc-850 focus:border-zinc-700' 
+                : 'bg-zinc-100 text-zinc-900 placeholder-zinc-400 focus:bg-white focus:border-zinc-300'
             }`}
             required
             autoFocus
@@ -196,13 +206,19 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div 
+            className="flex items-center gap-2 shrink-0 relative"
+            style={{ zIndex: isMenuOpen ? 50 : 1 }}
+          >
             {/* Priority Badge with Icon */}
             {getPriorityBadge(task.priority)}
 
-            {/* Reusable 3-Dot Options Menu */}
+            {/* Reusable 3-Dot Options Menu (Smart Auto Placement) */}
             <ThreeDotMenu
               items={menuItems}
+              isOpen={isMenuOpen}
+              onToggle={onToggleMenu}
+              placement="auto"
               title="Task options"
               ariaLabel="Task options"
             />

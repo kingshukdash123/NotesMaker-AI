@@ -97,22 +97,28 @@ export default function MonthlyCalendar({
     <div className="space-y-4 animate-in fade-in duration-300">
       
       {/* Month Navigation Control Header */}
-      <div className={`flex items-center justify-between border-b ${isDark ? 'border-zinc-900' : 'border-zinc-200'} pb-3 mb-2`}>
+      <div className={`flex items-center justify-between border-b ${isDark ? 'border-zinc-900' : 'border-zinc-200'} pb-3 px-2 sm:px-3 mb-3.5 sm:mb-4`}>
         <h3 className={`text-xs sm:text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>{formattedMonthHeading}</h3>
         <div className="flex gap-1">
           <button
             type="button"
             onClick={handlePrevMonth}
-            className="btn-icon"
+            className={`p-1.5 rounded-lg transition cursor-pointer select-none ${
+              isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-800'
+            }`}
             title="Previous Month"
+            aria-label="Previous Month"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={handleNextMonth}
-            className="btn-icon"
+            className={`p-1.5 rounded-lg transition cursor-pointer select-none ${
+              isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-800'
+            }`}
             title="Next Month"
+            aria-label="Next Month"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

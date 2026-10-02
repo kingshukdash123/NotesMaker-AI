@@ -19,6 +19,7 @@ export default function CustomSelect({
   className = '',
   dropdownClassName = '',
   triggerClassName = '',
+  labelClassName = '',
   ariaLabel = 'Select option',
   id,
   name
@@ -188,7 +189,7 @@ export default function CustomSelect({
           {selectedOption?.icon && (
             <span className="shrink-0">{selectedOption.icon}</span>
           )}
-          <span className="truncate">
+          <span className={`truncate ${labelClassName}`}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
