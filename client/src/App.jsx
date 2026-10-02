@@ -517,7 +517,7 @@ function MainApp() {
         </>
       ) : (
         /* Workspace (Authenticated) Layout */
-        <div className={`flex-1 w-full flex relative overflow-hidden transition-all duration-300 ${isVideoFullscreen ? 'h-screen h-[100dvh] mt-0' : 'h-[calc(100vh-53px)] h-[calc(100dvh-53px)] mt-[53px]'
+        <div className={`flex-1 min-h-0 w-full flex relative overflow-hidden transition-all duration-300 ${isVideoFullscreen ? 'h-full mt-0 pt-0' : 'h-full pt-[53px]'
           }`}>
           {/* Left Navigation Sidebar (Hidden in Fullscreen Video Mode) */}
           {!isVideoFullscreen && (

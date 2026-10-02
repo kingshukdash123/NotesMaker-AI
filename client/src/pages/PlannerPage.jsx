@@ -100,7 +100,7 @@ export default function PlannerPage() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden lg:overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="w-full p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-3.5 sm:space-y-6 animate-in fade-in duration-300 overflow-hidden lg:overflow-visible">
+      <div className="w-full p-3 sm:p-5 md:p-6 lg:p-8 flex-1 flex flex-col min-h-0 space-y-2.5 sm:space-y-4 lg:space-y-6 animate-in fade-in duration-300 overflow-hidden lg:overflow-visible">
         
         {/* Page Header (Pinned) */}
         <div className="space-y-1 shrink-0">
@@ -124,7 +124,7 @@ export default function PlannerPage() {
                 onClick={() => setPlannerTab(tab.id)}
                 title={tab.label}
                 aria-label={tab.label}
-                className={`flex-1 sm:flex-initial flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold relative transition shrink-0 cursor-pointer ${
+                className={`flex-1 sm:flex-initial flex flex-row items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold relative transition shrink-0 cursor-pointer ${
                   isActive 
                     ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
                     : isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
