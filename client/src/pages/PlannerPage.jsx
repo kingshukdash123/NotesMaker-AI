@@ -100,10 +100,10 @@ export default function PlannerPage() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden lg:overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="w-full p-3 sm:p-5 md:p-6 lg:p-8 flex-1 flex flex-col min-h-0 space-y-2.5 sm:space-y-4 lg:space-y-6 animate-in fade-in duration-300 overflow-hidden lg:overflow-visible">
+      <div className="w-full p-2.5 sm:p-4 md:p-6 lg:p-8 flex-1 flex flex-col min-h-0 gap-2 sm:gap-3.5 lg:gap-6 animate-in fade-in duration-300 overflow-hidden lg:overflow-visible">
         
         {/* Page Header (Pinned) */}
-        <div className="space-y-1 shrink-0">
+        <div className="shrink-0">
           <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2 sm:gap-2.5`}>
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 shrink-0" />
             <span>Study Planner</span>

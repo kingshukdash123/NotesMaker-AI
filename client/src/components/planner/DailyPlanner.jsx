@@ -49,10 +49,10 @@ export default function DailyPlanner({
   }, [tasks]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 h-full w-full space-y-3 sm:space-y-3.5 animate-in fade-in duration-300 overflow-hidden">
+    <div className="flex-1 flex flex-col min-h-0 h-full w-full overflow-hidden">
       
-      {/* 1. Date Navigation Header */}
-      <div className={`shrink-0 flex items-center justify-between gap-2 sm:gap-4 border-b pb-2.5 sm:pb-3 ${
+      {/* 1. Date Navigation Header (Fixed at Top) */}
+      <div className={`shrink-0 flex items-center justify-between gap-2 sm:gap-4 border-b pb-2 sm:pb-2.5 mb-2 sm:mb-2.5 ${
         isDark ? 'border-zinc-900' : 'border-zinc-200'
       }`}>
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
@@ -132,14 +132,14 @@ export default function DailyPlanner({
         </div>
       </div>
 
-      {/* 2. Unified Task List (Single clean scrollable list matching dashboard) */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-1 py-1 space-y-2">
+      {/* 2. Unified Task List (Scrollable Middle Area - Absorbs all overflow) */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-1 space-y-2">
         {tasks.length === 0 ? (
           /* Empty State */
-          <div className={`text-center py-10 sm:py-14 border rounded-2xl flex flex-col items-center justify-center gap-3 ${
+          <div className={`text-center py-8 sm:py-12 border rounded-2xl flex flex-col items-center justify-center gap-2.5 ${
             isDark ? 'border-zinc-900 bg-zinc-950/20 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-600 shadow-xs'
           }`}>
-            <ClipboardList className={`w-9 h-9 sm:w-10 sm:h-10 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
+            <ClipboardList className={`w-8 h-8 sm:w-10 sm:h-10 ${isDark ? 'text-zinc-700' : 'text-zinc-400'}`} />
             <div className="space-y-1">
               <p className={`text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Nothing planned for this day</p>
               <p className={`text-[10px] max-w-xs mx-auto leading-relaxed ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
@@ -160,8 +160,8 @@ export default function DailyPlanner({
         )}
       </div>
 
-      {/* 3. Task input form (Fixed at bottom) */}
-      <div className={`shrink-0 pt-3 sm:pt-4 pb-1 sm:pb-0 border-t ${isDark ? 'border-zinc-900/60' : 'border-zinc-200'}`}>
+      {/* 3. Task Input Form (Fixed at Bottom - Always visible) */}
+      <div className={`shrink-0 pt-2 sm:pt-2.5 mt-2 sm:mt-2.5 border-t ${isDark ? 'border-zinc-900/60' : 'border-zinc-200'}`}>
         <AddTaskForm onAddTask={onAddTask} />
       </div>
     </div>
