@@ -87,61 +87,65 @@ export default function PlannerPage() {
 
   const handleSelectDateFromCalendar = (dateObj) => {
     setSelectedDate(dateObj);
-    // On mobile devices, switch tab to daily view when clicking a date in the calendar
+    // On mobile/tablet viewports (< lg), switch tab to daily view when clicking a date in calendar
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       setPlannerTab('daily');
     }
   };
 
+  const subTabs = [
+    { id: 'daily', label: 'Daily Targets', icon: ClipboardList },
+    { id: 'monthly', label: 'Monthly Calendar', icon: CalendarDays },
+  ];
+
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto custom-scrollbar h-full w-full">
-      <div className="w-full p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-300">
+    <div className="flex-1 flex flex-col overflow-hidden lg:overflow-y-auto custom-scrollbar h-full w-full">
+      <div className="w-full p-3.5 sm:p-6 md:p-8 flex-1 flex flex-col min-h-0 space-y-3.5 sm:space-y-6 animate-in fade-in duration-300 overflow-hidden lg:overflow-visible">
         
-        {/* Page Header */}
-        <div className="space-y-1">
+        {/* Page Header (Pinned) */}
+        <div className="space-y-1 shrink-0">
           <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-900'} flex items-center gap-2 sm:gap-2.5`}>
-            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 shrink-0" />
             <span>Study Planner</span>
           </h1>
         </div>
 
-        {/* ── Mobile & Tablet View: Tab Switcher (< lg) ── */}
-        <div className="lg:hidden flex border-b pb-px select-none border-zinc-200 dark:border-zinc-900/60">
-          <button
-            type="button"
-            onClick={() => setPlannerTab('daily')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold relative transition cursor-pointer ${
-              plannerTab === 'daily' 
-                ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
-                : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-800'
-            }`}
-          >
-            <ClipboardList className={`w-4 h-4 ${plannerTab === 'daily' ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-            <span>Daily Targets</span>
-            {plannerTab === 'daily' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
-            )}
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => setPlannerTab('monthly')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold relative transition cursor-pointer ${
-              plannerTab === 'monthly' 
-                ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
-                : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-800'
-            }`}
-          >
-            <CalendarDays className={`w-4 h-4 ${plannerTab === 'monthly' ? 'text-orange-500' : isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-            <span>Monthly Calendar</span>
-            {plannerTab === 'monthly' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
-            )}
-          </button>
+        {/* ── Mobile & Tablet View: Sub-navigation Tab Bar (< lg) ── */}
+        <div className={`lg:hidden flex border-b pb-px overflow-x-auto select-none custom-scrollbar flex-nowrap shrink-0 ${
+          isDark ? 'border-zinc-900/60' : 'border-zinc-200/80'
+        }`}>
+          {subTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = plannerTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setPlannerTab(tab.id)}
+                title={tab.label}
+                aria-label={tab.label}
+                className={`flex-1 sm:flex-initial flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold relative transition shrink-0 cursor-pointer ${
+                  isActive 
+                    ? isDark ? 'text-zinc-50 font-bold' : 'text-zinc-900 font-bold'
+                    : isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
+                }`}
+              >
+                <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 transition-colors ${
+                  isActive 
+                    ? 'text-orange-500' 
+                    : isDark ? 'text-zinc-400' : 'text-zinc-500'
+                }`} />
+                <span className="font-medium sm:font-semibold leading-tight text-center whitespace-nowrap">{tab.label}</span>
+                {isActive && (
+                  <div className="absolute bottom-0 inset-x-0 h-0.5 bg-orange-500 rounded-full animate-fadeIn" />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Mobile & Tablet Content Area (< lg) ── */}
-        <div className="lg:hidden min-h-0 w-full flex-1 flex flex-col">
+        <div className="lg:hidden min-h-0 w-full flex-1 flex flex-col overflow-hidden">
           {plannerTab === 'daily' && (
             isLoading ? (
               <DailyPlannerSkeleton />
@@ -161,7 +165,7 @@ export default function PlannerPage() {
           )}
 
           {plannerTab === 'monthly' && (
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 min-h-0">
               <MonthlyCalendar
                 monthTasks={monthTasks}
                 currentDate={selectedDate}
@@ -178,6 +182,24 @@ export default function PlannerPage() {
           <div className={`lg:col-span-6 xl:col-span-5 border rounded-2xl p-5 sm:p-6 flex flex-col min-h-[580px] ${
             isDark ? 'bg-zinc-950/40 border-zinc-900/80' : 'bg-white border-zinc-200/80 shadow-xs'
           }`}>
+            {/* Desktop Column Header */}
+            <div className={`flex items-center justify-between pb-3.5 mb-3.5 border-b shrink-0 ${
+              isDark ? 'border-zinc-900' : 'border-zinc-200'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                  isDark ? 'bg-zinc-850 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
+                }`}>
+                  <ClipboardList className="w-4 h-4" />
+                </div>
+                <h2 className={`text-sm sm:text-base font-bold tracking-tight ${
+                  isDark ? 'text-zinc-100' : 'text-zinc-900'
+                }`}>
+                  Daily Targets
+                </h2>
+              </div>
+            </div>
+
             {isLoading ? (
               <DailyPlannerSkeleton />
             ) : (
@@ -199,6 +221,24 @@ export default function PlannerPage() {
           <div className={`lg:col-span-6 xl:col-span-7 border rounded-2xl p-5 sm:p-6 flex flex-col min-h-[580px] overflow-y-auto custom-scrollbar ${
             isDark ? 'bg-zinc-950/40 border-zinc-900/80' : 'bg-white border-zinc-200/80 shadow-xs'
           }`}>
+            {/* Desktop Column Header */}
+            <div className={`flex items-center justify-between pb-3.5 mb-3.5 border-b shrink-0 ${
+              isDark ? 'border-zinc-900' : 'border-zinc-200'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                  isDark ? 'bg-zinc-850 text-zinc-300' : 'bg-zinc-100 text-zinc-700'
+                }`}>
+                  <CalendarDays className="w-4 h-4" />
+                </div>
+                <h2 className={`text-sm sm:text-base font-bold tracking-tight ${
+                  isDark ? 'text-zinc-100' : 'text-zinc-900'
+                }`}>
+                  Monthly Calendar
+                </h2>
+              </div>
+            </div>
+
             <MonthlyCalendar
               monthTasks={monthTasks}
               currentDate={selectedDate}

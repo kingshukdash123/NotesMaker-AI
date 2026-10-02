@@ -369,7 +369,7 @@ function MainApp() {
   const isLegalPage = LEGAL_SECTIONS.has(activeSection);
 
   return (
-    <div className={`${isWorkspaceActive || isLegalPage ? 'h-screen overflow-hidden' : 'min-h-screen overflow-y-auto'} ${isDark ? 'bg-black text-zinc-100 selection:bg-zinc-800 selection:text-zinc-100' : 'bg-white text-zinc-900 selection:bg-zinc-200 selection:text-zinc-900'} flex flex-col relative transition-colors duration-200`}>
+    <div className={`${isWorkspaceActive || isLegalPage ? 'h-screen h-[100dvh] overflow-hidden' : 'min-h-screen min-h-[100dvh] overflow-y-auto'} ${isDark ? 'bg-black text-zinc-100 selection:bg-zinc-800 selection:text-zinc-100' : 'bg-white text-zinc-900 selection:bg-zinc-200 selection:text-zinc-900'} flex flex-col relative transition-colors duration-200`}>
       {/* Top Header Navbar (Hidden in Fullscreen Video Mode) */}
       {!isVideoFullscreen && (
         <Header
@@ -440,7 +440,7 @@ function MainApp() {
           </div>
 
           {isLegalPage ? (
-            <div className="flex-1 w-full flex flex-col pt-[53px] h-[calc(100vh-53px)] transition-all duration-300 relative z-10 overflow-hidden">
+            <div className="flex-1 w-full flex flex-col pt-[53px] h-[calc(100vh-53px)] h-[calc(100dvh-53px)] transition-all duration-300 relative z-10 overflow-hidden">
               <main className="flex-1 min-w-0 w-full flex flex-col h-full overflow-hidden">
                 <PolicyPage slug={activeSection} />
               </main>
@@ -517,7 +517,7 @@ function MainApp() {
         </>
       ) : (
         /* Workspace (Authenticated) Layout */
-        <div className={`flex-1 w-full flex relative overflow-hidden transition-all duration-300 ${isVideoFullscreen ? 'h-screen mt-0' : 'h-[calc(100vh-53px)] mt-[53px]'
+        <div className={`flex-1 w-full flex relative overflow-hidden transition-all duration-300 ${isVideoFullscreen ? 'h-screen h-[100dvh] mt-0' : 'h-[calc(100vh-53px)] h-[calc(100dvh-53px)] mt-[53px]'
           }`}>
           {/* Left Navigation Sidebar (Hidden in Fullscreen Video Mode) */}
           {!isVideoFullscreen && (

@@ -4,7 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 export function DailyPlannerSkeleton() {
   const { isDark } = useTheme();
   return (
-    <div className="flex-1 flex flex-col min-h-0 space-y-4 animate-in fade-in duration-300">
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5 animate-in fade-in duration-300">
       {/* Date Header Switcher Skeleton */}
       <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl ${isDark ? 'bg-zinc-950/40 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'} border`}>
         <div className="flex items-center gap-2">
@@ -16,15 +16,6 @@ export function DailyPlannerSkeleton() {
           <Skeleton className="h-8 w-20 rounded-xl" />
           <Skeleton className="h-8 w-24 rounded-xl" />
         </div>
-      </div>
-
-      {/* Progress Bar Skeleton */}
-      <div className={`p-3 rounded-xl ${isDark ? 'bg-zinc-950/30 border-zinc-900/60' : 'bg-white border-zinc-200 shadow-xs'} border space-y-2`}>
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-3 w-28 rounded" />
-          <Skeleton className="h-3 w-10 rounded" />
-        </div>
-        <Skeleton className="h-2 w-full rounded-full" />
       </div>
 
       {/* Task Checklist Items Skeleton */}
@@ -49,10 +40,11 @@ export function DailyPlannerSkeleton() {
         ))}
       </div>
 
-      {/* Bottom Input Skeleton */}
-      <div className={`p-3 rounded-2xl ${isDark ? 'bg-zinc-950/80 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'} border flex items-center gap-3`}>
+      {/* Input Bar Skeleton (Fixed at Bottom) */}
+      <div className={`p-3 rounded-2xl ${isDark ? 'bg-zinc-950/80 border-zinc-900' : 'bg-white border-zinc-200 shadow-xs'} border flex items-center gap-3 shrink-0`}>
         <Skeleton className="h-9 flex-1 rounded-xl" />
-        <Skeleton className="h-9 w-28 rounded-xl" />
+        <Skeleton className="h-9 w-20 rounded-xl" />
+        <Skeleton className="h-9 w-10 sm:w-24 rounded-xl" />
       </div>
     </div>
   );

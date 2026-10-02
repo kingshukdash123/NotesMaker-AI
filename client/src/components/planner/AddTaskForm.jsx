@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Flame, Clock, ArrowDown } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import CustomSelect from '../common/CustomSelect';
 
 const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'Low', dotColor: 'bg-emerald-500' },
-  { value: 'medium', label: 'Med', dotColor: 'bg-amber-500' },
-  { value: 'high', label: 'High', dotColor: 'bg-rose-500' }
+  { value: 'low', label: 'Low', icon: <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> },
+  { value: 'medium', label: 'Medium', icon: <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" /> },
+  { value: 'high', label: 'High', icon: <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" /> }
 ];
 
 export default function AddTaskForm({ onAddTask, placeholder = "e.g. Complete Thermodynamics chapter outline..." }) {

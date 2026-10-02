@@ -139,8 +139,8 @@ export default function MonthlyCalendar({
                 cell.isCurrentMonth
                   ? isToday
                     ? isDark
-                      ? 'bg-orange-500/5 border-orange-500 hover:bg-orange-500/10'
-                      : 'bg-orange-50/60 border-orange-500 hover:bg-orange-100/60 shadow-xs'
+                      ? 'bg-zinc-800/40 border-zinc-700 hover:bg-zinc-800/60'
+                      : 'bg-zinc-100 border-zinc-400 hover:bg-zinc-100/80 shadow-xs'
                     : isDark
                       ? 'bg-zinc-950/40 border-zinc-900 hover:border-zinc-800'
                       : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 shadow-xs'
@@ -159,7 +159,7 @@ export default function MonthlyCalendar({
                 
                 <span className={`text-[10px] font-bold ${
                   isToday && cell.isCurrentMonth
-                    ? 'text-orange-500'
+                    ? isDark ? 'text-zinc-100 font-black' : 'text-zinc-900 font-black'
                     : cell.isCurrentMonth 
                       ? isDark ? 'text-zinc-400' : 'text-zinc-800' 
                       : isDark ? 'text-zinc-700' : 'text-zinc-300'

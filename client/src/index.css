@@ -52,8 +52,15 @@
     --ring: #18181b;
   }
 
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
   body {
     @apply font-sans antialiased min-h-screen relative overflow-x-hidden transition-colors duration-200;
+    min-height: 100dvh;
     background-color: var(--background);
     color: var(--foreground);
   }

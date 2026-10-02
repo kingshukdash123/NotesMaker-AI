@@ -9,7 +9,10 @@ import {
   BarChart2,
   Crown,
   Check,
-  Loader2
+  Loader2,
+  Flame,
+  Clock,
+  ArrowDown
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import InfoPopover from '../common/InfoPopover';
@@ -151,36 +154,48 @@ export default function TodayPlanWidget({
   }, [tasks]);
 
   const getPriorityBadge = (priority = 'medium') => {
-    const p = priority.toLowerCase();
+    const p = (priority || 'medium').toLowerCase();
     if (p === 'high') {
       return (
-        <span className={`text-[10px] sm:text-[10.5px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
-          isDark 
-            ? 'bg-rose-950/40 text-rose-400' 
-            : 'bg-rose-100 text-rose-700'
-        }`}>
-          High
+        <span 
+          title="High Priority" 
+          aria-label="High Priority"
+          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+            isDark 
+              ? 'bg-rose-950/40 text-rose-400' 
+              : 'bg-rose-100 text-rose-700'
+          }`}
+        >
+          <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" />
         </span>
       );
     }
     if (p === 'low') {
       return (
-        <span className={`text-[10px] sm:text-[10.5px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
-          isDark 
-            ? 'bg-sky-950/40 text-sky-400' 
-            : 'bg-sky-100 text-sky-700'
-        }`}>
-          Low
+        <span 
+          title="Low Priority" 
+          aria-label="Low Priority"
+          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+            isDark 
+              ? 'bg-emerald-950/40 text-emerald-400' 
+              : 'bg-emerald-100 text-emerald-700'
+          }`}
+        >
+          <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
         </span>
       );
     }
     return (
-      <span className={`text-[10px] sm:text-[10.5px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
-        isDark 
-          ? 'bg-amber-950/40 text-amber-400' 
-          : 'bg-amber-100 text-amber-800'
-      }`}>
-        Med
+      <span 
+        title="Medium Priority" 
+        aria-label="Medium Priority"
+        className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+          isDark 
+            ? 'bg-amber-950/40 text-amber-400' 
+            : 'bg-amber-100 text-amber-800'
+        }`}
+      >
+        <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
       </span>
     );
   };

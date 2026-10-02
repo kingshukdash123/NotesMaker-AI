@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Trash2, Pencil, Check, X, Loader2 } from 'lucide-react';
+import { Trash2, Pencil, Check, X, Loader2, Flame, Clock, ArrowDown, CheckCircle2, Circle } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import ThreeDotMenu from '../common/ThreeDotMenu';
 import CustomSelect from '../common/CustomSelect';
 
 const PRIORITY_OPTIONS = [
-  { value: 'high', label: 'High', dotColor: 'bg-rose-500' },
-  { value: 'medium', label: 'Medium', dotColor: 'bg-amber-500' },
-  { value: 'low', label: 'Low', dotColor: 'bg-emerald-500' }
+  { value: 'high', label: 'High', icon: <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" /> },
+  { value: 'medium', label: 'Medium', icon: <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" /> },
+  { value: 'low', label: 'Low', icon: <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> }
 ];
 
 export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
@@ -40,31 +40,51 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
     setIsEditing(false);
   };
 
-  const getPriorityColor = (priority) => {
-    if (isDark) {
-      switch (priority) {
-        case 'high': return 'bg-red-950/20 text-red-500 border-red-900/30';
-        case 'medium': return 'bg-yellow-950/20 text-yellow-500 border-yellow-900/30';
-        case 'low': return 'bg-emerald-950/20 text-emerald-500 border-emerald-900/30';
-        default: return 'bg-zinc-900 text-zinc-500 border-zinc-800';
-      }
-    } else {
-      switch (priority) {
-        case 'high': return 'bg-red-50 text-red-700 border-red-200';
-        case 'medium': return 'bg-amber-50 text-amber-700 border-amber-200';
-        case 'low': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-        default: return 'bg-zinc-100 text-zinc-700 border-zinc-200';
-      }
+  const getPriorityBadge = (priority = 'medium') => {
+    const p = (priority || 'medium').toLowerCase();
+    if (p === 'high') {
+      return (
+        <span 
+          title="High Priority" 
+          aria-label="High Priority"
+          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+            isDark 
+              ? 'bg-rose-950/40 text-rose-400' 
+              : 'bg-rose-100 text-rose-700'
+          }`}
+        >
+          <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+        </span>
+      );
     }
-  };
-
-  const getPriorityDotColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-amber-500';
-      case 'low': return 'bg-emerald-500';
-      default: return 'bg-orange-400';
+    if (p === 'low') {
+      return (
+        <span 
+          title="Low Priority" 
+          aria-label="Low Priority"
+          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+            isDark 
+              ? 'bg-emerald-950/40 text-emerald-400' 
+              : 'bg-emerald-100 text-emerald-700'
+          }`}
+        >
+          <ArrowDown className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+        </span>
+      );
     }
+    return (
+      <span 
+        title="Medium Priority" 
+        aria-label="Medium Priority"
+        className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+          isDark 
+            ? 'bg-amber-950/40 text-amber-400' 
+            : 'bg-amber-100 text-amber-800'
+        }`}
+      >
+        <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+      </span>
+    );
   };
 
   const menuItems = [
@@ -82,10 +102,14 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
   ];
 
   return (
-    <div className={`group relative flex items-center justify-between gap-3 p-3.5 border rounded-xl transition duration-200 ${
-      isDark 
-        ? 'bg-zinc-950/40 border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900/20' 
-        : 'bg-white border-zinc-200 hover:border-zinc-300 shadow-xs'
+    <div className={`group relative min-h-[44px] flex items-center justify-between gap-3 px-3 py-2 sm:py-2.5 rounded-xl transition duration-150 select-none ${
+      task.completed
+        ? isDark 
+          ? 'bg-zinc-950/40 text-zinc-500' 
+          : 'bg-zinc-200/50 text-zinc-400'
+        : isDark
+          ? 'bg-zinc-900/30 hover:bg-zinc-900/60 text-zinc-200'
+          : 'bg-white hover:bg-zinc-50 text-zinc-900 shadow-2xs'
     }`}>
       {isEditing ? (
         /* Edit Mode */
@@ -142,30 +166,24 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
       ) : (
         /* Read Mode */
         <>
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Custom Checkbox */}
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {/* Custom Borderless Checkbox matching Dashboard */}
             <button
               type="button"
               onClick={handleToggle}
               disabled={isToggling}
-              aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
-              className={`w-4.5 h-4.5 rounded border transition flex items-center justify-center shrink-0 ${
-                isToggling
-                  ? isDark
-                    ? 'border-orange-500/40 bg-orange-950/20 cursor-wait'
-                    : 'border-orange-400 bg-orange-50 cursor-wait'
-                  : task.completed
-                    ? 'bg-orange-500 border-orange-500 text-white cursor-pointer'
-                    : isDark 
-                      ? 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 cursor-pointer' 
-                      : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 cursor-pointer'
+              className={`p-1.5 -m-1.5 text-zinc-400 shrink-0 focus:outline-none transition-transform ${
+                isToggling ? 'cursor-wait' : 'cursor-pointer active:scale-90'
               }`}
+              aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
             >
               {isToggling ? (
-                <Loader2 className="w-3 h-3 animate-spin text-orange-500" />
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
               ) : task.completed ? (
-                <Check className="w-3 h-3 stroke-[3]" />
-              ) : null}
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
+              ) : (
+                <Circle className="w-4 h-4 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
+              )}
             </button>
 
             {/* Task Title text */}
@@ -179,11 +197,8 @@ export default function TaskItem({ task, onToggle, onDelete, onUpdate }) {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* Priority Badge */}
-            <span className={`px-2 py-0.5 rounded text-[9px] font-bold border uppercase flex items-center gap-1 select-none ${getPriorityColor(task.priority)}`}>
-              <span className={`w-1 h-1 rounded-full ${getPriorityDotColor(task.priority)}`} />
-              {task.priority}
-            </span>
+            {/* Priority Badge with Icon */}
+            {getPriorityBadge(task.priority)}
 
             {/* Reusable 3-Dot Options Menu */}
             <ThreeDotMenu
