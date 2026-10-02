@@ -23,22 +23,24 @@ export default function ThemeToggle({
         aria-checked={!isDark}
         aria-label="Toggle theme mode"
         onClick={toggleTheme}
-        className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-300 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
+        className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-300 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 ${
           isDark 
-            ? 'bg-zinc-900 border-zinc-700/80' 
-            : 'bg-zinc-900 border-zinc-700 shadow-sm'
+            ? 'bg-zinc-800 border border-zinc-700/80' 
+            : 'bg-zinc-200 border border-zinc-300 shadow-inner'
         } ${className}`}
       >
         <span className="sr-only">Toggle theme</span>
         <span
-          className={`pointer-events-none flex h-5.5 w-5.5 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-300 ease-in-out ${
-            isDark ? 'translate-x-0.5 text-zinc-900' : 'translate-x-7 text-zinc-700'
+          className={`pointer-events-none flex h-5.5 w-5.5 transform items-center justify-center rounded-full shadow-md transition-transform duration-300 ease-in-out ${
+            isDark 
+              ? 'translate-x-0.5 bg-zinc-950 text-zinc-100 border border-zinc-800' 
+              : 'translate-x-6 bg-white text-zinc-900 shadow-sm'
           }`}
         >
           {isDark ? (
-            <Moon className="w-3.5 h-3.5 text-zinc-700" />
+            <Moon className="w-3 h-3 text-zinc-200" />
           ) : (
-            <Sun className="w-3.5 h-3.5 text-zinc-700 animate-spin-slow" />
+            <Sun className="w-3 h-3 text-zinc-700" />
           )}
         </span>
       </button>

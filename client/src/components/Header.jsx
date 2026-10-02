@@ -12,7 +12,6 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
-import ThemeToggle from './common/ThemeToggle';
 import OrbitIcon from './common/OrbitIcon';
 import ProfileUserIcon from './common/ProfileUserIcon';
 import BrandLogo from './common/BrandLogo';
@@ -178,7 +177,7 @@ export default function Header({
     : 'text-zinc-600 hover:text-orange-600 hover:bg-orange-50';
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-3 sm:px-5 py-2.5 sm:py-3 transition-colors duration-200 border-b ${
+    <header className={`fixed top-0 left-0 right-0 z-[90] backdrop-blur-md px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-2.5 sm:py-3 transition-colors duration-200 border-b ${
       isDark ? 'bg-black/90 border-zinc-800/80' : 'bg-white/90 border-zinc-200/80 shadow-xs'
     }`}>
       <div className="w-full flex items-center justify-between gap-3 sm:gap-6">
@@ -252,9 +251,6 @@ export default function Header({
                 <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
               </button>
 
-              {/* Theme Mode Toggle Button */}
-              <ThemeToggle />
-
               {/* Mobile/Tablet Menu Hamburger Button */}
               <button
                 type="button"
@@ -313,10 +309,6 @@ export default function Header({
               >
                 <Search className="w-4.5 h-4.5 shrink-0" />
               </button>
-
-
-              {/* Theme Mode Toggle Button */}
-              <ThemeToggle />
 
               {/* Quick Profile Access if logged in */}
               <button

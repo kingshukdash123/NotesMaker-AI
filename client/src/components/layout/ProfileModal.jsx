@@ -10,12 +10,15 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Lock,
-  Loader2
+  Loader2,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import ProfileUserIcon from '../common/ProfileUserIcon';
+import ThemeToggle from '../common/ThemeToggle';
 
 export default function ProfileModal() {
   const { isDark } = useTheme();
@@ -204,6 +207,28 @@ export default function ProfileModal() {
                   {currentEmail || 'Not provided'}
                 </span>
               </div>
+            </div>
+
+            {/* Appearance / Theme Mode Switch Row */}
+            <div className={`border rounded-xl p-3 sm:p-3.5 flex items-center justify-between text-xs ${
+              isDark ? 'bg-zinc-900/30 border-zinc-900' : 'bg-zinc-50 border-zinc-200'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className={`p-1.5 rounded-lg flex items-center justify-center ${
+                  isDark ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-200 text-zinc-800'
+                }`}>
+                  {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                </div>
+                <div>
+                  <span className={`block font-semibold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>
+                    Appearance
+                  </span>
+                  <span className={`text-[11px] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                    {isDark ? 'Dark Mode' : 'Light Mode'}
+                  </span>
+                </div>
+              </div>
+              <ThemeToggle variant="switch" />
             </div>
 
             {/* Action Buttons */}
