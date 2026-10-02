@@ -9,7 +9,7 @@ export default function LectureSpaceSection({ isDark, headingClass, subClass }) 
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <div className="hidden md:block">
           <BrowserFrame
-            src="/screenshots/study_space.png"
+            src="/screenshots/study_space.webp"
             alt="Pathshala AI Study Space — Distraction-free video with real-time study notes"
             className={isDark ? 'border-zinc-700' : 'border-zinc-300'}
           />
@@ -30,7 +30,7 @@ export default function LectureSpaceSection({ isDark, headingClass, subClass }) 
           {/* Mobile & Tablet: Image between heading and description */}
           <div className="md:hidden pt-2 pb-1">
             <BrowserFrame
-              src="/screenshots/study_space.png"
+              src="/screenshots/study_space.webp"
               alt="Pathshala AI Study Space — Distraction-free video with real-time study notes"
               className={isDark ? 'border-zinc-700' : 'border-zinc-300'}
             />

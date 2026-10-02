@@ -67,10 +67,11 @@ export default function ChatMessage({ message, isStreaming = false }) {
     <div className="flex gap-2 sm:gap-2.5 w-full py-2 sm:py-3 px-1 sm:px-2 transition duration-150 relative items-start">
       {/* Orbit Avatar Badge (Desktop: Left Side) */}
       <img
-        src="/orbit-dp-resize.png"
+        src="/orbit-dp-resize.webp"
         alt="Orbit"
         width="24"
         height="24"
+        decoding="async"
         className="hidden sm:block w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0 select-none sm:mt-0.5"
         title="Orbit"
       />
@@ -96,10 +97,11 @@ export default function ChatMessage({ message, isStreaming = false }) {
         <div className="flex items-center gap-2.5 mt-2 sm:mt-2.5 text-zinc-500">
           {/* Orbit Avatar (Mobile: End of Response) */}
           <img
-            src="/orbit-dp-resize.png"
+            src="/orbit-dp-resize.webp"
             alt="Orbit"
             width="20"
             height="20"
+            decoding="async"
             className="sm:hidden w-4.5 h-4.5 rounded-full object-cover shrink-0 select-none"
             title="Orbit"
           />

@@ -9,7 +9,7 @@ export default function PlaylistsSection({ isDark, headingClass, subClass }) {
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <div className="hidden md:block">
           <BrowserFrame
-            src="/screenshots/library_playlists.png"
+            src="/screenshots/library_playlists.webp"
             alt="Pathshala AI Library — Playlists with syllabus progress tracking"
             className={isDark ? 'border-zinc-700' : 'border-zinc-300'}
           />
@@ -30,7 +30,7 @@ export default function PlaylistsSection({ isDark, headingClass, subClass }) {
           {/* Mobile & Tablet: Image between heading and description */}
           <div className="md:hidden pt-2 pb-1">
             <BrowserFrame
-              src="/screenshots/library_playlists.png"
+              src="/screenshots/library_playlists.webp"
               alt="Pathshala AI Library — Playlists with syllabus progress tracking"
               className={isDark ? 'border-zinc-700' : 'border-zinc-300'}
             />

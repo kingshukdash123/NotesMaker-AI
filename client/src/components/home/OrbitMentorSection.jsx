@@ -23,7 +23,7 @@ export default function OrbitMentorSection({ isDark, headingClass, subClass }) {
           {/* Mobile & Tablet: Image between heading and description */}
           <div className="md:hidden pt-2 pb-1">
             <BrowserFrame
-              src="/screenshots/orbit_chat.png"
+              src="/screenshots/orbit_chat.webp"
               alt="Orbit Academic Mentor — Explaining complex concepts step-by-step"
               className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
             />
@@ -59,7 +59,7 @@ export default function OrbitMentorSection({ isDark, headingClass, subClass }) {
         </div>
         <div className="hidden md:block">
           <BrowserFrame
-            src="/screenshots/orbit_chat.png"
+            src="/screenshots/orbit_chat.webp"
             alt="Orbit Academic Mentor — Explaining complex concepts step-by-step"
             className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
           />

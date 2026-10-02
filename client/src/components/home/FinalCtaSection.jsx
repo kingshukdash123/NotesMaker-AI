@@ -21,7 +21,7 @@ export default function FinalCtaSection({ isDark, onOpenAuthModal, headingClass,
         {/* Orbit Mascot Character */}
         <div className="relative z-10 flex justify-center pb-1 sm:pb-2">
           <img
-            src="/orbit-dp-resize.png"
+            src="/orbit-dp-resize.webp"
             alt="Orbit — AI Academic Mentor"
             width="64"
             height="64"

@@ -328,10 +328,11 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
               ) : !activeThread ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 space-y-2.5 sm:space-y-3">
                   <img
-                    src="/orbit-resize.png"
+                    src="/orbit-resize.webp"
                     alt="Orbit"
                     width="72"
                     height="96"
+                    decoding="async"
                     className="w-16 h-20 sm:w-20 sm:h-24 object-contain mx-auto select-none pointer-events-none drop-shadow-md"
                   />
                   <h4 className={`text-[11px] sm:text-xs font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-900'}`}>Study Session</h4>
@@ -353,10 +354,11 @@ export default function RightAssistantSidebar({ currentUser, isOpen, onClose, mo
                   <div className="max-w-[260px] sm:max-w-[280px] mx-auto space-y-2.5 sm:space-y-3">
                     <div className="space-y-0.5 sm:space-y-1 text-center">
                       <img
-                        src="/orbit-resize.png"
+                        src="/orbit-resize.webp"
                         alt="Orbit"
                         width="80"
                         height="106"
+                        decoding="async"
                         className="w-16 h-22 sm:w-20 sm:h-26 object-contain mx-auto mb-1.5 sm:mb-2 select-none pointer-events-none drop-shadow-md"
                       />
                       <h3 className={`text-[11px] sm:text-xs font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeThread.title}</h3>

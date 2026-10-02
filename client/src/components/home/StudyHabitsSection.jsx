@@ -23,7 +23,7 @@ export default function StudyHabitsSection({ isDark, headingClass, subClass }) {
           {/* Mobile & Tablet: Image between heading and description */}
           <div className="md:hidden pt-2 pb-1">
             <BrowserFrame
-              src="/screenshots/dashboard_analytics.png"
+              src="/screenshots/dashboard_analytics.webp"
               alt="Pathshala AI Dashboard — Study Progress and Habit Tracker"
               className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
             />
@@ -44,7 +44,7 @@ export default function StudyHabitsSection({ isDark, headingClass, subClass }) {
         </div>
         <div className="hidden md:block">
           <BrowserFrame
-            src="/screenshots/dashboard_analytics.png"
+            src="/screenshots/dashboard_analytics.webp"
             alt="Pathshala AI Dashboard — Study Progress and Habit Tracker"
             className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
           />

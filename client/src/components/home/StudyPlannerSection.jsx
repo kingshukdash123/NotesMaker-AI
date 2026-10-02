@@ -22,7 +22,7 @@ export default function StudyPlannerSection({ isDark, headingClass, subClass }) 
           {/* Mobile & Tablet: Image between heading and description */}
           <div className="md:hidden pt-2 pb-1">
             <BrowserFrame
-              src="/screenshots/planner.png"
+              src="/screenshots/planner.webp"
               alt="Pathshala AI Daily Study Planner — Task organization and priority schedule"
               className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
             />
@@ -41,7 +41,7 @@ export default function StudyPlannerSection({ isDark, headingClass, subClass }) 
 
         <div className="hidden md:block">
           <BrowserFrame
-            src="/screenshots/planner.png"
+            src="/screenshots/planner.webp"
             alt="Pathshala AI Daily Study Planner — Task organization and priority schedule"
             className={isDark ? 'border-zinc-800' : 'border-zinc-200'}
           />

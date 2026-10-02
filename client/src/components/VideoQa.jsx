@@ -265,10 +265,11 @@ export default function VideoQa({ videoId, currentUser }) {
                   </div>
                 ) : (
                   <img
-                    src="/orbit-dp-resize.png"
+                    src="/orbit-dp-resize.webp"
                     alt="Orbit"
                     width="32"
                     height="32"
+                    decoding="async"
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 select-none mt-0.5"
                     title="Orbit"
                   />

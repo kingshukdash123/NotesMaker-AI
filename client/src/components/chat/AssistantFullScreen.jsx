@@ -401,10 +401,11 @@ export default function AssistantFullScreen({ currentUser }) {
           ) : !activeThread ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-4 max-w-sm mx-auto">
               <img
-                src="/orbit-resize.png"
+                src="/orbit-resize.webp"
                 alt="Orbit"
                 width="100"
                 height="133"
+                decoding="async"
                 className="w-24 h-32 sm:w-28 sm:h-36 object-contain mx-auto select-none pointer-events-none drop-shadow-lg"
               />
               <div className="space-y-1">
@@ -429,10 +430,11 @@ export default function AssistantFullScreen({ currentUser }) {
               <div className="max-w-md w-full space-y-5 text-center">
                 <div className="space-y-2">
                   <img
-                    src="/orbit-resize.png"
+                    src="/orbit-resize.webp"
                     alt="Orbit"
                     width="112"
                     height="150"
+                    decoding="async"
                     className="w-24 h-32 sm:w-28 sm:h-36 object-contain mx-auto mb-2 select-none pointer-events-none drop-shadow-lg"
                   />
                   <h2 className={`text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeThread.title}</h2>
